@@ -14,13 +14,13 @@ class PostgresDbConnection(application: Application) : DbConnection() {
     override val dbPassword: String
 
     init {
-        val host: String = application.property("com.example.auth.server.db.postgres.host").getString()
-        val port: Int = application.property("com.example.auth.server.db.postgres.port").getString().toInt()
-        val name: String = application.property("com.example.auth.server.db.postgres.name").getString()
+        val host: String = application.property("db.postgres.host").getString()
+        val port: Int = application.property("db.postgres.port").getString().toInt()
+        val name: String = application.property("db.postgres.name").getString()
 
         dbUrl = "jdbc:postgresql://$host:$port/$name"
-        dbUsername = application.property("com.example.auth.server.db.postgres.username").getString()
-        dbPassword = application.property("com.example.auth.server.db.postgres.password").getString()
+        dbUsername = application.property("db.postgres.username").getString()
+        dbPassword = application.property("db.postgres.password").getString()
     }
 
     override val driverUrl = "org.postgresql.Driver"

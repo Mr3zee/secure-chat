@@ -11,7 +11,7 @@ fun Application.isDevEnv(): Boolean {
 
 fun Application.propertyOrNull(path: String) = environment.config.propertyOrNull(path)
 
-fun Application.property(path: String) = propertyOrNull(path) ?: error("Expected Application com.example.auth.server.property $path")
+fun Application.property(path: String) = propertyOrNull(path) ?: error("Expected Application property $path")
 
 val Application.loggerLevel: Level
     get() = propertyOrNull("ktor.logger.level")?.let {
