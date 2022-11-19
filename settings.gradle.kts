@@ -1,3 +1,3 @@
-rootProject.name = "kotlin-client-server-sample"
+rootProject.name = "sd-id"
 
 include("common", "frontend", "server")
