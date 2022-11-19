@@ -1,11 +1,10 @@
-package services
+package com.example.auth.server.services
 
 import User
-import db.tables.UserTables
-import db.util.tx
+import com.example.auth.server.db.tables.UserTables
+import com.example.auth.server.db.util.tx
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
-
 
 class UserService {
     suspend fun addUser(user: User): List<User> {

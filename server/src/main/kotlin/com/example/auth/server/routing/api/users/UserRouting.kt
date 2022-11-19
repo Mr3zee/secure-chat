@@ -1,4 +1,4 @@
-package routing.api.users
+package com.example.auth.server.routing.api.users
 
 import ServerGreeting
 import User
@@ -7,8 +7,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
-import services.UserService
-
+import com.example.auth.server.services.UserService
 
 fun Route.userRouting() {
     val userService by inject<UserService>()

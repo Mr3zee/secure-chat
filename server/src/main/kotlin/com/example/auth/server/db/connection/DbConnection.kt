@@ -1,9 +1,8 @@
-package db.connection
+package com.example.auth.server.db.connection
 
-import db.util.tx
+import com.example.auth.server.db.util.tx
 import org.jetbrains.exposed.sql.*
 import org.koin.core.component.KoinComponent
-
 
 // marker interface
 interface TableHolder

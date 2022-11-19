@@ -1,8 +1,7 @@
-package db.tables
+package com.example.auth.server.db.tables
 
-import db.connection.TableHolder
+import com.example.auth.server.db.connection.TableHolder
 import org.jetbrains.exposed.dao.id.IntIdTable
-
 
 object UserTables : TableHolder {
     object Users : IntIdTable() {

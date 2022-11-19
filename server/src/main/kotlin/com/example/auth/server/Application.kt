@@ -1,4 +1,6 @@
-import db.connection.postgres
+package com.example.auth.server
+
+import com.example.auth.server.db.connection.postgres
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -13,15 +15,14 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import modules.applicationModules
+import com.example.auth.server.modules.applicationModules
 import org.koin.environmentProperties
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.slf4j.event.*
-import routing.api.apiRouting
-import routing.images.images
-import routing.indexRouting
-
+import com.example.auth.server.routing.api.apiRouting
+import com.example.auth.server.routing.images.images
+import com.example.auth.server.routing.indexRouting
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 

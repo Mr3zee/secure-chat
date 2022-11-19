@@ -1,10 +1,10 @@
-package routing.images
+package com.example.auth.server.routing.images
 
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import util.resourceBytes
+import com.example.auth.server.util.resourceBytes
 
 fun Route.images() {
     route("/images") {

@@ -1,7 +1,7 @@
-package routing.api
+package com.example.auth.server.routing.api
 
 import io.ktor.server.routing.*
-import routing.api.users.userRouting
+import com.example.auth.server.routing.api.users.userRouting
 
 fun Routing.apiRouting() {
     route("/api") {

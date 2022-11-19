@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package routing
+package com.example.auth.server.routing
 
 import io.ktor.http.*
 

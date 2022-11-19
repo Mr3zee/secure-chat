@@ -1,4 +1,4 @@
-package routing
+package com.example.auth.server.routing
 
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
