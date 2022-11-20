@@ -15,6 +15,11 @@
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/frontend" />
             <option value="$PROJECT_DIR$/server" />
+            <option value="$PROJECT_DIR$/server/application" />
+            <option value="$PROJECT_DIR$/server/base" />
+            <option value="$PROJECT_DIR$/server/core" />
+            <option value="$PROJECT_DIR$/server/domain" />
+            <option value="$PROJECT_DIR$/server/web" />
           </set>
         </option>
       </GradleProjectSettings>
