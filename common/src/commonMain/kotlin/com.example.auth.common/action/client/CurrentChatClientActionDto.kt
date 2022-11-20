@@ -8,7 +8,7 @@ sealed interface CurrentChatClientActionDto
 
 @Serializable
 data class GetMessagesActionDto(
-    val idLt: Long?,
+    val lastMessageId: Long?,
     val limit: Boolean,
 ) : CurrentChatClientActionDto
 

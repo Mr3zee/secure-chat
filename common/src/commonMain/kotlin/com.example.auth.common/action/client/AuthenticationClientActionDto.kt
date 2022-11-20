@@ -18,7 +18,7 @@ data class RegisterActionDto(
 ) : AuthenticationClientActionDto
 
 @Serializable
-data class DecodingResponseActionDto(
+data class DecodedResponseActionDto(
     val value: RawBytesDto,
 ) : AuthenticationClientActionDto
 
