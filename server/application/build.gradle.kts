@@ -80,7 +80,7 @@ tasks.named<JavaExec>("run") {
 ktor {
     docker {
         localImageName.set("secure-chat")
-        imageTag.set("0.0.1-SNAPSHOT")
+        imageTag.set("0.0.1")
         jreVersion.set(io.ktor.plugin.features.JreVersion.JRE_11)
     }
     fatJar {
