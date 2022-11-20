@@ -4,7 +4,6 @@ WORKDIR /home/gradle/src
 RUN gradle server:buildFatJar --no-daemon
 
 FROM openjdk:11
-EXPOSE 80:80
 
 ARG db_postgres_host_arg=localhost
 ARG db_postgres_port_arg=5678
@@ -19,6 +18,8 @@ ENV DB_POSTGRES_USERNAME=$db_postgres_username_arg
 ENV DB_POSTGRES_PASSWORD=$db_postgres_password_arg
 ENV DB_POSTGRES_NAME=$db_postgres_name_arg
 ENV APPLICATION_PORT=$application_port_arg
+
+EXPOSE $APPLICATION_PORT:$APPLICATION_PORT
 
 RUN mkdir /docker-app
 COPY --from=build /home/gradle/src/server/build/libs/*.jar /docker-app/secure-char.jar

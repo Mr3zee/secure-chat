@@ -59,6 +59,10 @@ tasks.named("buildImage") {
     dependsOn(buildApp)
 }
 
+tasks.named("buildFatJar") {
+    dependsOn(buildApp)
+}
+
 tasks.named("runDocker") {
     dependsOn(buildApp)
 }
