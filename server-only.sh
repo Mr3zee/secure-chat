@@ -2,4 +2,4 @@
 
 ./gradlew distZip distTar installDist
 
-./server/build/install/server/bin/server
+./server/application/build/install/application/bin/application

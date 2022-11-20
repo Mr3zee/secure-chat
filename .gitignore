@@ -2,4 +2,4 @@
 **/.gradle
 
 local.properties
-server/src/main/resources/static
+server/application/src/main/resources/static

@@ -20,42 +20,31 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 import org.koin.environmentProperties
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
-import org.slf4j.event.Level
+import org.slf4j.event.*
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
+
+val Application.logger by lazy {
+    KotlinLogging.logger("Application")
+}
 
 @Suppress("unused")
 fun Application.module() {
     install(ContentNegotiation) {
         json()
     }
-
     install(WebSockets) {
         contentConverter = KotlinxWebsocketSerializationConverter(Json)
     }
 
-    install(CORS) {
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Put)
-        allowMethod(HttpMethod.Delete)
-        allowMethod(HttpMethod.Patch)
-        allowHeader(HttpHeaders.Authorization)
-        allowHeader(HttpHeaders.AccessControlAllowOrigin)
-        allowNonSimpleContentTypes = true
-        allowCredentials = true
-        allowSameOrigin = true
-
-        // webpack-dev-server
-        val allowedHosts = listOf("localhost:3000")
-        allowedHosts.forEach { host ->
-            allowHost(host, listOf("http", "https"))
-        }
-    }
+    configureCORS()
 
     install(CallLogging) {
         level = this@module.loggerLevel

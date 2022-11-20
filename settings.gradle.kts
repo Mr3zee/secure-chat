@@ -1,4 +1,4 @@
-rootProject.name = "sd-id"
+rootProject.name = "secure-chat"
 
 include(
     "common",

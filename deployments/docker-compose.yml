@@ -1,7 +1,7 @@
-version: '3.1'
+version: '3.9'
 services:
   db:
-    image: postgres:15.1
+    image: postgres:13.7 # same as on prod
     restart: always
     environment:
       postgres: postgres
@@ -12,4 +12,4 @@ services:
     image: adminer
     restart: always
     ports:
-      - "8081:8080"
+      - "8080:8080"

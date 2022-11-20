@@ -9,6 +9,7 @@ exposed = "0.40.1"
 postgresql = "42.5.0"
 koin = "3.2.2"
 koin_ktor = "3.2.2"
+kotlin-logging-jvm = "3.0.2"
 
 
 [libraries]
@@ -66,6 +67,11 @@ koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5", version.ref = "
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin_ktor" }
 koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin_ktor" }
 
+# kotlin logging
+kotlin-logging-jvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlin-logging-jvm" }
+
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+io-ktor-plugin = {id = "io.ktor.plugin", version.ref = "ktor" }

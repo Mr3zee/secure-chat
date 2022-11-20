@@ -1,5 +1,16 @@
+@Suppress("DSL_SCOPE_VIOLATION") // "libs" produces a false-positive warning, see https://youtrack.jetbrains.com/issue/KTIJ-19369
 plugins {
     kotlin("jvm")
+    alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.io.ktor.plugin)
+    application
+    distribution
+}
+
+val ktorApplicationClassName = "com.example.secure.chat.application.ApplicationKt"
+
+application {
+    mainClass.set(ktorApplicationClassName)
 }
 
 tasks.test {
@@ -29,4 +40,50 @@ dependencies {
     implementation(libs.postgresql)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+}
+
+
+val buildAndCopyFrontend = tasks.register<Copy>("buildAndCopyFrontend") {
+    val frontendDist = project(":frontend").tasks.named("browserDistribution")
+    dependsOn(frontendDist)
+    from(frontendDist)
+    into("${project.projectDir}/src/main/resources/static")
+}
+
+val prepareAppResources = tasks.register("prepareAppResources") {
+    dependsOn(buildAndCopyFrontend)
+    finalizedBy("processResources")
+}
+
+val buildApp = tasks.register("buildApp") {
+    dependsOn(prepareAppResources)
+    finalizedBy("build")
+}
+
+tasks.named("buildImage") {
+    dependsOn(buildApp)
+}
+
+tasks.named("buildFatJar") {
+    dependsOn(buildApp)
+}
+
+tasks.named("runDocker") {
+    dependsOn(buildApp)
+}
+
+tasks.named<JavaExec>("run") {
+    dependsOn(buildApp)
+    classpath(tasks.named<Jar>("jar"))
+}
+
+ktor {
+    docker {
+        localImageName.set("secure-chat")
+        imageTag.set("0.0.1")
+        jreVersion.set(io.ktor.plugin.features.JreVersion.JRE_11)
+    }
+    fatJar {
+        archiveFileName.set("server.jar")
+    }
 }
