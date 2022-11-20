@@ -67,13 +67,28 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
+        DB_POSTGRES_HOST: ${{ secrets.DB_POSTGRES_HOST }}
+        DB_POSTGRES_PORT: ${{ secrets.DB_POSTGRES_PORT }}
+        DB_POSTGRES_USERNAME: ${{ secrets.DB_POSTGRES_USERNAME }}
+        DB_POSTGRES_PASSWORD: ${{ secrets.DB_POSTGRES_PASSWORD }}
+        DB_POSTGRES_NAME: ${{ secrets.DB_POSTGRES_NAME }}
+
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --no-cache --progress=plain
+        
+        docker build \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+          --build-arg db_postgres_host_arg=$DB_POSTGRES_HOST \
+          --build-arg db_postgres_port_arg=$DB_POSTGRES_PORT \
+          --build-arg db_postgres_username_arg=$DB_POSTGRES_USERNAME \
+          --build-arg db_postgres_password_arg=$DB_POSTGRES_PASSWORD \
+          --build-arg db_postgres_name_arg=$DB_POSTGRES_NAME \
+          . --no-cache --progress=plain
+        
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
