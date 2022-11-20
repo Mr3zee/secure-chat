@@ -17,15 +17,17 @@ fun Application.configureCORS() {
         allowCredentials = true
         allowSameOrigin = true
 
-        // webpack-dev-server
         val allowedHosts =
             this@configureCORS.propertyOrNull("ktor.deployment.allowedHosts")
                 ?.getString()
                 ?.split(",")
                 ?.map { it.trim() }
                 ?: emptyList()
+
         allowedHosts.forEach { host ->
+            this@configureCORS.logger.info { "Register host as allowed in CORS: http://$host, https://$host" }
             allowHost(host, listOf("http", "https"))
         }
+
     }
 }

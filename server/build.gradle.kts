@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.postgresql)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+    implementation(libs.kotlin.logging.jvm)
 }
 
 val buildAndCopyFrontend = tasks.register<Copy>("buildAndCopyFrontend") {
