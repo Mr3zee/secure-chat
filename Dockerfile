@@ -22,5 +22,5 @@ ENV APPLICATION_PORT=$application_port_arg
 EXPOSE $APPLICATION_PORT:$APPLICATION_PORT
 
 RUN mkdir /docker-app
-COPY --from=build /home/gradle/src/server/build/libs/*.jar /docker-app/secure-char.jar
-ENTRYPOINT ["java","-jar","/docker-app/secure-char.jar"]
+COPY --from=build /home/gradle/src/server/build/libs/server.jar /docker-app/secure-chat.jar
+ENTRYPOINT ["java","-jar","/docker-app/secure-chat.jar"]

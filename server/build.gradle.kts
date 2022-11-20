@@ -78,4 +78,7 @@ ktor {
         imageTag.set("0.0.1-SNAPSHOT")
         jreVersion.set(io.ktor.plugin.features.JreVersion.JRE_11)
     }
+    fatJar {
+        archiveFileName.set("server.jar")
+    }
 }
