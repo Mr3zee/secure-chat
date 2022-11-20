@@ -72,6 +72,7 @@ jobs:
         DB_POSTGRES_USERNAME: ${{ secrets.DB_POSTGRES_USERNAME }}
         DB_POSTGRES_PASSWORD: ${{ secrets.DB_POSTGRES_PASSWORD }}
         DB_POSTGRES_NAME: ${{ secrets.DB_POSTGRES_NAME }}
+        APPLICATION_ALLOWED_HOSTS: ${{ secrets.APPLICATION_ALLOWED_HOSTS }}
 
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
@@ -87,6 +88,7 @@ jobs:
           --build-arg db_postgres_username_arg=$DB_POSTGRES_USERNAME \
           --build-arg db_postgres_password_arg=$DB_POSTGRES_PASSWORD \
           --build-arg db_postgres_name_arg=$DB_POSTGRES_NAME \
+          --build-arg application_allowed_hosts_arg=APPLICATION_ALLOWED_HOSTS \
           . --no-cache --progress=plain
         
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
