@@ -4,7 +4,7 @@ WORKDIR /home/gradle/src
 RUN gradle server:buildFatJar --no-daemon
 
 FROM openjdk:11
-EXPOSE 80:8080
+EXPOSE 8080:8080
 
 ARG db_postgres_host_arg=localhost
 ARG db_postgres_port_arg=5678
