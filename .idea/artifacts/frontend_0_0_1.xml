@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="frontend-0.0.1">
+    <output-path>$PROJECT_DIR$/frontend/build/libs</output-path>
+    <root id="archive" name="frontend-0.0.1.jar" />
+  </artifact>
+</component>

@@ -2,12 +2,15 @@
 plugins {
     kotlin("jvm")
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.io.ktor.plugin)
     application
     distribution
 }
 
+val ktorApplicationClassName = "com.example.auth.server.ApplicationKt"
+
 application {
-    mainClass.set("ApplicationKt")
+    mainClass.set(ktorApplicationClassName)
 }
 
 tasks.test {
@@ -52,7 +55,23 @@ val buildApp = tasks.register("buildApp") {
     finalizedBy("build")
 }
 
+tasks.named("buildImage") {
+    dependsOn(buildApp)
+}
+
+tasks.named("runDocker") {
+    dependsOn(buildApp)
+}
+
 tasks.named<JavaExec>("run") {
     dependsOn(buildApp)
     classpath(tasks.named<Jar>("jar"))
+}
+
+ktor {
+    docker {
+        localImageName.set("secure-chat")
+        imageTag.set("0.0.1-SNAPSHOT")
+        jreVersion.set(io.ktor.plugin.features.JreVersion.JRE_11)
+    }
 }

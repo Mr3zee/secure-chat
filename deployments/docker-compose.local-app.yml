@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  secure-chat:
+    image: secure-chat:0.0.1-SNAPSHOT
+    restart: always
+    environment:
+      DB_POSTGRES_HOST: host.docker.internal
+    ports:
+      - "8082:8080"
+    depends_on:
+      - db

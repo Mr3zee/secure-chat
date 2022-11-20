@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Server Only" type="JetRunConfigurationType">
     <option name="MAIN_CLASS_NAME" value="com.example.auth.server.ApplicationKt" />
-    <module name="sd-id.server.main" />
+    <module name="secure-chat.server.main" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Gradle.BeforeRunTask" enabled="true" tasks="build" externalProjectPath="$PROJECT_DIR$/server" vmOptions="" scriptParameters="--configuration-cache" />

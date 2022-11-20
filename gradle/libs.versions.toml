@@ -67,3 +67,5 @@ koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref =
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+io-ktor-plugin = {id = "io.ktor.plugin", version.ref = "ktor" }
