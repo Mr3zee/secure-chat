@@ -25,7 +25,7 @@ fun Application.configureCORS() {
                 ?: emptyList()
 
         allowedHosts.forEach { host ->
-            this@configureCORS.logger.info { "Register host as allowed in CORS: http://$host, https://$host" }
+            this@configureCORS.logger.info { "Register host(s) as allowed in CORS: http://$host, https://$host" }
             allowHost(host, listOf("http", "https"))
         }
 
