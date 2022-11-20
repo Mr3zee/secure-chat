@@ -6,6 +6,6 @@ services:
     environment:
       DB_POSTGRES_HOST: host.docker.internal
     ports:
-      - "8082:8080"
+      - "8080:8080"
     depends_on:
       - db

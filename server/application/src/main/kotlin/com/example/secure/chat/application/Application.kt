@@ -7,11 +7,6 @@ import com.example.secure.chat.domain.db.connection.postgres
 import com.example.secure.chat.domain.dbModules
 import com.example.secure.chat.web.routing.setUpRouting
 import com.example.secure.chat.web.webModule
-import com.example.auth.server.db.connection.postgres
-import com.example.auth.server.modules.applicationModules
-import com.example.auth.server.routing.api.apiRouting
-import com.example.auth.server.routing.images.images
-import com.example.auth.server.routing.indexRouting
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
@@ -25,9 +20,9 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import kotlinx.serialization.json.Json
-import io.ktor.server.routing.*
 import mu.KotlinLogging
 import org.koin.environmentProperties
 import org.koin.ktor.plugin.Koin
