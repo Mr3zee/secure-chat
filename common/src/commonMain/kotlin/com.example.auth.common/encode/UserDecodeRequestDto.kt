@@ -4,6 +4,6 @@ import com.example.auth.common.byte.RawBytesDto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EncodeRqDto(
+data class UserDecodeRequestDto(
     val encodedData: RawBytesDto,
 )

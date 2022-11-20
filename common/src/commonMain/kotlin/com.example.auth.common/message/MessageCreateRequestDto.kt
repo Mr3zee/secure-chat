@@ -4,6 +4,6 @@ import com.example.auth.common.byte.RawBytesDto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MessageCreateRqDto(
+data class MessageCreateRequestDto(
     val text: RawBytesDto,
 )

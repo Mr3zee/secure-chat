@@ -3,7 +3,7 @@ package com.example.auth.common.on.connect
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RegisterRqDto(
+data class RegisterRequestDto(
     val login: String,
     val publicKey: String,
-) : OnConnectRqDto
+) : OnConnectRequestDto
