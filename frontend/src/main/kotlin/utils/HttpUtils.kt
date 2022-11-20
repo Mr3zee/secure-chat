@@ -33,16 +33,32 @@ object HttpUtils {
     }
 }
 
+typealias HttpParametersBuilder = MutableMap<String, Any?>
+
+@Suppress("unused")
+inline fun <reified B> sendAsyncApiPostRequest(
+    path: String,
+    body: B? = null,
+    crossinline parameters: HttpParametersBuilder.() -> Unit = {},
+    crossinline headers: HeadersBuilder.() -> Unit = {},
+    crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
+    crossinline onSuccess: suspend () -> Unit = {},
+) = sendAsyncApiPostRequest<B, Unit>(path, body, parameters, headers, onError) { onSuccess() }
+
 inline fun <reified B, reified R> sendAsyncApiPostRequest(
     path: String,
     body: B? = null,
+    crossinline parameters: HttpParametersBuilder.() -> Unit = {},
     crossinline headers: HeadersBuilder.() -> Unit = {},
     crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
-    crossinline onSuccess: suspend (R) -> Unit
+    noinline onSuccess: (suspend (R) -> Unit)? = null
 ) = launch(Ui) {
     val response = HttpUtils.client.request("/api/$path") {
-        this.method = HttpMethod.Post
-        this.headers {
+        method = HttpMethod.Post
+        mutableMapOf<String, Any?>().apply(parameters).forEach { (key, value) ->
+            parameter(key, value)
+        }
+        headers {
             headers()
         }
         body?.let {
@@ -52,21 +68,35 @@ inline fun <reified B, reified R> sendAsyncApiPostRequest(
     }
 
     when (response.status.value) {
-        in 200..299 -> onSuccess(response.body())
+        in 200..299 -> onSuccess?.invoke(response.body())
         else -> onError(response)
     }
 }
 
 @Suppress("unused")
+inline fun sendAsyncApiRequest(
+    path: String,
+    method: HttpMethod = HttpMethod.Get,
+    crossinline parameters: HttpParametersBuilder.() -> Unit = {},
+    crossinline headers: HeadersBuilder.() -> Unit = {},
+    crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
+    crossinline onSuccess: suspend () -> Unit = {}
+) = sendAsyncApiRequest<Unit>(path, method, parameters, headers, onError) { onSuccess() }
+
+@Suppress("unused")
 inline fun <reified R> sendAsyncApiRequest(
     path: String,
     method: HttpMethod = HttpMethod.Get,
+    crossinline parameters: HttpParametersBuilder.() -> Unit = {},
     crossinline headers: HeadersBuilder.() -> Unit = {},
     crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
-    crossinline onSuccess: suspend (R) -> Unit
+    crossinline onSuccess: suspend (R) -> Unit = {}
 ) = launch(Ui) {
     val response = HttpUtils.client.request("/api/$path") {
         this.method = method
+        mutableMapOf<String, Any?>().apply(parameters).forEach { (key, value) ->
+            parameter(key, value)
+        }
         this.headers {
             headers()
         }
