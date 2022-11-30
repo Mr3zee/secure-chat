@@ -1,3 +1,6 @@
+package com.example.secure.chat.web
+
+import androidx.compose.material.MaterialTheme
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
@@ -17,7 +20,9 @@ fun main() {
     lifecycle.attachToDocument()
 
     renderComposable(rootElementId = "root") {
-        AppComponent(rootModel)
+        MaterialTheme {
+            AppComponent(rootModel)
+        }
     }
 }
 
