@@ -1,8 +1,8 @@
-package utils
+package com.example.secure.chat.platform
 
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.js.*
+import io.ktor.client.engine.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.websocket.*
@@ -11,34 +11,24 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
-val Ui: CoroutineScope = CoroutineScope(Dispatchers.Main)
+expect object ClientHttpEngine {
+    val engine: HttpClientEngineFactory<HttpClientEngineConfig>
+}
 
-fun <T> launch(scope: CoroutineScope, body: suspend () -> T) {
-    with(scope) {
-        launch {
-            body()
+val client by lazy {
+    HttpClient(ClientHttpEngine.engine) {
+        install(ContentNegotiation) {
+            json()
+        }
+
+        install(WebSockets) {
+            contentConverter = KotlinxWebsocketSerializationConverter(Json)
         }
     }
 }
 
-object HttpUtils {
-    val client by lazy {
-        HttpClient(Js) {
-            install(ContentNegotiation) {
-                json()
-            }
-
-            install(WebSockets) {
-                contentConverter = KotlinxWebsocketSerializationConverter(Json)
-            }
-        }
-    }
-}
 
 typealias HttpParametersBuilder = MutableMap<String, Any?>
 
@@ -60,7 +50,7 @@ inline fun <reified B, reified R> sendAsyncApiPostRequest(
     crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
     noinline onSuccess: (suspend (R) -> Unit)? = null
 ) = launch(Ui) {
-    val response = HttpUtils.client.request("/api/$path") {
+    val response = client.request("/api/$path") {
         method = HttpMethod.Post
         mutableMapOf<String, Any?>().apply(parameters).forEach { (key, value) ->
             parameter(key, value)
@@ -99,7 +89,7 @@ inline fun <reified R> sendAsyncApiRequest(
     crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
     crossinline onSuccess: suspend (R) -> Unit = {}
 ) = launch(Ui) {
-    val response = HttpUtils.client.request("/api/$path") {
+    val response = client.request("/api/$path") {
         this.method = method
         mutableMapOf<String, Any?>().apply(parameters).forEach { (key, value) ->
             parameter(key, value)

@@ -1,15 +1,39 @@
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import org.jetbrains.compose.web.dom.Div
-import org.jetbrains.compose.web.dom.Text
+import com.arkivanov.decompose.DefaultComponentContext
+import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.arkivanov.essenty.lifecycle.resume
+import com.arkivanov.essenty.lifecycle.stop
+import com.example.secure.chat.web.compoents.AppComponent
+import com.example.secure.chat.web.models.AppModel
+import kotlinx.browser.document
 import org.jetbrains.compose.web.renderComposable
+import org.w3c.dom.Document
+
 
 fun main() {
-    val state by mutableStateOf(0)
+    val lifecycle = LifecycleRegistry()
+
+    val rootModel = AppModel(componentContext = DefaultComponentContext(lifecycle))
+
+    lifecycle.attachToDocument()
 
     renderComposable(rootElementId = "root") {
-        Div {
-            Text("Page state: $state, 0 - not connected to server, 1 - connected")
-        }
+        AppComponent(rootModel)
     }
 }
+
+private fun LifecycleRegistry.attachToDocument() {
+    fun onVisibilityChanged() {
+        if (document.visibilityState == "visible") {
+            resume()
+        } else {
+            stop()
+        }
+    }
+
+    onVisibilityChanged()
+
+    document.addEventListener(type = "visibilitychange", callback = { onVisibilityChanged() })
+}
+
+private val Document.visibilityState: String
+    get() = asDynamic().visibilityState.unsafeCast<String>()

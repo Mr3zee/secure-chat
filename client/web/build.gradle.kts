@@ -43,4 +43,8 @@ dependencies {
 
     implementation(compose.web.core)
     implementation(compose.runtime)
+    implementation(compose.animation)
+    implementation(compose.foundation)
+    implementation(compose.material)
+    implementation(compose.ui)
 }

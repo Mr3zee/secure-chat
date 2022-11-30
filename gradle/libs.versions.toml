@@ -11,6 +11,7 @@ koin = "3.2.2"
 koin_ktor = "3.2.2"
 kotlin-logging-jvm = "3.0.2"
 jetbrains-compose = "1.2.1"
+decompose = "1.0.0-beta-01"
 
 
 [libraries]
@@ -71,6 +72,9 @@ koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref =
 # kotlin logging
 kotlin-logging-jvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlin-logging-jvm" }
 
+# decompose
+decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+decompose-extensions-compose-jetbrains = { module = "com.arkivanov.decompose:extensions-compose-jetbrains", version.ref = "decompose" }
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -10,4 +10,6 @@ kotlin {
 
 dependencies {
     commonMainApi(project(":common"))
+
+    commonMainApi(libs.decompose)
 }
