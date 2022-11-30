@@ -2,6 +2,7 @@
 plugins {
     kotlin("js")
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.jetbrains.compose)
 }
 
 kotlin {
@@ -28,12 +29,18 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":common"))
+    implementation(project(":client:platform-common"))
+
     implementation(libs.kotlin.stdlib.js)
+
     implementation(enforcedPlatform(libs.kotlin.wrappers.bom))
-    implementation(libs.react)
-    implementation(libs.react.dom)
-    implementation(libs.emotion)
+    implementation(libs.kw.web)
+    implementation(libs.kw.browser)
+
     implementation(libs.ktor.client.js)
+    implementation(libs.ktor.client.websockets)
     implementation(libs.kotlinx.coroutines.core.js)
+
+    implementation(compose.web.core)
+    implementation(compose.runtime)
 }

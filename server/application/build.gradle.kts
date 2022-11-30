@@ -44,7 +44,7 @@ dependencies {
 
 
 val buildAndCopyFrontend = tasks.register<Copy>("buildAndCopyFrontend") {
-    val frontendDist = project(":frontend").tasks.named("browserDistribution")
+    val frontendDist = project(":client:web").tasks.named("browserDistribution")
     dependsOn(frontendDist)
     from(frontendDist)
     into("${project.projectDir}/src/main/resources/static")

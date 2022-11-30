@@ -5,13 +5,16 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.js.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 val Ui: CoroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -28,6 +31,10 @@ object HttpUtils {
         HttpClient(Js) {
             install(ContentNegotiation) {
                 json()
+            }
+
+            install(WebSockets) {
+                contentConverter = KotlinxWebsocketSerializationConverter(Json)
             }
         }
     }

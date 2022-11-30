@@ -6,12 +6,14 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 
 fun KotlinMultiplatformExtension.useJs() {
     js(IR) {
+        binaries.executable()
         useJsInternal()
     }
 }
 
 fun KotlinJsProjectExtension.useJs(browserConfig: KotlinJsBrowserDsl.() -> Unit = {}) {
     js(IR) {
+        binaries.executable()
         useJsInternal(browserConfig)
     }
 }
