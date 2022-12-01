@@ -1,12 +1,14 @@
 package com.example.secure.chat.web
 
-import androidx.compose.material.MaterialTheme
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.essenty.lifecycle.stop
-import com.example.secure.chat.web.compoents.AppComponent
+import com.example.secure.chat.web.components.AppComponent
+import com.example.secure.chat.web.compose.composition.AppCompositionLocalProvider
+import com.example.secure.chat.web.compose.composition.DefaultAppOwner
 import com.example.secure.chat.web.models.AppModel
+import com.example.secure.chat.web.theme.withTheme
 import kotlinx.browser.document
 import org.jetbrains.compose.web.renderComposable
 import org.w3c.dom.Document
@@ -20,8 +22,10 @@ fun main() {
     lifecycle.attachToDocument()
 
     renderComposable(rootElementId = "root") {
-        MaterialTheme {
-            AppComponent(rootModel)
+        AppCompositionLocalProvider(owner = DefaultAppOwner) {
+            withTheme {
+                AppComponent(rootModel)
+            }
         }
     }
 }

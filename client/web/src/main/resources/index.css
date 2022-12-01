@@ -1,0 +1,27 @@
+body, html, #root {
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+}
+
+@font-face {
+    font-family: "JetBrains Mono";
+    font-weight: 100;
+    src: url('fonts/JetBrainsMono/woff2/JetBrainsMono-Thin.woff2') format('woff2'),
+    url('fonts/JetBrainsMono/ttf/JetBrainsMono-Thin.ttf') format('ttf');
+}
+
+@font-face {
+    font-family: "JetBrains Mono";
+    font-weight: 400;
+    src: url('fonts/JetBrainsMono/woff2/JetBrainsMono-Regular.woff2') format('woff2'),
+    url('fonts/JetBrainsMono/ttf/JetBrainsMono-Regular.ttf') format('ttf');
+}
+
+@font-face {
+    font-family: "JetBrains Mono";
+    font-weight: 700;
+    src: url('fonts/JetBrainsMono/woff2/JetBrainsMono-Bold.woff2') format('woff2'),
+    url('fonts/JetBrainsMono/ttf/JetBrainsMono-Bold.ttf') format('ttf');
+}
