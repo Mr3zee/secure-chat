@@ -5,6 +5,8 @@ import org.jetbrains.compose.web.css.CSSColorValue
 interface Theme {
     val primaryColor: CSSColorValue
 
+    val secondaryColor: CSSColorValue
+
     val textColor: CSSColorValue
 
     val secondaryTextColor: CSSColorValue

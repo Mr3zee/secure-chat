@@ -1,10 +1,13 @@
 package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
+import com.example.secure.chat.web.compose.base.components.horizontal
+import com.example.secure.chat.web.compose.base.components.horizontalSeparator
 import com.example.secure.chat.web.compose.base.components.vertical
+import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.css.*
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Header
+import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
@@ -13,7 +16,9 @@ fun AppHeader() {
         attrs = {
             style {
                 width(100.percent)
-                height(40.px)
+                height(50.px)
+
+                overflowX("clip")
             }
         }
     ) {
@@ -26,13 +31,35 @@ fun AppHeader() {
                 alignItems(AlignItems.Center)
             }
         ) {
-            Div(attrs = {
-                style {
-                    fontSize(32.px)
+            horizontal(
+                styleBuilder = {
+                    fontSize(36.px)
                 }
-            }) {
-                Text("secure.chat")
+            ) {
+                val theme = XTheme.current
+
+                Span(attrs = {
+                    style {
+                        color(theme.secondaryColor)
+                    }
+                }) {
+                    Text("c2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQ=")
+                }
+
+                Span {
+                    Text("secure.chat")
+                }
+
+                Span(attrs = {
+                    style {
+                        color(theme.secondaryColor)
+                    }
+                }) {
+                    Text("c2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQuc2VjdXJlLmNoYXQ=")
+                }
             }
         }
+
+        horizontalSeparator()
     }
 }
