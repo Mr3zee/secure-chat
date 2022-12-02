@@ -17,5 +17,6 @@ dependencies {
     commonMainApi(libs.ktor.client.content.negotiation)
     commonMainApi(libs.ktor.serialization.kotlinx.json)
     commonMainApi(libs.kotlinx.coroutines.core)
+    commonMainApi(libs.kotlinx.datetime)
     commonMainApi(libs.koin.core)
 }

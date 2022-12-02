@@ -35,7 +35,7 @@ sealed interface FontSize {
 
 fun StyleScope.applyCustomFont(
     size: FontSize = FontSize.Base,
-    font: BaseFont = JetBrainsMono.Regular
+    font: BaseFont = JetBrainsMono.Thin
 ) {
     fontFamily(font.fontFamily)
     fontStyle(font.fontStyle.toString())
