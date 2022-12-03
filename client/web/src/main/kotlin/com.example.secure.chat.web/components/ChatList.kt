@@ -44,7 +44,7 @@ fun xChatList(model: ChatModel) {
         Style(ChatItemStylesheet)
 
         model.chats.value.forEach { chat ->
-            xChatItem(chat)
+            xChatItem(model, chat)
 
             xHorizontalSeparator()
         }
@@ -52,10 +52,22 @@ fun xChatList(model: ChatModel) {
 }
 
 @Composable
-private fun xChatItem(chat: Chat) {
+private fun xChatItem(model: ChatModel, chat: Chat) {
+    val theme = XTheme.current
+
     vertical(
         attrs = {
+            style {
+                if (chat == model.selectedChat.value) {
+                    backgroundColor(theme.secondaryColor)
+                }
+            }
+
             classes(ChatItemStylesheet.item)
+
+            onClick {
+                model.selectedChat.value = chat
+            }
         },
     ) {
         horizontal(
