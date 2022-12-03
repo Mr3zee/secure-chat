@@ -11,5 +11,7 @@ interface Theme {
 
     val secondaryTextColor: CSSColorValue
 
+    val secondaryTextColor60: CSSColorValue
+
     val backgroundColor: CSSColorValue
 }

@@ -17,11 +17,10 @@ fun xMainScreen(model: ChatModel) {
             height(100.percent - HEADER_SIZE)
         }
     ) {
-
         xChatList(model)
 
         xVerticalSeparator()
 
-        xChatTimeline(model)
+        xChatWindow(model)
     }
 }

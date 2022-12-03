@@ -11,18 +11,34 @@ import org.jetbrains.compose.web.css.flexDirection
 import org.jetbrains.compose.web.dom.Div
 
 @Composable
-fun vertical(styleBuilder: StyleBuilder = {}, attrs: DivAttrs = {}, content: DivContent = {}) {
+fun flex(styleBuilder: StyleBuilder = {}, attrs: DivAttrs = {}, content: DivContent = {}) {
     Div(
         attrs = {
             style {
                 styleBuilder()
 
                 display(DisplayStyle.Flex)
-                flexDirection(FlexDirection.Column)
             }
 
             attrs()
         },
         content = content
     )
+}
+
+
+@Composable
+fun horizontal(styleBuilder: StyleBuilder = {}, attrs: DivAttrs = {}, content: DivContent = {}) {
+    flex(styleBuilder = {
+        styleBuilder()
+        flexDirection(FlexDirection.Row)
+    }, attrs, content)
+}
+
+@Composable
+fun vertical(styleBuilder: StyleBuilder = {}, attrs: DivAttrs = {}, content: DivContent = {}) {
+    flex(styleBuilder = {
+        styleBuilder()
+        flexDirection(FlexDirection.Column)
+    }, attrs, content)
 }

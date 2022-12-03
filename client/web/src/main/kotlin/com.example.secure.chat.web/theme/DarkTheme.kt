@@ -13,5 +13,7 @@ object DarkTheme : Theme {
 
     override val secondaryTextColor: CSSColorValue = rgb(145, 186, 247)
 
+    override val secondaryTextColor60: CSSColorValue = rgba(145, 186, 247, 0.6)
+
     override val backgroundColor: CSSColorValue = rgb(24, 28, 37)
 }

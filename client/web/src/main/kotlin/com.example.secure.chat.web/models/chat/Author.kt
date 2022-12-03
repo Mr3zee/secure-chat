@@ -1,9 +1,13 @@
 package com.example.secure.chat.web.models.chat
 
 sealed interface Author {
-    object Me : Author
+    val name: String
 
-    data class User(val username: String) : Author
+    object Me : Author {
+        override val name: String = "You"
+    }
 
-    data class Bot(val botName: String) : Author
+    data class User(override val name: String) : Author
+
+    data class Bot(override val name: String) : Author
 }

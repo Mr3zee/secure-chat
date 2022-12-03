@@ -1,9 +1,12 @@
 package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.font.FontSize
 import com.example.secure.chat.web.font.applyCustomFont
+import com.example.secure.chat.web.font.fonts.JetBrainsMono
 import com.example.secure.chat.web.models.ChatModel
 import com.example.secure.chat.web.models.chat.Chat
 import com.example.secure.chat.web.theme.DarkTheme
@@ -13,7 +16,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 
@@ -43,7 +45,15 @@ fun xChatList(model: ChatModel) {
     ) {
         Style(ChatItemStylesheet)
 
-        model.chats.value.forEach { chat ->
+
+        xChatItem(model, Chat.Local)
+
+        xHorizontalSeparator()
+
+        val chats by remember { model.chats.asState() }
+
+        // todo virtual lists?, better ordering?
+        chats.sortedByDescending { it.lastMessage.value?.timestamp }.forEach { chat ->
             xChatItem(model, chat)
 
             xHorizontalSeparator()
@@ -55,10 +65,12 @@ fun xChatList(model: ChatModel) {
 private fun xChatItem(model: ChatModel, chat: Chat) {
     val theme = XTheme.current
 
+    val selectedChatState by remember { model.selectedChat.asState() }
+
     vertical(
         attrs = {
             style {
-                if (chat == model.selectedChat.value) {
+                if (chat == selectedChatState) {
                     backgroundColor(theme.secondaryColor)
                 }
             }
@@ -79,7 +91,12 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                 alignItems(AlignItems.Center)
             }
         ) {
-            xChatLogo(chat)
+            val name = when (chat) {
+                is Chat.Global -> chat.dto.name
+                is Chat.Local -> "Local Security Manager"
+            }
+
+            xLogo(40.px, name)
 
             xChatDescription(chat)
         }
@@ -112,13 +129,21 @@ private fun xChatDescription(chat: Chat) {
             ) {
                 when (chat) {
                     is Chat.Local -> {
-                        Span {
+                        Span(
+                            attrs = {
+                                style {
+                                    applyCustomFont(font = JetBrainsMono.Bold)
+                                }
+                            }
+                        ) {
                             Text("Local Security Manager")
                         }
                     }
 
                     is Chat.Global -> {
-                        xEllipsis(chat.dto.name)
+                        xEllipsis(chat.dto.name) {
+                            applyCustomFont(font = JetBrainsMono.Bold)
+                        }
                     }
                 }
 
@@ -140,50 +165,18 @@ private fun xChatDescription(chat: Chat) {
                 }
             }
 
-            if (chat is Chat.Global) {
-                val theme = XTheme.current
+            val theme = XTheme.current
 
-                chat.lastMessage.value?.let { lastMessage ->
-                    xEllipsis(
-                        content = lastMessage.text,
-                        styleBuilder = {
-                            color(theme.secondaryTextColor)
-                            applyCustomFont(size = FontSize.Small)
-                        }
-                    )
+            chat.lastMessage.value?.let { lastMessage ->
+                xEllipsis(lastMessage.author.name) {
+                    applyCustomFont(size = FontSize.Small)
+                }
+
+                xEllipsis(lastMessage.text) {
+                    color(theme.secondaryTextColor)
+                    applyCustomFont(size = FontSize.Small)
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun xChatLogo(chat: Chat) {
-    val theme = XTheme.current
-
-    Div(
-        attrs = {
-            style {
-                width(40.px)
-                height(40.px)
-
-                display(DisplayStyle.Flex)
-                justifyContent(JustifyContent.Center)
-                alignItems(AlignItems.Center)
-
-                borderRadius(50.percent)
-
-                backgroundColor(theme.secondaryColor)
-            }
-        }
-    ) {
-        Span {
-            val logo = when (chat) {
-                is Chat.Global -> chat.dto.name.firstOrNull()?.toString() ?: return@Span
-                is Chat.Local -> "LSM"
-            }
-
-            Text(logo)
         }
     }
 }
