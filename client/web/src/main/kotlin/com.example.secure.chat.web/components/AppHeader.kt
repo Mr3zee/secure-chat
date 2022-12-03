@@ -16,7 +16,7 @@ fun xAppHeader() {
         attrs = {
             style {
                 width(100.percent)
-                height(50.px)
+                height(HEADER_SIZE)
 
                 overflowX("clip")
             }

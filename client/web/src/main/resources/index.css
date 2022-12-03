@@ -29,3 +29,23 @@ body, html, #root {
     src: url('fonts/JetBrainsMono/woff2/JetBrainsMono-Bold.woff2') format('woff2'),
     url('fonts/JetBrainsMono/ttf/JetBrainsMono-Bold.ttf') format('ttf');
 }
+
+
+*::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+* {
+    scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-clip: padding-box;
+
+    border: 0;
+}

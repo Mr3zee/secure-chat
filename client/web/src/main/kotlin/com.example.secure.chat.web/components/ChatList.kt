@@ -1,10 +1,7 @@
 package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
-import com.example.secure.chat.web.compose.base.components.horizontal
-import com.example.secure.chat.web.compose.base.components.vertical
-import com.example.secure.chat.web.compose.base.components.xEllipsis
-import com.example.secure.chat.web.compose.base.components.xHorizontalSeparator
+import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.font.FontSize
 import com.example.secure.chat.web.font.applyCustomFont
 import com.example.secure.chat.web.models.ChatModel
@@ -39,10 +36,9 @@ object ChatItemStylesheet : StyleSheet() {
 
 @Composable
 fun xChatList(model: ChatModel) {
-    vertical(
+    xScrollable(
         styleBuilder = {
             width(400.px)
-            height(100.percent)
         }
     ) {
         Style(ChatItemStylesheet)

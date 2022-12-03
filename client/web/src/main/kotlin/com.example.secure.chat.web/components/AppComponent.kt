@@ -7,6 +7,8 @@ import com.example.secure.chat.web.models.ChatModel
 import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.css.*
 
+val HEADER_SIZE = 50.px
+
 @Composable
 fun AppComponent(
     model: ChatModel,
@@ -23,7 +25,7 @@ fun AppComponent(
             applyCustomFont()
 
             color(theme.textColor)
-        }
+        },
     ) {
         xAppHeader()
 

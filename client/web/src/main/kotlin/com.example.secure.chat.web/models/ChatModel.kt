@@ -28,6 +28,15 @@ class ChatModel(
         listOf(
             Chat.Local,
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
+            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 2")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 3")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 4")).apply {
