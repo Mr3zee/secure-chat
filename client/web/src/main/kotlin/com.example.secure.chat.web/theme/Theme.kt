@@ -9,6 +9,8 @@ interface Theme {
 
     val secondaryColor: CSSColorValue
 
+    val secondaryColor30: CSSColorValue
+
     val textColor: CSSColorValue
 
     val secondaryTextColor: CSSColorValue

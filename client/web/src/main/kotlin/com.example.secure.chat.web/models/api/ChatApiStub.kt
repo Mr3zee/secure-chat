@@ -54,12 +54,12 @@ object ChatApiStub : ChatApi {
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(3, "Chat 4")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(4, "Chat 5")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(5, "Chat 6")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(6, "Chat 7")),
+            Chat.Global(mutableStateOf(true), mutableStateOf(null), ChatDto(6, "Chat 7")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(7, "Chat 8")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(8, "Chat 9")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(9, "Chat 10")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(10, "Chat 11")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(11, "Chat 12")),
+            Chat.Global(mutableStateOf(true), mutableStateOf(null), ChatDto(11, "Chat 12")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(12, "Chat 13")).apply {
                 lastMessage.value = message.copy(text = "hello 25", status = mutableStateOf(MessageStatus.Unread))
             },

@@ -73,12 +73,19 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                 if (chat == selectedChatState) {
                     backgroundColor(theme.secondaryColor)
                 }
+
+                if (chat.isLocked.value) {
+                    color(theme.secondaryColor)
+                    backgroundColor(theme.secondaryColor30)
+                }
             }
 
             classes(ChatItemStylesheet.item)
 
             onClick {
-                model.selectedChat.value = chat
+                if (!chat.isLocked.value) {
+                    model.selectedChat.value = chat
+                }
             }
         },
     ) {
@@ -139,28 +146,32 @@ private fun xChatDescription(chat: Chat) {
                     }
 
                     is Chat.Global -> {
-                        xEllipsis(chat.dto.name) {
+                        val name = (if (chat.isLocked.value) "(Locked) " else "") + chat.dto.name
+
+                        xEllipsis(name) {
                             applyCustomFont(font = JetBrainsMono.Bold)
                         }
                     }
                 }
 
-                chat.lastMessage.value?.let { message ->
-                    horizontal(
-                        styleBuilder = {
-                            applyCustomFont(size = FontSize.Small)
-                        }
-                    ) {
-                        xMessageStatus(message) {
-                            gap(8.px)
-                        }
+                if (!chat.isLocked.value) {
+                    chat.lastMessage.value?.let { message ->
+                        horizontal(
+                            styleBuilder = {
+                                applyCustomFont(size = FontSize.Small)
+                            }
+                        ) {
+                            xMessageStatus(message) {
+                                gap(8.px)
+                            }
 
-                        Span {
-                            val date = message.timestamp
-                            if (date.date == Clock.System.now().toLocalDateTime(TimeZone.UTC).date) {
-                                Text("${date.time}")
-                            } else {
-                                Text("${date.date}")
+                            Span {
+                                val date = message.timestamp
+                                if (date.date == Clock.System.now().toLocalDateTime(TimeZone.UTC).date) {
+                                    Text("${date.time}")
+                                } else {
+                                    Text("${date.date}")
+                                }
                             }
                         }
                     }

@@ -81,7 +81,7 @@ private fun xEmptyChatMessage(model: ChatModel) {
             """.trimIndent()
 
             is Chat.Global -> """
-                This is the start of your conversation.
+                This is the start of your conversation in ${(selectedChat as? Chat.Global)?.dto?.name ?: ""}.
                 List of available commands:
                 
                 /invite <username> - invite new members. 
