@@ -9,6 +9,7 @@ import com.example.secure.chat.web.font.applyCustomFont
 import com.example.secure.chat.web.font.fonts.JetBrainsMono
 import com.example.secure.chat.web.models.ChatModel
 import com.example.secure.chat.web.models.chat.Chat
+import com.example.secure.chat.web.models.chat.MessageStatus
 import com.example.secure.chat.web.theme.DarkTheme
 import com.example.secure.chat.web.theme.XTheme
 import kotlinx.datetime.Clock
@@ -44,7 +45,6 @@ fun xChatList(model: ChatModel) {
         }
     ) {
         Style(ChatItemStylesheet)
-
 
         xChatItem(model, Chat.Local)
 
@@ -96,7 +96,7 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                 is Chat.Local -> "Local Security Manager"
             }
 
-            xLogo(40.px, name)
+            xLogo(40.px, name, withOutline = chat.lastMessage.value?.status?.value == MessageStatus.Unread)
 
             xChatDescription(chat)
         }

@@ -10,7 +10,13 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
-fun xLogo(size: CSSNumeric, name: String, take: Int = 3, styleBuilder: StyleBuilder = {}) {
+fun xLogo(
+    size: CSSNumeric,
+    name: String,
+    take: Int = 3,
+    withOutline: Boolean = false,
+    styleBuilder: StyleBuilder = {}
+) {
     val theme = XTheme.current
 
     Div(
@@ -24,6 +30,16 @@ fun xLogo(size: CSSNumeric, name: String, take: Int = 3, styleBuilder: StyleBuil
                 alignItems(AlignItems.Center)
 
                 borderRadius(50.percent)
+
+                if (withOutline) {
+                    border {
+                        color = theme.secondaryTextColor
+                        width = 2.px
+                        style = LineStyle.Solid
+                    }
+                }
+
+                boxSizing("border-box")
 
                 backgroundColor(theme.secondaryColor)
             }

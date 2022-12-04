@@ -50,6 +50,12 @@ class ChatModel(
             currentInput.value = inputByChat.getOrElse(chat) { "" }
             selectedChatTimeline.value = emptyList()
 
+            chat.lastMessage.value?.status?.let {
+                if (it.value == MessageStatus.Unread) {
+                    it.value = MessageStatus.Verified
+                }
+            }
+
             when (chat) {
                 is Chat.Local -> {
                     selectedChatTimeline.value = localChatTimeline
@@ -62,6 +68,12 @@ class ChatModel(
                     chatTimelineRequestJob = launch(Ui) {
                         selectedChatTimeline.value = api.getChatTimeline(chat)
                         selectedChat.value.lastMessage.value = selectedChatTimeline.value.lastOrNull()
+
+                        chat.lastMessage.value?.status?.let {
+                            if (it.value == MessageStatus.Unread) {
+                                it.value = MessageStatus.Verified
+                            }
+                        }
                     }
 
                     messageProcessor.value = GlobalMessageProcessor

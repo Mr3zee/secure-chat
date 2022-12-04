@@ -38,7 +38,7 @@ object ChatApiStub : ChatApi {
                     message.copy(text = "hello 22", timestamp = now()),
                     message.copy(text = "hello 23", timestamp = now()),
                     message.copy(text = "hello 24", timestamp = now()),
-                    message.copy(text = "hello 25", timestamp = now(), status = mutableStateOf(MessageStatus.Local), author = Author.Me),
+                    message.copy(text = "hello 25", timestamp = now(), status = mutableStateOf(MessageStatus.Unread)),
                 )
             }
 
@@ -61,7 +61,7 @@ object ChatApiStub : ChatApi {
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(10, "Chat 11")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(11, "Chat 12")),
             Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(12, "Chat 13")).apply {
-                lastMessage.value = message
+                lastMessage.value = message.copy(text = "hello 25", status = mutableStateOf(MessageStatus.Unread))
             },
         )
     }
