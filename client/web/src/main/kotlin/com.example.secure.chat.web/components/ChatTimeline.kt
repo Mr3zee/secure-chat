@@ -106,7 +106,7 @@ private fun xMessagesList(model: ChatModel, allMessages: List<Message>) {
             xDateLabel(date)
 
             messages.sortedBy { it.timestamp }.forEach {
-                xMessage(model, it)
+                xMessage(it)
             }
         }
     flex(
@@ -156,7 +156,7 @@ private fun xDateLabel(date: LocalDate) {
 }
 
 @Composable
-private fun xMessage(model: ChatModel, message: Message) {
+private fun xMessage(message: Message) {
     horizontal(
         styleBuilder = {
             margin(5.px, 16.px, 5.px, 16.px)
@@ -217,6 +217,8 @@ private fun xMessage(model: ChatModel, message: Message) {
             horizontal(
                 styleBuilder = {
                     color(theme.secondaryTextColor)
+
+                    property("overflow-wrap", "anywhere")
                 }
             ) {
                 Text(message.text)

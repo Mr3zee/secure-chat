@@ -37,7 +37,6 @@ fun xChatInput(model: ChatModel) {
     horizontal(
         styleBuilder = {
             width(100.percent)
-            minHeight(40.px) // 20 input margin + 20 one-line text
         }
     ) {
         val inputType by remember { model.inputType.asState() }
@@ -49,6 +48,8 @@ fun xChatInput(model: ChatModel) {
                 flex(1, 0, auto.unsafeCast<CSSNumeric>())
 
                 margin(10.px, 16.px, 10.px, 16.px)
+
+                width(0.percent)
             },
         ) {
             when (inputType) {

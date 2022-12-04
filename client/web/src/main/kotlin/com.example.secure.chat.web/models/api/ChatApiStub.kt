@@ -29,7 +29,7 @@ object ChatApiStub : ChatApi {
                     message.copy(text = "hello 13", timestamp = now()),
                     message.copy(text = "hello 14", timestamp = now()),
                     message.copy(text = "hello 15", timestamp = now(), status = mutableStateOf(MessageStatus.Failed), author = Author.Me),
-                    message.copy(text = "hello 16", timestamp = now()),
+                    message.copy(text = "hello16".repeat(100), timestamp = now()),
                     message.copy(text = "hello 17", timestamp = now()),
                     message.copy(text = "hello 18", timestamp = now()),
                     message.copy(text = "hello 19", timestamp = now(), status = mutableStateOf(MessageStatus.Local), author = Author.Me),

@@ -34,7 +34,6 @@ dependencies {
     implementation(libs.kotlin.stdlib.js)
 
     implementation(enforcedPlatform(libs.kotlin.wrappers.bom))
-    implementation(libs.kw.web)
     implementation(libs.kw.browser)
 
     implementation(libs.ktor.client.js)

@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.7.20"
-kotlin-wrappers-bom = "1.0.0-pre.454"
+kotlin-wrappers-bom = "1.0.0-pre.355"
 ktor = "2.1.3"
 kotlinx-serialization-json = "1.4.1"
 kotlinx-coroutines-core = "1.6.4"
@@ -33,7 +33,6 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 
 # kotlin wrappers
 kotlin-wrappers-bom = { module = "org.jetbrains.kotlin-wrappers:kotlin-wrappers-bom", version.ref = "kotlin-wrappers-bom" }
-kw-web = { module = "org.jetbrains.kotlin-wrappers:kotlin-web" }
 kw-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser" }
 
 # ktor

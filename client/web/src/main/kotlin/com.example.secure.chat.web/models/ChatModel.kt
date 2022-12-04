@@ -72,6 +72,8 @@ class ChatModel(
 
     fun submitMessage() {
         val text = currentInput.value
+        if (text.isBlank()) return
+
         currentInput.value = ""
         val inputType = inputType.value
         acceptUserInput(text, inputType)

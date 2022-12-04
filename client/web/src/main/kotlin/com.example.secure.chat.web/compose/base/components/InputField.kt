@@ -13,6 +13,7 @@ import org.jetbrains.compose.web.attributes.placeholder
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
+import org.jetbrains.compose.web.events.SyntheticKeyboardEvent
 
 @Composable
 fun xInputField(
@@ -40,6 +41,10 @@ fun xInputField(
                 property("z-index", 10)
 
                 color(theme.secondaryTextColor)
+
+                whiteSpace("pre-wrap")
+
+                property("overflow-wrap", "anywhere")
             },
             attrs = {
                 ref { el ->
@@ -60,7 +65,9 @@ fun xInputField(
                     property.value = data
                 }
 
-                onEnter(onSubmit)
+                onEnter {
+                    onSubmit()
+                }
             }
         )
 
@@ -119,14 +126,15 @@ fun xSecretInputField(property: MutableProperty<String>, placeholder: String, on
             property.value = it.value
         }
 
-        onEnter(onSubmit)
+        onEnter { onSubmit() }
     }
 }
 
-fun AttrsScope<*>.onEnter(handle: () -> Unit) {
+private fun AttrsScope<*>.onEnter(withShift: Boolean = false, handle: (SyntheticKeyboardEvent) -> Unit) {
     onKeyDown { event ->
-        if (!event.shiftKey && event.key == "Enter") {
-            handle()
+        val acceptShift = (withShift && event.shiftKey) || (!withShift && !event.shiftKey)
+        if (acceptShift && event.key == "Enter") {
+            handle(event)
         }
     }
 }
