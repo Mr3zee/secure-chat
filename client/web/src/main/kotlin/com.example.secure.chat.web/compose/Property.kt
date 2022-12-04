@@ -8,11 +8,13 @@ import kotlinx.atomicfu.atomic
 interface Property<T> {
     val value: T
 
-    fun onChange(handler: (T) -> Unit): Long
+    fun subscribe(handler: (T) -> Unit): Long
 
-    fun onChangeWithPrev(handler: (prev: T, new: T) -> Unit): Long
+    fun subscribeWithPrev(handler: (prev: T, new: T) -> Unit): Long
 
     fun unsubscribe(id: Long)
+
+    fun fire()
 
     fun asState(): State<T>
 }
@@ -30,14 +32,18 @@ class MutableProperty<T : Any?> internal constructor(initialValue: T) : Property
             currentValue.value = StateProxy(value)
         }
 
-    override fun onChangeWithPrev(handler: (prev: T, new: T) -> Unit): Long {
+    override fun fire() {
+        currentValue.value = currentValue.value
+    }
+
+    override fun subscribeWithPrev(handler: (prev: T, new: T) -> Unit): Long {
         val observer = { it: StateProxy<T> ->
             handler(oldValue.value.value, it.value)
         }
         return remember(observer)
     }
 
-    override fun onChange(handler: (T) -> Unit): Long {
+    override fun subscribe(handler: (T) -> Unit): Long {
         val observer = { it: StateProxy<T> ->
             handler(it.value)
         }
@@ -57,11 +63,15 @@ class MutableProperty<T : Any?> internal constructor(initialValue: T) : Property
         }
     }
 
-    override fun asState(): State<T> {
-        val state = mutableStateOf(value)
-        onChange {
-            state.value = it
+    private val state: State<T> by lazy {
+        mutableStateOf(value).also { s ->
+            subscribe {
+                s.value = it
+            }
         }
+    }
+
+    override fun asState(): State<T> {
         return state
     }
 }

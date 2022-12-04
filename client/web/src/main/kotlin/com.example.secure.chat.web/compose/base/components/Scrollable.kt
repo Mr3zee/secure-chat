@@ -11,6 +11,7 @@ import org.jetbrains.compose.web.css.px
 @Composable
 fun xScrollable(
     styleBuilder: StyleBuilder = {},
+    innerStyleBuilder: StyleBuilder = {},
     attrs: DivAttrs = {},
     content: DivContent = {}
 ) {
@@ -26,6 +27,6 @@ fun xScrollable(
             attrs()
         },
     ) {
-        vertical(content = content)
+        vertical(attrs = { style { innerStyleBuilder() } }, content = content)
     }
 }

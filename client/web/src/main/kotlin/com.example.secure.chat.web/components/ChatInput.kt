@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.models.ChatModel
+import com.example.secure.chat.web.models.TextInputType
 import com.example.secure.chat.web.theme.DarkTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
@@ -51,12 +52,12 @@ fun xChatInput(model: ChatModel) {
             },
         ) {
             when (inputType) {
-                TextInputType.Message -> InputField(
+                TextInputType.Message -> xInputField(
                     property = model.currentInput,
                     placeholder = "Write a message..."
                 ) { model.submitMessage() }
 
-                TextInputType.Secret -> SecretInputField(
+                TextInputType.Secret -> xSecretInputField(
                     property = model.currentInput,
                     placeholder = "Write your secret..."
                 ) { model.submitMessage() }
@@ -77,8 +78,4 @@ fun xChatInput(model: ChatModel) {
             Text("Send")
         }
     }
-}
-
-enum class TextInputType {
-    Message, Secret
 }

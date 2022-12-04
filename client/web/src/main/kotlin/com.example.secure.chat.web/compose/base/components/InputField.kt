@@ -15,7 +15,7 @@ import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
-fun InputField(
+fun xInputField(
     property: MutableProperty<String>,
     placeholder: String = "",
     onSubmit: () -> Unit = {}
@@ -38,10 +38,12 @@ fun InputField(
                 outlineWidth(0.px)
 
                 property("z-index", 10)
+
+                color(theme.secondaryTextColor)
             },
             attrs = {
                 ref { el ->
-                    val id = property.onChange {
+                    val id = property.subscribe {
                         el.textContent = it
                         el.focus()
                     }
@@ -86,7 +88,7 @@ object SecretInputFieldStylesheet : StyleSheet() {
 }
 
 @Composable
-fun SecretInputField(property: MutableProperty<String>, placeholder: String, onSubmit: () -> Unit = {}) {
+fun xSecretInputField(property: MutableProperty<String>, placeholder: String, onSubmit: () -> Unit = {}) {
     Style(SecretInputFieldStylesheet)
 
     val theme = XTheme.current
@@ -108,7 +110,7 @@ fun SecretInputField(property: MutableProperty<String>, placeholder: String, onS
 
             applyCustomFont()
 
-            color(theme.secondaryTextColor)
+            color(theme.textColor)
         }
 
         placeholder(placeholder)
@@ -121,7 +123,7 @@ fun SecretInputField(property: MutableProperty<String>, placeholder: String, onS
     }
 }
 
-private fun AttrsScope<*>.onEnter(handle: () -> Unit) {
+fun AttrsScope<*>.onEnter(handle: () -> Unit) {
     onKeyDown { event ->
         if (!event.shiftKey && event.key == "Enter") {
             handle()

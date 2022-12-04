@@ -108,8 +108,6 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
 private fun xChatDescription(chat: Chat) {
     horizontal(
         styleBuilder = {
-            maxWidth(100.percent - 76.px)
-
             flex(1, 0, auto.unsafeCast<CSSNumeric>())
         }
     ) {
@@ -148,18 +146,22 @@ private fun xChatDescription(chat: Chat) {
                 }
 
                 chat.lastMessage.value?.let { message ->
-                    Span(
-                        attrs = {
-                            style {
-                                applyCustomFont(size = FontSize.Small)
-                            }
+                    horizontal(
+                        styleBuilder = {
+                            applyCustomFont(size = FontSize.Small)
                         }
                     ) {
-                        val date = message.timestamp
-                        if (date.date == Clock.System.now().toLocalDateTime(TimeZone.UTC).date) {
-                            Text("${date.time}")
-                        } else {
-                            Text("${date.date}")
+                        xMessageStatus(message) {
+                            gap(8.px)
+                        }
+
+                        Span {
+                            val date = message.timestamp
+                            if (date.date == Clock.System.now().toLocalDateTime(TimeZone.UTC).date) {
+                                Text("${date.time}")
+                            } else {
+                                Text("${date.date}")
+                            }
                         }
                     }
                 }

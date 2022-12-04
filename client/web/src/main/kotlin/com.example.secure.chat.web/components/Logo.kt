@@ -1,6 +1,7 @@
 package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
+import com.example.secure.chat.web.compose.base.types.StyleBuilder
 import com.example.secure.chat.web.models.chat.whitespaceRegex
 import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.css.*
@@ -9,7 +10,7 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
-fun xLogo(size: CSSNumeric, name: String) {
+fun xLogo(size: CSSNumeric, name: String, take: Int = 3, styleBuilder: StyleBuilder = {}) {
     val theme = XTheme.current
 
     Div(
@@ -28,11 +29,17 @@ fun xLogo(size: CSSNumeric, name: String) {
             }
         }
     ) {
-        Span {
+        Span(
+            attrs = {
+                style {
+                    styleBuilder()
+                }
+            }
+        ) {
             val logo = name
                 .split(whitespaceRegex)
                 .mapNotNull { it.firstOrNull() }
-                .take(3)
+                .take(take)
                 .joinToString("") { it.titlecase() }
 
             Text(logo)

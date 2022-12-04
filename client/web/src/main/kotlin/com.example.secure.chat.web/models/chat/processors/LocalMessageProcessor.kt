@@ -9,24 +9,12 @@ object LocalMessageProcessor : MessageProcessor {
     private val echoBot = Author.Bot("Echo")
 
     override suspend fun processMessage(message: Message): Message {
-        return when (message) {
-            is Message.Text -> Message.Text(
-                author = echoBot,
-                id = message.id,
-                timestamp = message.timestamp,
-                text = message.text,
-                status = mutableStateOf(MessageStatus.Verified)
-            )
-
-            is Message.Command -> Message.Command(
-                author = echoBot,
-                id = message.id,
-                timestamp = message.timestamp,
-                text = message.text,
-                status = mutableStateOf(MessageStatus.Verified),
-                command = message.command,
-                arguments = message.arguments,
-            )
-        }
+        return Message(
+            author = echoBot,
+            id = message.id,
+            timestamp = message.timestamp,
+            text = message.text,
+            status = mutableStateOf(MessageStatus.Verified)
+        )
     }
 }

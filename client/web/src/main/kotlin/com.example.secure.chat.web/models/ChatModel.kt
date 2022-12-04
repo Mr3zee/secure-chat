@@ -3,7 +3,6 @@ package com.example.secure.chat.web.models
 import com.arkivanov.decompose.ComponentContext
 import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.launch
-import com.example.secure.chat.web.components.TextInputType
 import com.example.secure.chat.web.compose.mutableProperty
 import com.example.secure.chat.web.models.api.ChatApi
 import com.example.secure.chat.web.models.chat.*
@@ -34,16 +33,18 @@ class ChatModel(
     private val inputByChat = mutableMapOf<Chat, String>()
     val currentInput = mutableProperty("")
 
+    val newMessageEvent = mutableProperty(Unit)
+
     init {
         launch(Ui) {
             chats.value = api.getAllChats()
         }
 
-        currentInput.onChange {
+        currentInput.subscribe {
             inputByChat[selectedChat.value] = it
         }
 
-        selectedChat.onChangeWithPrev { prev, chat ->
+        selectedChat.subscribeWithPrev { prev, chat ->
             inputByChat[prev] = currentInput.value
 
             currentInput.value = inputByChat.getOrElse(chat) { "" }
@@ -60,6 +61,7 @@ class ChatModel(
                     chatTimelineRequestJob?.cancel()
                     chatTimelineRequestJob = launch(Ui) {
                         selectedChatTimeline.value = api.getChatTimeline(chat)
+                        selectedChat.value.lastMessage.value = selectedChatTimeline.value.lastOrNull()
                     }
 
                     messageProcessor.value = GlobalMessageProcessor
@@ -71,32 +73,23 @@ class ChatModel(
     fun submitMessage() {
         val text = currentInput.value
         currentInput.value = ""
-        if (text.isNotBlank()) {
-            when (inputType.value) {
-                TextInputType.Secret -> acceptUserSecret(text)
-                TextInputType.Message -> acceptUserInput(text)
-            }
-        }
+        val inputType = inputType.value
+        acceptUserInput(text, inputType)
     }
 
-    private fun acceptUserInput(text: String) {
+    private fun acceptUserInput(text: String, inputType: TextInputType) {
         val message = textToMessage(text, Author.Me)
 
         launch(Ui) {
-            dispatchMessage(selectedChat.value, message)
+            dispatchMessage(selectedChat.value, message, inputType)
         }
     }
 
-    private fun acceptUserSecret(text: String) {
-        val message = textToMessage(text, Author.Me, isSecret = true) as Message.Text
-
-        launch(Ui) {
-            dispatchMessage(selectedChat.value, message.copy(text = "*".repeat(16)))
+    private suspend fun dispatchMessage(chat: Chat, message: Message, inputType: TextInputType) {
+        when (inputType) {
+            TextInputType.Message -> newMessage(chat, message)
+            TextInputType.Secret -> newMessage(chat, message.copy(text = "*".repeat(16)))
         }
-    }
-
-    private suspend fun dispatchMessage(chat: Chat, message: Message) {
-        newMessage(chat, message)
 
         val status = try {
             val response = messageProcessor.value.processMessage(message)
@@ -111,9 +104,15 @@ class ChatModel(
 
     private fun newMessage(chat: Chat, message: Message) {
         if (selectedChat.value == chat) {
-            selectedChatTimeline.value = listOf(message) + selectedChatTimeline.value
+            selectedChatTimeline.value += message
         }
 
         chat.lastMessage.value = message
+
+        newMessageEvent.fire()
     }
+}
+
+enum class TextInputType {
+    Message, Secret
 }
