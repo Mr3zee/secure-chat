@@ -5,84 +5,99 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.MutableProperty
 import com.example.secure.chat.web.font.applyCustomFont
+import com.example.secure.chat.web.prosemirror.editor.messageEditorView
+import com.example.secure.chat.web.prosemirror.external.Transaction
+import com.example.secure.chat.web.prosemirror.external.safeFocus
 import com.example.secure.chat.web.theme.DarkTheme
 import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.attributes.AttrsScope
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.attributes.placeholder
 import org.jetbrains.compose.web.css.*
+import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Input
-import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.events.SyntheticKeyboardEvent
+
+
+object ProsemirrorStyleSheet : StyleSheet() {
+    val prosemirror by style {
+        ".ProseMirror" {
+            width(0.px)
+
+            flex(1, 0, auto.unsafeCast<CSSNumeric>())
+
+            whiteSpace("pre-wrap")
+            property("overflow-wrap", "anywhere")
+        }
+
+        ".ProseMirror-focused" {
+            border(0.px)
+            outline("none")
+        }
+
+        ".ProseMirror-widget" {
+            color(DarkTheme.primaryColor) //placeholder
+        }
+    }
+}
 
 @Composable
 fun xInputField(
     property: MutableProperty<String>,
+    resetProperty: MutableProperty<String>,
     placeholder: String = "",
     onSubmit: () -> Unit = {}
 ) {
     flex(
         styleBuilder = {
             height(100.percent)
-        }
+        },
     ) {
-        val theme = XTheme.current
+        Style(ProsemirrorStyleSheet)
 
-        val state by remember { property.asState() }
+        val theme = XTheme.current
 
         flex(
             styleBuilder = {
                 height(100.percent)
                 width(100.percent)
 
-                border(0.px)
-                outlineWidth(0.px)
-
-                property("z-index", 10)
-
                 color(theme.secondaryTextColor)
-
-                whiteSpace("pre-wrap")
-
-                property("overflow-wrap", "anywhere")
             },
             attrs = {
+                classes(ProsemirrorStyleSheet.prosemirror)
+
                 ref { el ->
-                    val id = property.subscribe {
-                        el.textContent = it
-                        el.focus()
+                    val view = messageEditorView(el, property, placeholder, onSubmit)
+                    view.safeFocus()
+
+                    val id = resetProperty.subscribe {
+                        val tr = if (it.isNotEmpty()) {
+                            view.state.tr.replaceWith(
+                                from = 0,
+                                to = view.state.doc.nodeSize - 2,
+                                content = view.state.schema.text(it)
+                            ) as Transaction
+                        } else {
+                            view.state.tr.delete(
+                                from = 0,
+                                to = view.state.doc.nodeSize - 2,
+                            ) as Transaction
+                        }
+
+                        val newState = view.state.apply(tr)
+                        view.updateState(newState)
+
+                        view.safeFocus()
                     }
 
                     onDispose {
-                        property.unsubscribe(id)
+                        resetProperty.unsubscribe(id)
+                        view.destroy()
                     }
-                }
-
-                contentEditable(true)
-
-                addEventListener("input") {
-                    val data = it.nativeEvent.target.asDynamic().textContent as String
-                    property.value = data
-                }
-
-                onEnter {
-                    onSubmit()
                 }
             }
         )
-
-        flex(
-            styleBuilder = {
-                position(Position.Absolute)
-                color(theme.primaryColor)
-
-                property("z-index", 5)
-            }
-        ) {
-            if (state.isEmpty()) {
-                Text(placeholder)
-            }
-        }
     }
 }
 
@@ -111,7 +126,7 @@ fun xSecretInputField(property: MutableProperty<String>, placeholder: String, on
             padding(0.px)
 
             border(0.px)
-            outlineWidth("0")
+            outline("none")
 
             backgroundColor(Color.transparent)
 

@@ -32,12 +32,17 @@ class ChatModel(
 
     private val inputByChat = mutableMapOf<Chat, String>()
     val currentInput = mutableProperty("")
+    val resetInput = mutableProperty(currentInput.value)
 
     val newMessageEvent = mutableProperty(Unit)
 
     init {
         launch(Ui) {
             chats.value = api.getAllChats()
+        }
+
+        resetInput.subscribe {
+            currentInput.value = it
         }
 
         currentInput.subscribe {
@@ -47,7 +52,7 @@ class ChatModel(
         selectedChat.subscribeWithPrev { prev, chat ->
             inputByChat[prev] = currentInput.value
 
-            currentInput.value = inputByChat.getOrElse(chat) { "" }
+            resetInput.value = inputByChat.getOrElse(chat) { "" }
             selectedChatTimeline.value = emptyList()
 
             chat.lastMessage.value?.status?.let {
@@ -86,7 +91,7 @@ class ChatModel(
         val text = currentInput.value
         if (text.isBlank()) return
 
-        currentInput.value = ""
+        resetInput.value = ""
         val inputType = inputType.value
         acceptUserInput(text, inputType)
     }

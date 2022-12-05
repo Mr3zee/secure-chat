@@ -46,4 +46,12 @@ dependencies {
     implementation(compose.foundation)
     implementation(compose.material)
     implementation(compose.ui)
+
+    implementation(npm("prosemirror-state", "1.4.2"))
+    implementation(npm("prosemirror-model", "1.18.3"))
+    implementation(npm("prosemirror-view", "1.29.1"))
+    implementation(npm("prosemirror-transform", "1.7.0"))
+    implementation(npm("prosemirror-history", "1.3.0"))
+    implementation(npm("prosemirror-keymap", "1.2.0"))
+    implementation(npm("prosemirror-commands", "1.4.0"))
 }

@@ -55,6 +55,7 @@ fun xChatInput(model: ChatModel) {
             when (inputType) {
                 TextInputType.Message -> xInputField(
                     property = model.currentInput,
+                    resetProperty = model.resetInput,
                     placeholder = "Write a message..."
                 ) { model.submitMessage() }
 
