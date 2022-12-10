@@ -15,6 +15,18 @@ interface BaseFont {
 sealed interface FontSize {
     val value: CSSNumeric
 
+    object Biggest : FontSize {
+        override val value: CSSNumeric = 36.px
+    }
+
+    object Bigger : FontSize {
+        override val value: CSSNumeric = 24.px
+    }
+
+    object Big : FontSize {
+        override val value: CSSNumeric = 18.px
+    }
+
     object Base : FontSize {
         override val value: CSSNumeric = 15.px
     }

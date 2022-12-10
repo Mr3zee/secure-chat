@@ -5,6 +5,7 @@ import org.jetbrains.compose.web.css.rgb
 import org.jetbrains.compose.web.css.rgba
 
 object DarkTheme : Theme {
+    // if you say that it is magic const, you better run
     override val primaryColor: CSSColorValue = rgb(64, 88, 100)
 
     override val primaryColor60: CSSColorValue = rgba(64, 88, 100, 0.6)

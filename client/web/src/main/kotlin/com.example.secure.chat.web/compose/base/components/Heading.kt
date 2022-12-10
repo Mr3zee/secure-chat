@@ -73,7 +73,7 @@ private fun defaultAttrs(
     attrs: HeadingAttrs = {},
 ): HeadingAttrs = {
     style {
-        margin(0.px)
+        margin(0.px) // default is some cringe number, so set to zero
 
         styleBuilder()
     }

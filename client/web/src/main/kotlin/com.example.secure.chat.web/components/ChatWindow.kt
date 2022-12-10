@@ -16,7 +16,7 @@ fun xChatWindow(model: ChatModel) {
         styleBuilder = {
             flex(1, 0, auto.unsafeCast<CSSNumeric>())
 
-            width(0.percent)
+            width(0.percent) // css magic
         }
     ) {
         xChatTimeline(model)

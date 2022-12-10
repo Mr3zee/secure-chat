@@ -8,7 +8,7 @@ import com.example.secure.chat.web.compose.base.types.Content
 val XTheme = staticCompositionLocalOf<Theme> { DarkTheme }
 
 @Composable
-fun withTheme(theme: Theme = DarkTheme, content: Content = {}) {
+fun provideTheme(theme: Theme = DarkTheme, content: Content = {}) {
     CompositionLocalProvider(
         XTheme providesDefault theme,
         content = content

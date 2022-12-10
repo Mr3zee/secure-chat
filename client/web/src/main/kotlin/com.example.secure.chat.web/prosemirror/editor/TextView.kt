@@ -19,7 +19,7 @@ fun textView(
     })
 }
 
-fun messageEditorView(
+fun textEditor(
     mount: HTMLElement,
     property: MutableProperty<String>,
     placeholder: String,

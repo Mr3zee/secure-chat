@@ -4,7 +4,10 @@ import androidx.compose.runtime.Composable
 import com.example.secure.chat.web.compose.base.components.horizontal
 import com.example.secure.chat.web.compose.base.components.vertical
 import com.example.secure.chat.web.compose.base.components.xHorizontalSeparator
+import com.example.secure.chat.web.font.FontSize
+import com.example.secure.chat.web.font.applyCustomFont
 import com.example.secure.chat.web.theme.XTheme
+import com.example.secure.chat.web.utils.consts.APP_HEADER_HEIGHT
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Header
 import org.jetbrains.compose.web.dom.Span
@@ -16,7 +19,7 @@ fun xAppHeader() {
         attrs = {
             style {
                 width(100.percent)
-                height(HEADER_SIZE)
+                height(APP_HEADER_HEIGHT)
 
                 overflowX("clip")
             }
@@ -33,7 +36,7 @@ fun xAppHeader() {
         ) {
             horizontal(
                 styleBuilder = {
-                    fontSize(36.px)
+                    applyCustomFont(size = FontSize.Biggest)
                 }
             ) {
                 val theme = XTheme.current

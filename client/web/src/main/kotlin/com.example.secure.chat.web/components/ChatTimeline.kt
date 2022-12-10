@@ -13,6 +13,7 @@ import com.example.secure.chat.web.models.chat.Chat
 import com.example.secure.chat.web.models.chat.Message
 import com.example.secure.chat.web.theme.XTheme
 import com.example.secure.chat.web.utils.capitalized
+import com.example.secure.chat.web.utils.consts.MESSAGES_DAY_LABEL_HEIGHT
 import com.example.secure.chat.web.utils.ensureScrollTo
 import com.example.secure.chat.web.utils.today
 import kotlinx.datetime.LocalDate
@@ -28,7 +29,7 @@ fun xChatTimeline(model: ChatModel) {
     flex(
         styleBuilder = {
             height(100.percent)
-            minHeight(0.px)
+            minHeight(0.px) // css magic
         }
     ) {
         val allMessages by remember { model.selectedChatTimeline.asState() }
@@ -103,7 +104,7 @@ private fun xMessagesList(model: ChatModel, allMessages: List<Message>) {
         .entries
         .sortedBy { it.key }
         .forEach { (date, messages) ->
-            xDateLabel(date)
+            xDayLabel(date)
 
             messages.sortedBy { it.timestamp }.forEach {
                 xMessage(it)
@@ -130,12 +131,12 @@ private fun xMessagesList(model: ChatModel, allMessages: List<Message>) {
 }
 
 @Composable
-private fun xDateLabel(date: LocalDate) {
+private fun xDayLabel(date: LocalDate) {
     val theme = XTheme.current
 
     horizontal(
         styleBuilder = {
-            height(32.px)
+            height(MESSAGES_DAY_LABEL_HEIGHT)
 
             width(100.percent)
 
@@ -159,24 +160,26 @@ private fun xDateLabel(date: LocalDate) {
 private fun xMessage(message: Message) {
     horizontal(
         styleBuilder = {
-            margin(5.px, 16.px, 5.px, 16.px)
+            margin(5.px, 16.px, 5.px, 16.px) // don't touch my margins
         }
     ) {
         val theme = XTheme.current
 
+        // good logo
         xLogo(30.px, message.author.name, take = 2) {
             if (message.author is Author.Me) {
                 color(theme.secondaryTextColor)
             }
         }
 
+        // good gap
         gap(16.px)
 
         vertical(
             styleBuilder = {
                 flex(1, 0, auto.unsafeCast<CSSNumeric>())
 
-                width(0.percent)
+                width(0.percent) // css magic
             }
         ) {
 

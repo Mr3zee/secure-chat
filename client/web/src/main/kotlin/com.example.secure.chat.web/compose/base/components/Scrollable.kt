@@ -19,7 +19,7 @@ fun xScrollable(
         attrs = {
 
             style {
-                minHeight(0.px)
+                minHeight(0.px) // css magic
                 overflow("auto")
 
                 styleBuilder()

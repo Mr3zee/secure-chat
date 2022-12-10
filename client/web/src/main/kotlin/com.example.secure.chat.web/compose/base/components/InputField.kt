@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.MutableProperty
 import com.example.secure.chat.web.font.applyCustomFont
-import com.example.secure.chat.web.prosemirror.editor.messageEditorView
+import com.example.secure.chat.web.prosemirror.editor.textEditor
 import com.example.secure.chat.web.prosemirror.external.Transaction
 import com.example.secure.chat.web.prosemirror.external.safeFocus
 import com.example.secure.chat.web.theme.DarkTheme
@@ -22,7 +22,7 @@ import org.jetbrains.compose.web.events.SyntheticKeyboardEvent
 object ProsemirrorStyleSheet : StyleSheet() {
     val prosemirror by style {
         ".ProseMirror" {
-            width(0.px)
+            width(0.px) // css magic
 
             flex(1, 0, auto.unsafeCast<CSSNumeric>())
 
@@ -68,10 +68,11 @@ fun xInputField(
                 classes(ProsemirrorStyleSheet.prosemirror)
 
                 ref { el ->
-                    val view = messageEditorView(el, property, placeholder, onSubmit)
+                    val view = textEditor(el, property, placeholder, onSubmit)
                     view.safeFocus()
 
                     val id = resetProperty.subscribe {
+                        // prosemirror model indexing, no magic here
                         val tr = if (it.isNotEmpty()) {
                             view.state.tr.replaceWith(
                                 from = 0,

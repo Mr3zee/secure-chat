@@ -7,7 +7,10 @@ import com.arkivanov.essenty.lifecycle.stop
 import com.example.secure.chat.web.components.AppComponent
 import com.example.secure.chat.web.models.ChatModel
 import com.example.secure.chat.web.models.api.ChatApiStub
-import com.example.secure.chat.web.theme.withTheme
+import com.example.secure.chat.web.theme.provideTheme
+import com.example.secure.chat.web.utils.consts.ROOT_ELEMENT
+import com.example.secure.chat.web.utils.consts.VISIBILITY_CHANGE_EVENT_NAME
+import com.example.secure.chat.web.utils.consts.VISIBILITY_CHANGE_VISIBLE
 import kotlinx.browser.document
 import org.jetbrains.compose.web.renderComposable
 import org.w3c.dom.Document
@@ -20,8 +23,8 @@ fun main() {
 
     lifecycle.attachToDocument()
 
-    renderComposable(rootElementId = "root") {
-        withTheme {
+    renderComposable(rootElementId = ROOT_ELEMENT) {
+        provideTheme {
             AppComponent(rootModel)
         }
     }
@@ -29,7 +32,7 @@ fun main() {
 
 private fun LifecycleRegistry.attachToDocument() {
     fun onVisibilityChanged() {
-        if (document.visibilityState == "visible") {
+        if (document.visibilityState == VISIBILITY_CHANGE_VISIBLE) {
             resume()
         } else {
             stop()
@@ -38,7 +41,7 @@ private fun LifecycleRegistry.attachToDocument() {
 
     onVisibilityChanged()
 
-    document.addEventListener(type = "visibilitychange", callback = { onVisibilityChanged() })
+    document.addEventListener(type = VISIBILITY_CHANGE_EVENT_NAME, callback = { onVisibilityChanged() })
 }
 
 private val Document.visibilityState: String

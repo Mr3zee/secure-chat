@@ -12,6 +12,8 @@ import com.example.secure.chat.web.models.chat.Chat
 import com.example.secure.chat.web.models.chat.MessageStatus
 import com.example.secure.chat.web.theme.DarkTheme
 import com.example.secure.chat.web.theme.XTheme
+import com.example.secure.chat.web.utils.consts.CHAT_LIST_ITEM_HEIGHT
+import com.example.secure.chat.web.utils.consts.CHAT_LIST_WIDTH
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -22,10 +24,10 @@ import org.jetbrains.compose.web.dom.Text
 
 object ChatItemStylesheet : StyleSheet() {
     val item by style {
-        height(60.px)
-        width(100.percent - 20.px)
+        height(CHAT_LIST_ITEM_HEIGHT) // this is the way
+        width(100.percent - 20.px) // 20 for padding 10 + 10
 
-        padding(10.px)
+        padding(10.px) // yes, this padding
 
         display(DisplayStyle.Flex)
 
@@ -41,7 +43,7 @@ object ChatItemStylesheet : StyleSheet() {
 fun xChatList(model: ChatModel) {
     xScrollable(
         styleBuilder = {
-            width(400.px)
+            width(CHAT_LIST_WIDTH)
         }
     ) {
         Style(ChatItemStylesheet)
@@ -93,7 +95,7 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
             styleBuilder = {
                 height(100.percent)
 
-                gap(16.px)
+                gap(16.px) // good layout
 
                 alignItems(AlignItems.Center)
             }
@@ -103,6 +105,7 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                 is Chat.Local -> "Local Security Manager"
             }
 
+            // good layout
             xLogo(40.px, name, withOutline = chat.lastMessage.value?.status?.value == MessageStatus.Unread)
 
             xChatDescription(chat)
@@ -162,7 +165,7 @@ private fun xChatDescription(chat: Chat) {
                             }
                         ) {
                             xMessageStatus(message) {
-                                gap(8.px)
+                                gap(8.px) // just gap, big enough
                             }
 
                             Span {

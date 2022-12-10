@@ -16,7 +16,7 @@ object ChatInputStyleSheet : StyleSheet() {
     val button by style {
         height(100.percent)
 
-        paddingLeft(24.px)
+        paddingLeft(24.px) // this is the way
         paddingRight(24.px)
 
         border(0.px)
@@ -45,11 +45,11 @@ fun xChatInput(model: ChatModel) {
 
         vertical(
             styleBuilder = {
-                flex(1, 0, auto.unsafeCast<CSSNumeric>())
+                flex(1, 0, auto.unsafeCast<CSSNumeric>()) // not magic, learn css flex-grow
 
-                margin(10.px, 16.px, 10.px, 16.px)
+                margin(10.px, 16.px, 10.px, 16.px) //  this input margin, it just looks good with these values, no magic
 
-                width(0.percent)
+                width(0.percent) // css hack
             },
         ) {
             when (inputType) {

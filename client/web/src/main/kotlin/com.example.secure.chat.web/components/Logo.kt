@@ -29,12 +29,12 @@ fun xLogo(
                 justifyContent(JustifyContent.Center)
                 alignItems(AlignItems.Center)
 
-                borderRadius(50.percent)
+                borderRadius(50.percent) // perfect circle
 
                 if (withOutline) {
                     border {
                         color = theme.secondaryTextColor
-                        width = 2.px
+                        width = 2.px // good border
                         style = LineStyle.Solid
                     }
                 }
