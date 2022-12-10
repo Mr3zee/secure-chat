@@ -13,7 +13,7 @@ import kotlinx.coroutines.Job
 
 class ChatModel(
     private val api: ChatApi,
-    private val componentContext: ComponentContext
+    private val componentContext: ComponentContext,
 ) : ComponentContext by componentContext {
     val privateKey = mutableProperty<String?>(null)
 

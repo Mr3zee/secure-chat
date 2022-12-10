@@ -11,7 +11,7 @@ import kotlin.properties.Delegates
 fun textView(
     node: HTMLElement,
     editorState: EditorState,
-    dispatch: ((Transaction) -> Unit)? = null
+    dispatch: ((Transaction) -> Unit)? = null,
 ): EditorView {
     return EditorView(node, jso {
         dispatchTransaction = dispatch
@@ -23,7 +23,7 @@ fun messageEditorView(
     mount: HTMLElement,
     property: MutableProperty<String>,
     placeholder: String,
-    onEnter: () -> Unit
+    onEnter: () -> Unit,
 ): EditorView {
     val state = textState(property.value, placeholder, onEnter = onEnter)
     var view by Delegates.notNull<EditorView>()

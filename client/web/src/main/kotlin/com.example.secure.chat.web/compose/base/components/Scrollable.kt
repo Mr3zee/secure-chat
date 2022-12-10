@@ -13,7 +13,7 @@ fun xScrollable(
     styleBuilder: StyleBuilder = {},
     innerStyleBuilder: StyleBuilder = {},
     attrs: DivAttrs = {},
-    content: DivContent = {}
+    content: DivContent = {},
 ) {
     vertical(
         attrs = {

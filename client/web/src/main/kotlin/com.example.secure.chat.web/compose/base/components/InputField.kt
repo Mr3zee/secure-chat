@@ -46,7 +46,7 @@ fun xInputField(
     property: MutableProperty<String>,
     resetProperty: MutableProperty<String>,
     placeholder: String = "",
-    onSubmit: () -> Unit = {}
+    onSubmit: () -> Unit = {},
 ) {
     flex(
         styleBuilder = {

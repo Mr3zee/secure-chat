@@ -19,7 +19,7 @@ sealed interface Chat {
     data class Global(
         override val isLocked: MutableState<Boolean>,
         override val key: MutableState<String?>,
-        val dto: ChatDto
+        val dto: ChatDto,
     ) : Chat {
         override val lastMessage = mutableStateOf<Message?>(null)
     }

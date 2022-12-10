@@ -13,26 +13,51 @@ object ChatApiStub : ChatApi {
         return when {
             chat is Chat.Global && chat.dto.id == 12L -> {
                 listOf(
-                    message.copy(text = "hello 1".repeat(100), timestamp = now(), status = mutableStateOf(MessageStatus.Failed), author = Author.Me),
+                    message.copy(
+                        text = "hello 1".repeat(100),
+                        timestamp = now(),
+                        status = mutableStateOf(MessageStatus.Failed),
+                        author = Author.Me
+                    ),
                     message.copy(text = "hello 2", timestamp = now()),
                     message.copy(text = "hello 3", timestamp = now()),
                     message.copy(text = "hello 4", timestamp = now()),
                     message.copy(text = "hello 5", timestamp = now()),
-                    message.copy(text = "hello 5", timestamp = now(), status = mutableStateOf(MessageStatus.Failed), author = Author.Me),
+                    message.copy(
+                        text = "hello 5",
+                        timestamp = now(),
+                        status = mutableStateOf(MessageStatus.Failed),
+                        author = Author.Me
+                    ),
                     message.copy(text = "hello 6", timestamp = now()),
                     message.copy(text = "hello 7", timestamp = now()),
                     message.copy(text = "hello 8", timestamp = now()),
                     message.copy(text = "hello 9", timestamp = now()),
-                    message.copy(text = "hello 10", timestamp = now(), status = mutableStateOf(MessageStatus.Local), author = Author.Me),
+                    message.copy(
+                        text = "hello 10",
+                        timestamp = now(),
+                        status = mutableStateOf(MessageStatus.Local),
+                        author = Author.Me
+                    ),
                     message.copy(text = "hello 11", timestamp = now()),
                     message.copy(text = "hello 12", timestamp = now()),
                     message.copy(text = "hello 13", timestamp = now()),
                     message.copy(text = "hello 14", timestamp = now()),
-                    message.copy(text = "hello 15", timestamp = now(), status = mutableStateOf(MessageStatus.Failed), author = Author.Me),
+                    message.copy(
+                        text = "hello 15",
+                        timestamp = now(),
+                        status = mutableStateOf(MessageStatus.Failed),
+                        author = Author.Me
+                    ),
                     message.copy(text = "hello16".repeat(100), timestamp = now()),
                     message.copy(text = "hello 17", timestamp = now()),
                     message.copy(text = "hello 18", timestamp = now()),
-                    message.copy(text = "hello 19", timestamp = now(), status = mutableStateOf(MessageStatus.Local), author = Author.Me),
+                    message.copy(
+                        text = "hello 19",
+                        timestamp = now(),
+                        status = mutableStateOf(MessageStatus.Local),
+                        author = Author.Me
+                    ),
                     message.copy(text = "hello 20", timestamp = now()),
                     message.copy(text = "hello 21", timestamp = now()),
                     message.copy(text = "hello 22", timestamp = now()),

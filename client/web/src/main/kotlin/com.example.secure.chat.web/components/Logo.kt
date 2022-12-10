@@ -15,7 +15,7 @@ fun xLogo(
     name: String,
     take: Int = 3,
     withOutline: Boolean = false,
-    styleBuilder: StyleBuilder = {}
+    styleBuilder: StyleBuilder = {},
 ) {
     val theme = XTheme.current
 

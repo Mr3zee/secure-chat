@@ -11,7 +11,7 @@ import org.jetbrains.compose.web.css.px
 fun h1(
     styleBuilder: StyleBuilder = {},
     attrs: HeadingAttrs = {},
-    content: HeadingContent = {}
+    content: HeadingContent = {},
 ) = org.jetbrains.compose.web.dom.H1(
     attrs = defaultAttrs(styleBuilder, attrs),
     content = content
@@ -21,7 +21,7 @@ fun h1(
 fun h2(
     styleBuilder: StyleBuilder = {},
     attrs: HeadingAttrs = {},
-    content: HeadingContent = {}
+    content: HeadingContent = {},
 ) = org.jetbrains.compose.web.dom.H2(
     attrs = defaultAttrs(styleBuilder, attrs),
     content = content
@@ -31,7 +31,7 @@ fun h2(
 fun h3(
     styleBuilder: StyleBuilder = {},
     attrs: HeadingAttrs = {},
-    content: HeadingContent = {}
+    content: HeadingContent = {},
 ) = org.jetbrains.compose.web.dom.H3(
     attrs = defaultAttrs(styleBuilder, attrs),
     content = content
@@ -41,7 +41,7 @@ fun h3(
 fun h4(
     styleBuilder: StyleBuilder = {},
     attrs: HeadingAttrs = {},
-    content: HeadingContent = {}
+    content: HeadingContent = {},
 ) = org.jetbrains.compose.web.dom.H4(
     attrs = defaultAttrs(styleBuilder, attrs),
     content = content
@@ -51,7 +51,7 @@ fun h4(
 fun h5(
     styleBuilder: StyleBuilder = {},
     attrs: HeadingAttrs = {},
-    content: HeadingContent = {}
+    content: HeadingContent = {},
 ) = org.jetbrains.compose.web.dom.H5(
     attrs = defaultAttrs(styleBuilder, attrs),
     content = content
@@ -61,7 +61,7 @@ fun h5(
 fun h6(
     styleBuilder: StyleBuilder = {},
     attrs: HeadingAttrs = {},
-    content: HeadingContent = {}
+    content: HeadingContent = {},
 ) = org.jetbrains.compose.web.dom.H6(
     attrs = defaultAttrs(styleBuilder, attrs),
     content = content

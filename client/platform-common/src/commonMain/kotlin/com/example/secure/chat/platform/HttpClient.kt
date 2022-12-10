@@ -48,7 +48,7 @@ inline fun <reified B, reified R> sendAsyncApiPostRequest(
     crossinline parameters: HttpParametersBuilder.() -> Unit = {},
     crossinline headers: HeadersBuilder.() -> Unit = {},
     crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
-    noinline onSuccess: (suspend (R) -> Unit)? = null
+    noinline onSuccess: (suspend (R) -> Unit)? = null,
 ) = launch(Ui) {
     val response = client.request("/api/$path") {
         method = HttpMethod.Post
@@ -77,7 +77,7 @@ inline fun sendAsyncApiRequest(
     crossinline parameters: HttpParametersBuilder.() -> Unit = {},
     crossinline headers: HeadersBuilder.() -> Unit = {},
     crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
-    crossinline onSuccess: suspend () -> Unit = {}
+    crossinline onSuccess: suspend () -> Unit = {},
 ) = sendAsyncApiRequest<Unit>(path, method, parameters, headers, onError) { onSuccess() }
 
 @Suppress("unused")
@@ -87,7 +87,7 @@ inline fun <reified R> sendAsyncApiRequest(
     crossinline parameters: HttpParametersBuilder.() -> Unit = {},
     crossinline headers: HeadersBuilder.() -> Unit = {},
     crossinline onError: suspend (HttpResponse) -> Unit = { it.logError() },
-    crossinline onSuccess: suspend (R) -> Unit = {}
+    crossinline onSuccess: suspend (R) -> Unit = {},
 ) = launch(Ui) {
     val response = client.request("/api/$path") {
         this.method = method

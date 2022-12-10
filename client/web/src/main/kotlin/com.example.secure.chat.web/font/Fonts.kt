@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.FontStyle
 import com.example.secure.chat.web.font.fonts.JetBrainsMono
 import org.jetbrains.compose.web.css.*
 
-interface BaseFont{
+interface BaseFont {
     val fontFamily: String
     val fontWeight: Int
     val fontStyle: FontStyle
@@ -15,19 +15,19 @@ interface BaseFont{
 sealed interface FontSize {
     val value: CSSNumeric
 
-    object Base: FontSize {
+    object Base : FontSize {
         override val value: CSSNumeric = 15.px
     }
 
-    object Small: FontSize {
+    object Small : FontSize {
         override val value: CSSNumeric = 12.px
     }
 
-    object Smaller: FontSize {
+    object Smaller : FontSize {
         override val value: CSSNumeric = 10.px
     }
 
-    object Smallest: FontSize {
+    object Smallest : FontSize {
         override val value: CSSNumeric = 8.px
     }
 }
@@ -35,7 +35,7 @@ sealed interface FontSize {
 
 fun StyleScope.applyCustomFont(
     size: FontSize = FontSize.Base,
-    font: BaseFont = JetBrainsMono.Thin
+    font: BaseFont = JetBrainsMono.Thin,
 ) {
     fontFamily(font.fontFamily)
     fontStyle(font.fontStyle.toString())

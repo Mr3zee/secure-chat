@@ -7,7 +7,7 @@ import kotlin.js.Json
 fun textState(
     text: String,
     placeholder: String,
-    onEnter: () -> Unit
+    onEnter: () -> Unit,
 ): EditorState {
     return EditorState.create(jso {
         schema = baseSchema
@@ -30,6 +30,7 @@ fun docFromText(text: String): Json {
                 "content": []
             }
         """.trimIndent()
+
         else -> """
             {
                 "type": "doc",
