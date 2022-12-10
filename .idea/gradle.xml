@@ -12,8 +12,10 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/buildSrc" />
+            <option value="$PROJECT_DIR$/client" />
+            <option value="$PROJECT_DIR$/client/platform-common" />
+            <option value="$PROJECT_DIR$/client/web" />
             <option value="$PROJECT_DIR$/common" />
-            <option value="$PROJECT_DIR$/frontend" />
             <option value="$PROJECT_DIR$/server" />
             <option value="$PROJECT_DIR$/server/application" />
             <option value="$PROJECT_DIR$/server/base" />

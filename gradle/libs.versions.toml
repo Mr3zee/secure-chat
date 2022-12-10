@@ -1,15 +1,18 @@
 [versions]
-kotlin = "1.7.21"
-kotlin-wrappers-bom = "1.0.0-pre.438"
+kotlin = "1.7.20"
+kotlin-wrappers-bom = "1.0.0-pre.355"
 ktor = "2.1.3"
 kotlinx-serialization-json = "1.4.1"
 kotlinx-coroutines-core = "1.6.4"
+kotlinx-datetime = "0.4.0"
 logback = "1.4.4"
 exposed = "0.40.1"
 postgresql = "42.5.0"
 koin = "3.2.2"
 koin_ktor = "3.2.2"
 kotlin-logging-jvm = "3.0.2"
+jetbrains-compose = "1.2.1"
+decompose = "1.0.0-beta-01"
 
 
 [libraries]
@@ -25,12 +28,12 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
 kotlinx-coroutines-core-js = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-js", version.ref = "kotlinx-coroutines-core" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines-core" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+
 
 # kotlin wrappers
 kotlin-wrappers-bom = { module = "org.jetbrains.kotlin-wrappers:kotlin-wrappers-bom", version.ref = "kotlin-wrappers-bom" }
-react = { module = "org.jetbrains.kotlin-wrappers:kotlin-react" }
-react-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-dom" }
-emotion = { module = "org.jetbrains.kotlin-wrappers:kotlin-emotion" }
+kw-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser" }
 
 # ktor
 ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
@@ -47,6 +50,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 
 # logback
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
@@ -70,8 +74,13 @@ koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref =
 # kotlin logging
 kotlin-logging-jvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlin-logging-jvm" }
 
+# decompose
+decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+decompose-extensions-compose-jetbrains = { module = "com.arkivanov.decompose:extensions-compose-jetbrains", version.ref = "decompose" }
 
 [plugins]
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
-io-ktor-plugin = {id = "io.ktor.plugin", version.ref = "ktor" }
+io-ktor-plugin = { id = "io.ktor.plugin", version.ref = "ktor" }
+
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "jetbrains-compose" }
