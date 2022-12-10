@@ -110,6 +110,8 @@ suspend fun HttpResponse.logError() {
     bodyAsText().let {
         if (it.isNotBlank()) {
             console.error(it)
+        } else {
+            console.error("No message was provided")
         }
     }
 }
