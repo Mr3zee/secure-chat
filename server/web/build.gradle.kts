@@ -7,6 +7,7 @@ tasks.test {
 }
 
 dependencies {
+    implementation(project(":server:base"))
     implementation(project(":server:core"))
     implementation(project(":common"))
     implementation(libs.koin.jvm)
