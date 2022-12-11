@@ -15,8 +15,14 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.isActive
 import org.koin.ktor.ext.inject
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.spec.MGF1ParameterSpec
+import java.security.spec.X509EncodedKeySpec
 import java.util.*
-import kotlin.NoSuchElementException
+import javax.crypto.Cipher
+import javax.crypto.spec.OAEPParameterSpec
+import javax.crypto.spec.PSource
 
 fun Routing.websocketRouting() {
     webSocket("/websocket") {
@@ -64,8 +70,19 @@ suspend fun Routing.authenticate(
 }
 
 fun encode(user: User, message: ByteArray): ByteArray {
-    // todo
-    return message
+    val keySpec = X509EncodedKeySpec(user.publicKey.byteArray)
+    val key: PublicKey = KeyFactory.getInstance("RSA")
+        .generatePublic(keySpec)
+    val params = OAEPParameterSpec(
+        "SHA-512",
+        "MGF1",
+        MGF1ParameterSpec("SHA-512"),
+        PSource.PSpecified.DEFAULT,
+    )
+    val cipher = Cipher.getInstance("RSA/ECB/OAEPPadding").apply {
+        init(Cipher.ENCRYPT_MODE, key, params)
+    }
+    return cipher.doFinal(message)
 }
 
 suspend fun handleSession(context: WebSocketSessionContext) {
