@@ -12,19 +12,36 @@ import org.jetbrains.exposed.sql.select
 
 object MessageRepositoryImpl : MessageRepository {
 
-    override fun Transaction.createMessage(rq: MessageCreateRq): Message =
+    override fun Transaction.createMessage(rq: MessageCreateRq): Long =
         Messages.insertAndGetId {
+            it[chatId] = rq.user.id
+            it[userId] = rq.user.id
             it[text] = rq.text.byteArray
-        }.value.let { id -> Message(id, rq.user.login, rq.text) }
+        }.value
+
+    override fun Transaction.getMessage(id: Long): Message =
+        Messages.innerJoin(Users).select {
+            Messages.id.eq(id)
+        }.single().let { row ->
+            Message(
+                row[Messages.id].value,
+                row[Messages.chatId],
+                row[Users.login],
+                row[Messages.text].let(::ByteArrayWrapper),
+                row[Messages.createdTs],
+            )
+        }
 
     override fun Transaction.getMessages(chatId: Long): List<Message> =
         Messages.innerJoin(Users).select {
             Messages.chatId.eq(chatId)
         }.map { row ->
             Message(
+                row[Messages.id].value,
                 row[Messages.chatId],
                 row[Users.login],
                 row[Messages.text].let(::ByteArrayWrapper),
+                row[Messages.createdTs],
             )
         }
 }

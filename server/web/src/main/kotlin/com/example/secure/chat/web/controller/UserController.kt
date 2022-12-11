@@ -11,7 +11,7 @@ interface UserController  {
         rq: GetUserPublicKeyRequestDto,
     ): GetUserPublicKeyResponseDto
 
-    suspend fun getUser(login: String): User
+    suspend fun getUser(login: String): User?
 
     suspend fun register(createRq: UserCreateRq): User
 }

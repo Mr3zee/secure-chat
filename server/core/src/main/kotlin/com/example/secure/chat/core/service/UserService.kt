@@ -7,5 +7,5 @@ interface UserService {
 
     fun register(rq: UserCreateRq): User
 
-    fun load(login: String): User
+    fun load(login: String): User?
 }
