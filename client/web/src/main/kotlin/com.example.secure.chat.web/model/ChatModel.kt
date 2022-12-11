@@ -42,7 +42,7 @@ class ChatModel(
 
     val newMessageEvent = mutableProperty(Unit)
 
-    val localMessageProcessor = LocalMessageProcessor(this)
+    private val localMessageProcessor = LocalMessageProcessor(this)
     private val globalMessageProcessor = GlobalMessageProcessor(this)
 
     private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
@@ -95,6 +95,20 @@ class ChatModel(
         }
     }
 
+    suspend fun leaveChat(chat: Chat.Global): Boolean {
+        return if (api.leaveChat(chat)) {
+            if (chat == selectedChat.value) {
+                selectedChat.value = Chat.Local
+            }
+
+            chats.value -= chat.id
+            credentials.chatsLonePublicKeys -= chat.id
+            credentials.chatKeys -= chat.id
+
+            true
+        } else false
+    }
+
     fun logout() {
         selectedChat.value = Chat.Local
         inputByChat.clear()
@@ -119,7 +133,14 @@ class ChatModel(
         }
 
         reader.onerror = {
-            newMessage(selectedChat.value, Message(securityManagerBot, "Failed to upload a file."))
+            newMessage(
+                chat = selectedChat.value,
+                message = Message(
+                    author = securityManagerBot,
+                    text = "Failed to upload a file.",
+                    initialStatus = MessageStatus.Local
+                )
+            )
 
             unlockInput()
         }
@@ -191,14 +212,14 @@ class ChatModel(
     }
 
     private suspend fun dispatchMessage(chat: Chat, message: Message) {
-        newMessage(chat, message)
-
         with(messageProcessor.value) {
-            val context = MessageContext(message.author) {
+            val user = credentials.login.value?.let { Author.User(it) } ?: Author.Me
+
+            val context = MessageContext(chat, user, message) {
                 newMessage(chat, it)
             }
 
-            context.processMessage(message)
+            context.processMessage()
         }
     }
 

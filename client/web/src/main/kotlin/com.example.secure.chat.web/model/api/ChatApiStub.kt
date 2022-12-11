@@ -47,6 +47,18 @@ object ChatApiStub : ChatApi {
         } to coder.genRsaKeyPair()
     }
 
+    override suspend fun leaveChat(chat: Chat.Global): Boolean {
+        return true
+    }
+
+    override suspend fun inviteMember(chat: Chat.Global, username: String): Boolean {
+        return true
+    }
+
+    override suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean {
+        return true
+    }
+
     override suspend fun getChatTimeline(chat: Chat.Global): List<Message> {
         return listOf(
             message.copy(
@@ -72,7 +84,7 @@ object ChatApiStub : ChatApi {
             message.copy(
                 text = "hello 10",
                 timestamp = now(),
-                initialStatus = MessageStatus.Local,
+                initialStatus = MessageStatus.Pending,
                 author = Author.Me
             ),
             message.copy(text = "hello 11", timestamp = now()),
@@ -91,7 +103,7 @@ object ChatApiStub : ChatApi {
             message.copy(
                 text = "hello 19",
                 timestamp = now(),
-                initialStatus = MessageStatus.Local,
+                initialStatus = MessageStatus.Pending,
                 author = Author.Me
             ),
             message.copy(text = "hello 20", timestamp = now()),

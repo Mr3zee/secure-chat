@@ -17,19 +17,16 @@ class LocalMessageProcessor(
 ) : MessageProcessor {
     private val storage = mutableMapOf<String, String>()
 
-    override suspend fun createMessage(text: String): Message {
-        return message(text)
-    }
+    override suspend fun MessageContext.processMessage(): Unit = with(localConversation) {
+        message.status.value = MessageStatus.Local
+        dispatch(message)
 
-    override suspend fun MessageContext.processMessage(message: Message): Unit = with(localConversation) {
         model.lockInput()
 
         handle(message) ?: run {
             sendMessage("Unknown command. If you are not logged in, please log in or register first. List of available commands:")
             sendMessage(CMD_REFERENCE)
         }
-
-        message.status.value = MessageStatus.Verified
 
         model.unlockInput()
     }
@@ -208,7 +205,7 @@ class LocalMessageProcessor(
 
                 val initialMessage = Message(
                     author = author,
-                    text = "${author.name} created this chat",
+                    text = "'${author.name}' created this chat",
                     initialStatus = MessageStatus.Verified
                 )
 
@@ -349,14 +346,14 @@ class LocalMessageProcessor(
         chat: Chat.Global,
         privateCryptoKey: PrivateCryptoKey,
     ): Boolean {
-        val message = model.api.getLastMessage(chat, privateCryptoKey, model.coder) ?: run {
+        val lastMessage = model.api.getLastMessage(chat, privateCryptoKey, model.coder) ?: run {
             sendMessage("Failed to login into ${chat.name} chat.")
             return false
         }
 
         sendMessage("Logged in into ${chat.name} chat.")
 
-        chat.lastMessage.value = message
+        chat.lastMessage.value = lastMessage
         chat.isLocked.value = false
 
         return true
@@ -377,7 +374,7 @@ class LocalMessageProcessor(
     }
 
     private fun MessageContext.sendMessage(string: String) {
-        dispatch(message(string))
+        dispatch(botMessage(string))
     }
 
     companion object {
@@ -407,8 +404,8 @@ private enum class LocalCommands {
     login, file_login, logout, register, new_chat, chat_login, dump, load
 }
 
-private fun message(text: String) = Message(
+private fun botMessage(text: String) = Message(
     author = securityManagerBot,
     text = text,
-    initialStatus = MessageStatus.Verified
+    initialStatus = MessageStatus.Local
 )

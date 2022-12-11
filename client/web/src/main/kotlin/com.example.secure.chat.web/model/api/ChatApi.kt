@@ -19,4 +19,10 @@ interface ChatApi {
     suspend fun getAllChats(coder: Coder): List<Pair<Chat.Global, PublicCryptoKey>>
 
     suspend fun getChatTimeline(chat: Chat.Global): List<Message>
+
+    suspend fun leaveChat(chat: Chat.Global): Boolean
+
+    suspend fun inviteMember(chat: Chat.Global, username: String): Boolean
+
+    suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean
 }

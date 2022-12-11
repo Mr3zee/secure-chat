@@ -15,6 +15,9 @@ import kotlin.js.Promise
 private const val PRIVATE_PEM_BEGIN = "-----BEGIN PRIVATE KEY-----"
 private const val PRIVATE_PEM_END = "-----END PRIVATE KEY-----"
 
+private const val PUBLIC_PEM_BEGIN = "-----BEGIN PUBLIC KEY-----"
+private const val PUBLIC_PEM_END = "-----END PUBLIC KEY-----"
+
 private const val PKCS8_FORMAT = "pkcs8"
 private const val SPKI_FORMAT = "spki"
 
@@ -39,6 +42,14 @@ val GenRsaParams = jso<RsaHashedKeyGenParams> {
 
 suspend fun Crypto.exportPublicRSAKey(key: PublicCryptoKey): ArrayBuffer {
     return exportKey(SPKI_FORMAT, key).unsafeCast<Promise<ArrayBuffer>>().await()
+}
+
+suspend fun Crypto.exportPublicRSAKeyPEM(key: PublicCryptoKey): String {
+    return exportPublicRSAKey(key).let {
+        val strKey = it.asString()
+        val base64Key = window.btoa(strKey)
+        "$PUBLIC_PEM_BEGIN\n$base64Key\n$PUBLIC_PEM_END"
+    }
 }
 
 suspend fun Crypto.exportPrivateRSAKey(key: PrivateCryptoKey): ArrayBuffer {

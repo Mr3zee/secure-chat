@@ -12,11 +12,11 @@ data class Message(
     val id: Long = Random(42).nextLong(),
     val timestamp: LocalDateTime = now(),
     val isSecret: Boolean = false,
-    private val initialStatus: MessageStatus = MessageStatus.Local,
+    private val initialStatus: MessageStatus = MessageStatus.Pending,
 ) {
     val status: MutableProperty<MessageStatus> = mutableProperty(initialStatus)
 }
 
 enum class MessageStatus {
-    Local, Verified, Failed, Unread
+    Pending, Verified, Failed, Unread, Local
 }
