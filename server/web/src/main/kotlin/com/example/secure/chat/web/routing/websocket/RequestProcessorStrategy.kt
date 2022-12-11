@@ -21,7 +21,7 @@ object RequestProcessorStrategy : KoinComponent {
 
     private fun chooseProcessor(
         request: ClientRequestDto<*, *>,
-    ): suspend (WebSocketSessionContext) -> ServerResponseDto<*, *>? {
+    ): suspend (WebSocketSessionContext) -> ServerResponseDto<*, *> {
         return when (request) {
             is ChatCreateRequestDto -> { context -> chatController.chatCreate(context, request) }
             is ChatListRequestDto -> { context -> chatController.chatList(context, request) }
@@ -31,10 +31,7 @@ object RequestProcessorStrategy : KoinComponent {
             is GetUserPublicKeyRequestDto -> { _ -> userController.getUserPublicKey(request) }
             is MessageListRequestDto -> { context -> messageController.messageList(context, request) }
             is MessageSendRequestDto -> { context -> messageController.messageSend(context, request) }
-            is LogoutRequestDto -> { context ->
-                context.close()
-                null
-            }
+            is LogoutRequestDto -> { _ -> LogoutResponseDto(request.requestId) }
         }
     }
 
@@ -44,13 +41,18 @@ object RequestProcessorStrategy : KoinComponent {
     ) {
         val action = chooseProcessor(request)
 
-        val response: ServerResponseDto<*, *>? = try {
-            action.invoke(context)
+        try {
+            val response = action.invoke(context)
+            context.sendSerialized(response)
+            if (response is LogoutResponseDto) {
+                context.close()
+            }
         } catch (e: Exception) {
             logger.error(e) { "Failed to process request ${request::class.simpleName}" }
-            context.closeExceptionally(e)
-            return
+            try {
+                context.closeExceptionally(e)
+            } catch (ignored: Exception) {
+            }
         }
-        response?.let { context.sendSerialized(it) }
     }
 }
