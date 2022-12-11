@@ -2,7 +2,7 @@ package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
 import com.example.secure.chat.web.compose.base.types.StyleBuilder
-import com.example.secure.chat.web.models.chat.whitespaceRegex
+import com.example.secure.chat.web.model.chat.whitespaceRegex
 import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div

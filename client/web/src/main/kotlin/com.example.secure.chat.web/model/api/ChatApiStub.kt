@@ -1,22 +1,41 @@
-package com.example.secure.chat.web.models.api
+package com.example.secure.chat.web.model.api
 
-import androidx.compose.runtime.mutableStateOf
-import com.example.auth.common.chat.ChatDto
-import com.example.secure.chat.web.models.chat.Author
-import com.example.secure.chat.web.models.chat.Chat
-import com.example.secure.chat.web.models.chat.Message
-import com.example.secure.chat.web.models.chat.MessageStatus
+import com.example.secure.chat.web.crypto.PrivateCryptoKey
+import com.example.secure.chat.web.crypto.PublicCryptoKey
+import com.example.secure.chat.web.model.chat.Author
+import com.example.secure.chat.web.model.chat.Chat
+import com.example.secure.chat.web.model.chat.Message
+import com.example.secure.chat.web.model.chat.MessageStatus
+import com.example.secure.chat.web.model.creds.Coder
 import com.example.secure.chat.web.utils.now
 
 object ChatApiStub : ChatApi {
+    override suspend fun registerUser(username: String, publicCryptoKey: PublicCryptoKey, coder: Coder): Boolean {
+        return when (username) {
+            "admin", "user" -> true
+            else -> false
+        }
+    }
+
+    override suspend fun loginUser(username: String, privateCryptoKey: PrivateCryptoKey, coder: Coder): Boolean {
+        return when (username) {
+            "admin", "user" -> true
+            else -> false
+        }
+    }
+
+    override suspend fun getLastMessage(chat: Chat.Global, key: PrivateCryptoKey, coder: Coder): Message {
+        return message.copy(text = "chat-${chat.id}-message-${now()}")
+    }
+
     override suspend fun getChatTimeline(chat: Chat): List<Message> {
         return when {
-            chat is Chat.Global && chat.dto.id == 12L -> {
+            chat is Chat.Global && chat.id == 12L -> {
                 listOf(
                     message.copy(
                         text = "hello 1".repeat(100),
                         timestamp = now(),
-                        status = mutableStateOf(MessageStatus.Failed),
+                        initialStatus = MessageStatus.Failed,
                         author = Author.Me
                     ),
                     message.copy(text = "hello 2", timestamp = now()),
@@ -26,7 +45,7 @@ object ChatApiStub : ChatApi {
                     message.copy(
                         text = "hello 5",
                         timestamp = now(),
-                        status = mutableStateOf(MessageStatus.Failed),
+                        initialStatus = MessageStatus.Failed,
                         author = Author.Me
                     ),
                     message.copy(text = "hello 6", timestamp = now()),
@@ -36,7 +55,7 @@ object ChatApiStub : ChatApi {
                     message.copy(
                         text = "hello 10",
                         timestamp = now(),
-                        status = mutableStateOf(MessageStatus.Local),
+                        initialStatus = MessageStatus.Local,
                         author = Author.Me
                     ),
                     message.copy(text = "hello 11", timestamp = now()),
@@ -46,7 +65,7 @@ object ChatApiStub : ChatApi {
                     message.copy(
                         text = "hello 15",
                         timestamp = now(),
-                        status = mutableStateOf(MessageStatus.Failed),
+                        initialStatus = MessageStatus.Failed,
                         author = Author.Me
                     ),
                     message.copy(text = "hello16".repeat(100), timestamp = now()),
@@ -55,7 +74,7 @@ object ChatApiStub : ChatApi {
                     message.copy(
                         text = "hello 19",
                         timestamp = now(),
-                        status = mutableStateOf(MessageStatus.Local),
+                        initialStatus = MessageStatus.Local,
                         author = Author.Me
                     ),
                     message.copy(text = "hello 20", timestamp = now()),
@@ -63,7 +82,7 @@ object ChatApiStub : ChatApi {
                     message.copy(text = "hello 22", timestamp = now()),
                     message.copy(text = "hello 23", timestamp = now()),
                     message.copy(text = "hello 24", timestamp = now()),
-                    message.copy(text = "hello 25", timestamp = now(), status = mutableStateOf(MessageStatus.Unread)),
+                    message.copy(text = "hello 25", timestamp = now(), initialStatus = MessageStatus.Unread),
                 )
             }
 
@@ -71,22 +90,25 @@ object ChatApiStub : ChatApi {
         }
     }
 
-    override suspend fun getAllChats(): List<Chat> {
+    override suspend fun getAllChats(): List<Chat.Global> {
         return listOf(
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(0, "Chat 1")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(1, "Chat 2")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(2, "Chat 3")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(3, "Chat 4")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(4, "Chat 5")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(5, "Chat 6")),
-            Chat.Global(mutableStateOf(true), mutableStateOf(null), ChatDto(6, "Chat 7")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(7, "Chat 8")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(8, "Chat 9")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(9, "Chat 10")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(10, "Chat 11")),
-            Chat.Global(mutableStateOf(true), mutableStateOf(null), ChatDto(11, "Chat 12")),
-            Chat.Global(mutableStateOf(false), mutableStateOf(null), ChatDto(12, "Chat 13")).apply {
-                lastMessage.value = message.copy(text = "hello 25", status = mutableStateOf(MessageStatus.Unread))
+            Chat.Global(0, "Chat 1"),
+            Chat.Global(1, "Chat 2"),
+            Chat.Global(2, "Chat 3"),
+            Chat.Global(3, "Chat 4"),
+            Chat.Global(4, "Chat 5"),
+            Chat.Global(5, "Chat 6"),
+            Chat.Global(6, "Chat 7").apply { isLocked.value = true },
+            Chat.Global(7, "Chat 8"),
+            Chat.Global(8, "Chat 9"),
+            Chat.Global(9, "Chat 10"),
+            Chat.Global(10, "Chat 11"),
+            Chat.Global(11, "Chat 12").apply { isLocked.value = true },
+            Chat.Global(12, "Chat 13").apply {
+                lastMessage.value = message.copy(
+                    text = "hello 25",
+                    initialStatus = MessageStatus.Unread
+                )
             },
         )
     }
@@ -94,8 +116,6 @@ object ChatApiStub : ChatApi {
 
 private val message = Message(
     author = Author.User("Other user"),
-    id = 0,
-    timestamp = now(),
     text = "hello 1",
-    status = mutableStateOf(MessageStatus.Verified),
+    initialStatus = MessageStatus.Verified,
 )

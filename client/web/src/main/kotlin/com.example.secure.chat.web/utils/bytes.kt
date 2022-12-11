@@ -7,6 +7,10 @@ import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
 
+external fun decodeURIComponent(encodedURI: String): String
+
+external fun encodeURIComponent(encodedURI: String): String
+
 inline fun Uint8Array.asString() = decoder.decode(this)
 
 fun Uint8Array.toByteArray() = asDynamic().unsafeCast<ByteArray>()

@@ -3,7 +3,7 @@ package com.example.secure.chat.web.components
 import androidx.compose.runtime.Composable
 import com.example.secure.chat.web.compose.base.components.horizontal
 import com.example.secure.chat.web.compose.base.components.xVerticalSeparator
-import com.example.secure.chat.web.models.ChatModel
+import com.example.secure.chat.web.model.ChatModel
 import com.example.secure.chat.web.utils.consts.APP_HEADER_HEIGHT
 import org.jetbrains.compose.web.css.height
 import org.jetbrains.compose.web.css.minus

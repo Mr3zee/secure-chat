@@ -1,46 +1,52 @@
-package com.example.secure.chat.web.models
+package com.example.secure.chat.web.model
 
 import com.arkivanov.decompose.ComponentContext
 import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.launch
 import com.example.secure.chat.web.compose.mutableProperty
-import com.example.secure.chat.web.models.api.ChatApi
-import com.example.secure.chat.web.models.chat.*
-import com.example.secure.chat.web.models.chat.processors.GlobalMessageProcessor
-import com.example.secure.chat.web.models.chat.processors.LocalMessageProcessor
-import com.example.secure.chat.web.models.chat.processors.MessageProcessor
+import com.example.secure.chat.web.model.api.ChatApi
+import com.example.secure.chat.web.model.chat.*
+import com.example.secure.chat.web.model.chat.processors.GlobalMessageProcessor
+import com.example.secure.chat.web.model.chat.processors.LocalMessageProcessor
+import com.example.secure.chat.web.model.chat.processors.MessageContext
+import com.example.secure.chat.web.model.chat.processors.MessageProcessor
+import com.example.secure.chat.web.model.creds.Coder
+import com.example.secure.chat.web.model.creds.Credentials
 import kotlinx.coroutines.Job
 
 class ChatModel(
-    private val api: ChatApi,
+    val credentials: Credentials,
+    val api: ChatApi,
+    val coder: Coder,
     private val componentContext: ComponentContext,
 ) : ComponentContext by componentContext {
-    val privateKey = mutableProperty<String?>(null)
+    // all chats
+    val chats = mutableProperty(emptyMap<Long, Chat.Global>())
 
-    val chats = mutableProperty(emptyList<Chat>())
-
+    // currently displayed chat
     val selectedChat = mutableProperty<Chat>(Chat.Local)
+
+    // currently displayed chat's timeline
     val selectedChatTimeline = mutableProperty(emptyList<Message>())
-
     private val localChatTimeline = mutableListOf<Message>()
-
     private var chatTimelineRequestJob: Job? = null
 
-    private val messageProcessor = mutableProperty<MessageProcessor>(LocalMessageProcessor)
-
+    // input properties
     val inputType = mutableProperty(TextInputType.Message)
-
-    private val inputByChat = mutableMapOf<Chat, String>()
     val currentInput = mutableProperty("")
     val resetInput = mutableProperty(currentInput.value)
+    private val inputByChat = mutableMapOf<Chat, String>()
 
     val newMessageEvent = mutableProperty(Unit)
 
-    init {
-        launch(Ui) {
-            chats.value = api.getAllChats()
-        }
+    val localMessageProcessor = LocalMessageProcessor(this)
 
+    private val globalMessageProcessor = GlobalMessageProcessor(this)
+
+    private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
+
+
+    init {
         resetInput.subscribe {
             currentInput.value = it
         }
@@ -65,7 +71,7 @@ class ChatModel(
                 is Chat.Local -> {
                     selectedChatTimeline.value = localChatTimeline
 
-                    messageProcessor.value = LocalMessageProcessor
+                    messageProcessor.value = localMessageProcessor
                 }
 
                 is Chat.Global -> {
@@ -81,10 +87,34 @@ class ChatModel(
                         }
                     }
 
-                    messageProcessor.value = GlobalMessageProcessor
+                    messageProcessor.value = globalMessageProcessor
                 }
             }
         }
+    }
+
+    fun displaySecret(name: String, secret: String) {
+        // todo
+    }
+
+    fun acceptFile() {
+        // todo
+    }
+
+    suspend fun loadChats() {
+        chats.value = api.getAllChats().associateBy { it.id }
+    }
+
+    fun lockInput() {
+        // todo
+    }
+
+    fun unlockInput() {
+        // todo
+    }
+
+    fun acceptSecret() {
+        inputType.value = TextInputType.Secret
     }
 
     fun submitMessage() {
@@ -92,8 +122,9 @@ class ChatModel(
         if (text.isBlank()) return
 
         resetInput.value = ""
-        val inputType = inputType.value
-        acceptUserInput(text, inputType)
+        val inputTypeVal = inputType.value
+        inputType.value = TextInputType.Message
+        acceptUserInput(text, inputTypeVal)
     }
 
     private fun acceptUserInput(text: String, inputType: TextInputType) {
@@ -110,15 +141,13 @@ class ChatModel(
             TextInputType.Secret -> newMessage(chat, message.copy(text = "*".repeat(16)))
         }
 
-        val status = try {
-            val response = messageProcessor.value.processMessage(message)
-            newMessage(chat, response)
-            MessageStatus.Verified
-        } catch (e: Exception) {
-            MessageStatus.Failed
-        }
+        with(messageProcessor.value) {
+            val context = MessageContext {
+                newMessage(chat, it)
+            }
 
-        message.status.value = status
+            context.processMessage(message)
+        }
     }
 
     private fun newMessage(chat: Chat, message: Message) {

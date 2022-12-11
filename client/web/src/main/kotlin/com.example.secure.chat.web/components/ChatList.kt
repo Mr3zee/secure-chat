@@ -7,9 +7,10 @@ import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.font.FontSize
 import com.example.secure.chat.web.font.applyCustomFont
 import com.example.secure.chat.web.font.fonts.JetBrainsMono
-import com.example.secure.chat.web.models.ChatModel
-import com.example.secure.chat.web.models.chat.Chat
-import com.example.secure.chat.web.models.chat.MessageStatus
+import com.example.secure.chat.web.model.ChatModel
+import com.example.secure.chat.web.model.chat.Chat
+import com.example.secure.chat.web.model.chat.MessageStatus
+import com.example.secure.chat.web.model.chat.processors.securityManagerBot
 import com.example.secure.chat.web.theme.DarkTheme
 import com.example.secure.chat.web.theme.XTheme
 import com.example.secure.chat.web.utils.consts.CHAT_LIST_ITEM_HEIGHT
@@ -55,7 +56,7 @@ fun xChatList(model: ChatModel) {
         val chats by remember { model.chats.asState() }
 
         // todo virtual lists?, better ordering?
-        chats.sortedByDescending { it.lastMessage.value?.timestamp }.forEach { chat ->
+        chats.values.sortedByDescending { it.lastMessage.value?.timestamp }.forEach { chat ->
             xChatItem(model, chat)
 
             xHorizontalSeparator()
@@ -101,8 +102,8 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
             }
         ) {
             val name = when (chat) {
-                is Chat.Global -> chat.dto.name
-                is Chat.Local -> "Local Security Manager"
+                is Chat.Global -> chat.name
+                is Chat.Local -> securityManagerBot.name
             }
 
             // good layout
@@ -149,7 +150,7 @@ private fun xChatDescription(chat: Chat) {
                     }
 
                     is Chat.Global -> {
-                        val name = (if (chat.isLocked.value) "(Locked) " else "") + chat.dto.name
+                        val name = (if (chat.isLocked.value) "(Locked) " else "") + chat.name
 
                         xEllipsis(name) {
                             applyCustomFont(font = JetBrainsMono.Bold)

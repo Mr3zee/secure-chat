@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.components.*
-import com.example.secure.chat.web.models.ChatModel
-import com.example.secure.chat.web.models.TextInputType
+import com.example.secure.chat.web.model.ChatModel
+import com.example.secure.chat.web.model.TextInputType
 import com.example.secure.chat.web.theme.DarkTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto

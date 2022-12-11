@@ -45,7 +45,7 @@ suspend fun Crypto.exportPrivateRSAKey(key: PrivateCryptoKey): ArrayBuffer {
     return exportKey(PKCS8_FORMAT, key).unsafeCast<Promise<ArrayBuffer>>().await()
 }
 
-suspend fun Crypto.exportPrivateKeyPEM(key: PrivateCryptoKey): String {
+suspend fun Crypto.exportPrivateRSAKeyPEM(key: PrivateCryptoKey): String {
     return exportPrivateRSAKey(key).let {
         val strKey = it.asString()
         val base64Key = window.btoa(strKey)
