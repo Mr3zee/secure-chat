@@ -12,6 +12,8 @@ kotlin {
                 enabled = true
             }
 
+            sourceMaps = true
+
             val proxies = devServer?.proxy ?: mutableMapOf()
             listOf(
                 "/api",

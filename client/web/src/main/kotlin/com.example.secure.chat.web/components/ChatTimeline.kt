@@ -7,13 +7,16 @@ import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.font.FontSize
 import com.example.secure.chat.web.font.applyCustomFont
 import com.example.secure.chat.web.font.fonts.JetBrainsMono
-import com.example.secure.chat.web.models.ChatModel
-import com.example.secure.chat.web.models.chat.Author
-import com.example.secure.chat.web.models.chat.Chat
-import com.example.secure.chat.web.models.chat.Message
+import com.example.secure.chat.web.model.ChatModel
+import com.example.secure.chat.web.model.chat.Author
+import com.example.secure.chat.web.model.chat.Chat
+import com.example.secure.chat.web.model.chat.Message
+import com.example.secure.chat.web.model.chat.processors.GlobalMessageProcessor
+import com.example.secure.chat.web.model.chat.processors.LocalMessageProcessor
 import com.example.secure.chat.web.theme.XTheme
 import com.example.secure.chat.web.utils.capitalized
 import com.example.secure.chat.web.utils.consts.MESSAGES_DAY_LABEL_HEIGHT
+import com.example.secure.chat.web.utils.consts.SECRET_PLACEHOLDER
 import com.example.secure.chat.web.utils.ensureScrollTo
 import com.example.secure.chat.web.utils.today
 import kotlinx.datetime.LocalDate
@@ -69,27 +72,24 @@ private fun xEmptyChatMessage(model: ChatModel) {
 
         val text = when (selectedChat) {
             is Chat.Local -> """
-                This is your Local Security Manager.
-                You can manage your chats here and do some other staff.
-                List of available commands:
-                
-                /start - login into your profile.
-                /register <username> - create new profile.
-                /chat <name> - create new chat.
-                
-                If you lose your key - you will not be able to recover it.
-                If you lose chat key - you will need to get a new invite.
+This is your Security Manager.
+You can manage your chats here and do some other stuff.
+List of available commands:
+
+${LocalMessageProcessor.CMD_REFERENCE}
+
+If you lose your key - you will not be able to recover it.
+If you lose chat key - you will need to get a new invite.
             """.trimIndent()
 
             is Chat.Global -> """
-                This is the start of your conversation in ${(selectedChat as? Chat.Global)?.dto?.name ?: ""}.
-                List of available commands:
-                
-                /invite <username> - invite new members. 
-                /leave - leave chat. 
-                
-                You will not be able to kick someone out.
-                You will not be able to join back unless invited again.
+This is the start of your conversation in ${(selectedChat as? Chat.Global)?.name ?: ""}.
+List of available commands:
+
+${GlobalMessageProcessor.CMD_REFERENCE}
+
+You will not be able to kick someone out.
+You will not be able to join back unless invited again.
             """.trimIndent()
         }
 
@@ -110,6 +110,9 @@ private fun xMessagesList(model: ChatModel, allMessages: List<Message>) {
                 xMessage(it)
             }
         }
+
+    gap(24.px) // gap the better distinct a message from the input
+
     flex(
         attrs = {
             ref { el ->
@@ -222,9 +225,16 @@ private fun xMessage(message: Message) {
                     color(theme.secondaryTextColor)
 
                     property("overflow-wrap", "anywhere")
+
+                    whiteSpace("pre-wrap")
                 }
             ) {
-                Text(message.text)
+                val content =when {
+                    message.isSecret -> SECRET_PLACEHOLDER
+                    else -> message.text
+                }
+
+                Text(content)
             }
         }
     }

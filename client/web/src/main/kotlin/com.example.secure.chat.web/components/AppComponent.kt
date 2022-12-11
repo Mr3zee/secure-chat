@@ -3,7 +3,7 @@ package com.example.secure.chat.web.components
 import androidx.compose.runtime.Composable
 import com.example.secure.chat.web.compose.base.components.vertical
 import com.example.secure.chat.web.font.applyCustomFont
-import com.example.secure.chat.web.models.ChatModel
+import com.example.secure.chat.web.model.ChatModel
 import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.css.*
 

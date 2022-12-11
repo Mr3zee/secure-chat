@@ -1,4 +1,4 @@
-package com.example.secure.chat.web.models.chat
+package com.example.secure.chat.web.model.chat
 
 sealed interface Author {
     val name: String

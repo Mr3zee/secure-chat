@@ -2,8 +2,8 @@ package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
 import com.example.secure.chat.web.compose.base.types.Content
-import com.example.secure.chat.web.models.chat.Message
-import com.example.secure.chat.web.models.chat.MessageStatus
+import com.example.secure.chat.web.model.chat.Message
+import com.example.secure.chat.web.model.chat.MessageStatus
 import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.dom.Span
