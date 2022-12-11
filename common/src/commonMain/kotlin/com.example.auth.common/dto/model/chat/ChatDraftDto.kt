@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChatDraftDto(
     val name: RawBytesDto,
+    val publicKey: RawBytesDto,
 )

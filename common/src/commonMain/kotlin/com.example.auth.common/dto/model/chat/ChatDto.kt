@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 data class ChatDto(
     val id: Long,
     val name: RawBytesDto,
+    val publicKey: RawBytesDto,
 )

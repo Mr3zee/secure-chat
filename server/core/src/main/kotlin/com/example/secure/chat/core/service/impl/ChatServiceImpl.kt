@@ -17,7 +17,7 @@ import com.example.secure.chat.domain.repository.UserRepository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class ChatServiceImpl : ChatService, KoinComponent {
+object ChatServiceImpl : ChatService, KoinComponent {
 
     private val chatRepository by inject<ChatRepository>()
     private val inviteRepository by inject<InviteRepository>()
@@ -26,18 +26,19 @@ class ChatServiceImpl : ChatService, KoinComponent {
 
     override suspend fun getAllChats(userId: Long): List<UserChat> = tx {
         with(chatRepository) {
-            getUsersChats(userId)
+            getUserChats(userId)
         }
     }
 
     override suspend fun createChat(
         rq: UserChatCreateRq,
+        publicKey: ByteArrayWrapper,
         startMessage: ByteArrayWrapper,
     ): Pair<UserChat, Message> = tx {
-        val userChat: UserChat
-        with(chatRepository) {
-            val chatId = createChat()
-            userChat = createUserChat(chatId, rq)
+        val userChat: UserChat = with(chatRepository) {
+            val chatId = createChat(publicKey)
+            createUserChat(chatId, rq)
+            getUserChat(chatId)
         }
         userChat to with(messageRepository) {
             val messageId = createMessage(
@@ -69,6 +70,7 @@ class ChatServiceImpl : ChatService, KoinComponent {
         }
         with(chatRepository) {
             createUserChat(rq.chatId, UserChatCreateRq(rq.user, rq.chatName))
+            getUserChat(rq.chatId)
         }
     }
 }

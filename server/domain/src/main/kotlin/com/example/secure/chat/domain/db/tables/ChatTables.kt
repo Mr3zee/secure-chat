@@ -7,12 +7,14 @@ import org.jetbrains.exposed.sql.Table
 
 object ChatTables : TableHolder {
 
-    object Chats : LongIdTable("chats")
+    object Chats : LongIdTable("chats") {
+        val publicKey = binary("public_key")
+    }
 
     object Invites : Table("chat_invites") {
         val userId = long("user_id").references(Users.id)
         val chatId = long("chat_id").references(Chats.id)
-        val encodedKey = binary("encoded_key", 4096 - 2)
+        val encodedKey = binary("encoded_key")
         override val primaryKey = PrimaryKey(userId, chatId)
     }
 }

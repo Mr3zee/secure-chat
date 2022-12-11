@@ -32,6 +32,7 @@ object ChatControllerImpl : ChatController, KoinComponent {
     ): ChatCreateResponseDto {
         val (chat, message) = chatService.createChat(
             toModel(context.currentUser, rq.chat),
+            toModel(rq.chat.publicKey),
             toModel(rq.startMessageText),
         )
         return ChatCreateResponseDto(
