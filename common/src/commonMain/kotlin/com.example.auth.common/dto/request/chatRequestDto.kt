@@ -1,6 +1,7 @@
 package com.example.auth.common.dto.request
 
 import com.example.auth.common.dto.model.chat.ChatDraftDto
+import com.example.auth.common.dto.model.invite.InviteDraftDto
 import com.example.auth.common.dto.model.invite.InviteDto
 import com.example.auth.common.dto.model.message.MessageDraftDto
 import com.example.auth.common.dto.response.*
@@ -34,5 +35,5 @@ data class InviteAcceptRequestDto(
 data class InviteSendRequestDto(
     override val requestId: Long,
     val userLogin: String,
-    val invite: InviteDto,
+    val invite: InviteDraftDto,
 ) : ClientRequestDto<InviteSendRequestDto, InviteSendResponseDto>

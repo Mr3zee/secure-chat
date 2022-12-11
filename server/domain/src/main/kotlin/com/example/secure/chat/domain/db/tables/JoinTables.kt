@@ -9,7 +9,7 @@ object JoinTables : TableHolder {
 
     object UsersChatsJoinTable : Table("users_chats_join_table") {
         val userId = long("user_id").index().references(Users.id)
-        val chatId = long("chat_id").references(Chats.id)
+        val chatId = long("chat_id").index().references(Chats.id)
         val name = varchar("chat_name", 256 - 1)
         override val primaryKey: PrimaryKey = PrimaryKey(userId, chatId)
 

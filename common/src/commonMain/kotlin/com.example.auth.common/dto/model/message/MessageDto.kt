@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 data class MessageDto(
     val id: Long,
     val chatId: Long,
+    val userLogin: String,
     val encodedText: RawBytesDto,
     val timestamp: Instant,
 )
