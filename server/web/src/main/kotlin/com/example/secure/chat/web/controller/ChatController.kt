@@ -6,27 +6,27 @@ import com.example.secure.chat.web.routing.websocket.WebSocketSessionContext
 
 interface ChatController {
 
-    fun chatList(
+    suspend fun chatList(
         context: WebSocketSessionContext,
         rq: ChatListRequestDto,
     ): ChatListResponseDto
 
-    fun chatCreate(
+    suspend fun chatCreate(
         context: WebSocketSessionContext,
         rq: ChatCreateRequestDto,
     ): ChatCreateResponseDto
 
-    fun inviteList(
+    suspend fun inviteList(
         context: WebSocketSessionContext,
         rq: InviteListRequestDto,
     ): InviteListResponseDto
 
-    fun inviteSend(
+    suspend fun inviteSend(
         context: WebSocketSessionContext,
         rq: InviteSendRequestDto,
     ): InviteSendResponseDto
 
-    fun inviteAccept(
+    suspend fun inviteAccept(
         context: WebSocketSessionContext,
         rq: InviteAcceptRequestDto,
     ): InviteAcceptResponseDto

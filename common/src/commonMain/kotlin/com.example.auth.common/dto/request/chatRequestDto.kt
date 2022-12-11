@@ -1,9 +1,9 @@
 package com.example.auth.common.dto.request
 
+import com.example.auth.common.dto.model.byte.RawBytesDto
 import com.example.auth.common.dto.model.chat.ChatDraftDto
 import com.example.auth.common.dto.model.invite.InviteDraftDto
 import com.example.auth.common.dto.model.invite.InviteDto
-import com.example.auth.common.dto.model.message.MessageDraftDto
 import com.example.auth.common.dto.response.*
 import kotlinx.serialization.Serializable
 
@@ -16,7 +16,7 @@ data class ChatListRequestDto(
 data class ChatCreateRequestDto(
     override val requestId: Long,
     val chat: ChatDraftDto,
-    val startMessage: MessageDraftDto,
+    val startMessageText: RawBytesDto,
 ) : ClientRequestDto<ChatCreateRequestDto, ChatCreateResponseDto>
 
 @Serializable
@@ -28,7 +28,7 @@ data class InviteListRequestDto(
 data class InviteAcceptRequestDto(
     override val requestId: Long,
     val invite: InviteDto,
-    val chatName: String,
+    val chatName: RawBytesDto,
 ) : ClientRequestDto<InviteAcceptRequestDto, InviteAcceptResponseDto>
 
 @Serializable

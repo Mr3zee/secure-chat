@@ -5,7 +5,7 @@ import com.example.secure.chat.base.model.user.UserCreateRq
 
 interface UserService {
 
-    fun register(rq: UserCreateRq): User
+    suspend fun register(rq: UserCreateRq): User
 
-    fun load(login: String): User?
+    suspend fun load(login: String): User?
 }

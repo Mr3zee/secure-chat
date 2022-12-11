@@ -8,12 +8,12 @@ import com.example.secure.chat.web.routing.websocket.WebSocketSessionContext
 
 interface MessageController {
 
-    fun messageList(
+    suspend fun messageList(
         context: WebSocketSessionContext,
         rq: MessageListRequestDto,
     ): MessageListResponseDto
 
-    fun messageSend(
+    suspend fun messageSend(
         context: WebSocketSessionContext,
         rq: MessageSendRequestDto,
     ): MessageSendResponseDto
