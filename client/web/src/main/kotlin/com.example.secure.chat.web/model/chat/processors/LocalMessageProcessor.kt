@@ -10,6 +10,7 @@ import com.example.secure.chat.web.model.chat.MessageStatus
 import com.example.secure.chat.web.model.chat.processors.handler.ConversationHandler
 import com.example.secure.chat.web.model.creds.Credentials
 import com.example.secure.chat.web.model.creds.CredsDTO
+import kotlinx.js.jso
 
 class LocalMessageProcessor(
     private val model: ChatModel,
@@ -43,14 +44,14 @@ class LocalMessageProcessor(
                     return@command LocalState.START
                 }
 
-                val (pk, sk) = model.coder.genRsaKeyPair()
+                val keyPair = model.coder.genRsaKeyPair()
                 val login = it.args[0]
 
-                if (model.api.registerUser(login, pk, model.coder)) {
-                    model.credentials.privateKey.value = sk
+                if (model.api.registerUser(login, keyPair, model.coder)) {
+                    model.credentials.keyPair.value = keyPair
                     model.credentials.login.value = login
 
-                    model.prepareSecretToCopy(sk)
+                    model.prepareSecretToCopy(keyPair.privateKey)
 
                     sendMessage(
                         """
@@ -125,22 +126,30 @@ class LocalMessageProcessor(
 
                 storage.clear()
 
-                if (model.api.loginUser(username, privateCryptoKey, model.coder)) {
-                    model.credentials.privateKey.value = privateCryptoKey
-                    model.credentials.login.value = username
+                val res = model.api.loginUser(username, privateCryptoKey, model.coder)
 
-                    launch(Ui) {
-                        model.loadChats()
+                when {
+                    res.isSuccess -> {
+                        val keyPair = res.getOrNull() ?: error("unreachable")
+
+                        model.credentials.keyPair.value = keyPair
+                        model.credentials.login.value = username
+
+                        launch(Ui) {
+                            model.loadChats()
+                        }
+
+                        sendMessage("Login successful. Welcome, $username!")
+
+                        LocalState.LOGGED_IN
                     }
 
-                    sendMessage("Login successful. Welcome, $username!")
+                    else -> {
+                        sendMessage("Failed to log in. Please, check your credentials and try again.")
+                        sendMessage("Please, enter your username.")
 
-                    LocalState.LOGGED_IN
-                } else {
-                    sendMessage("Failed to log in. Please, check your credentials and try again.")
-                    sendMessage("Please, enter your username.")
-
-                    LocalState.AWAIT_USERNAME
+                        LocalState.AWAIT_USERNAME
+                    }
                 }
             }
         }
@@ -150,23 +159,31 @@ class LocalMessageProcessor(
 
             text {
                 withFile(it.text, errorState = LocalState.START) { creds ->
-                    if (model.api.loginUser(creds.login, creds.privateKey, model.coder)) {
-                        sendMessage("Login successful. Welcome, ${creds.login}!")
+                    val res = model.api.loginUser(creds.login, creds.privateKey, model.coder)
 
-                        model.credentials.login.value = creds.login
-                        model.credentials.privateKey.value = creds.privateKey
+                    when {
+                        res.isSuccess -> {
+                            val keyPair = res.getOrNull() ?: error("unreachable")
 
-                        launch(Ui) {
-                            model.loadChats()
+                            sendMessage("Login successful. Welcome, ${creds.login}!")
 
-                            loginIntoChats(creds)
+                            model.credentials.login.value = creds.login
+                            model.credentials.keyPair.value = keyPair
+
+                            launch(Ui) {
+                                model.loadChats()
+
+                                loginIntoChats(creds)
+                            }
+
+                            LocalState.LOGGED_IN
                         }
 
-                        LocalState.LOGGED_IN
-                    } else {
-                        sendMessage("Invalid user credentials. Aborting.")
+                        else -> {
+                            sendMessage("Invalid user credentials. Aborting.")
 
-                        LocalState.START
+                            LocalState.START
+                        }
                     }
                 }
             }
@@ -195,13 +212,13 @@ class LocalMessageProcessor(
                     initialStatus = MessageStatus.Verified
                 )
 
-                val (chat, sk) = model.api.createChat(chatName, initialMessage, model.coder)
+                val (chat, keyPair) = model.api.createChat(chatName, initialMessage, model.coder)
 
-                model.prepareSecretToCopy(sk)
+                model.prepareSecretToCopy(keyPair.privateKey)
 
                 sendMessage("Created new chat '$chatName'. Please, use the button bellow to copy the chat's secret.")
 
-                model.addChat(chat, sk)
+                model.addChat(chat, keyPair)
 
                 LocalState.LOGGED_IN
             }
@@ -275,8 +292,23 @@ class LocalMessageProcessor(
                     return@text LocalState.LOGGED_IN
                 }
 
+                val publicKey = model.credentials.chatsLonePublicKeys[chatId] ?: run {
+                    console.warn("Expected public key to be present.")
+
+                    sendMessage("Unexpected error happened, performing update...")
+
+                    model.loadChats()
+
+                    sendMessage("Updated, please try again with /${LocalCommands.chat_login} command.")
+
+                    return@text LocalState.LOGGED_IN
+                }
+
                 if (tryLoginIntoChat(chat, privateKey)) {
-                    model.credentials.chatKeys.value += chatId to privateKey
+                    model.credentials.chatKeys += chatId to jso {
+                        this.privateKey = privateKey
+                        this.publicKey = publicKey
+                    }
                 }
 
                 LocalState.LOGGED_IN
@@ -300,7 +332,7 @@ class LocalMessageProcessor(
 
     private suspend fun MessageContext.loginIntoChats(credsDTO: CredsDTO) {
         val chats = model.chats.value
-        val unused = mutableListOf<Long>()
+        val unused = mutableSetOf<Long>()
 
         credsDTO.chatKeys.entries.forEach { (k, v) ->
             chats[k]?.let { chat ->
@@ -310,7 +342,7 @@ class LocalMessageProcessor(
             }
         }
 
-        model.credentials.chatKeys.value -= unused
+        model.credentials.chatKeys -= unused
     }
 
     private suspend fun MessageContext.tryLoginIntoChat(

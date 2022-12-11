@@ -57,9 +57,9 @@ external interface RsaDecryptParams {
 }
 
 external interface CryptoKeyPair {
-    val publicKey: PublicCryptoKey
+    var publicKey: PublicCryptoKey
 
-    val privateKey: PrivateCryptoKey
+    var privateKey: PrivateCryptoKey
 }
 
 operator fun CryptoKeyPair.component1(): PublicCryptoKey = publicKey

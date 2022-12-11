@@ -23,9 +23,11 @@ fun xEllipsis(content: String, maxSymbols: Int = 40, styleBuilder: StyleBuilder 
             }
         }
     ) {
-        Text(content.substring(0..maxSymbols - 3))
+        val text = if (content.length > maxSymbols) content.dropLast(3) else content
 
-        if (content.length > maxSymbols - 3) {
+        Text(text)
+
+        if (content.length > maxSymbols) {
             Span {
                 Text("...")
             }

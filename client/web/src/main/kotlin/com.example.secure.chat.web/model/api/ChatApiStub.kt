@@ -1,5 +1,6 @@
 package com.example.secure.chat.web.model.api
 
+import com.example.secure.chat.web.crypto.CryptoKeyPair
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
 import com.example.secure.chat.web.crypto.PublicCryptoKey
 import com.example.secure.chat.web.model.chat.Author
@@ -11,17 +12,21 @@ import com.example.secure.chat.web.utils.now
 import kotlin.random.Random
 
 object ChatApiStub : ChatApi {
-    override suspend fun registerUser(username: String, publicCryptoKey: PublicCryptoKey, coder: Coder): Boolean {
+    override suspend fun registerUser(username: String, keyPair: CryptoKeyPair, coder: Coder): Boolean {
         return when (username) {
             "admin", "user" -> true
             else -> false
         }
     }
 
-    override suspend fun loginUser(username: String, privateCryptoKey: PrivateCryptoKey, coder: Coder): Boolean {
+    override suspend fun loginUser(
+        username: String,
+        privateCryptoKey: PrivateCryptoKey,
+        coder: Coder,
+    ): Result<CryptoKeyPair> {
         return when (username) {
-            "admin", "user" -> true
-            else -> false
+            "admin", "user" -> Result.success(coder.genRsaKeyPair())
+            else -> Result.failure(IllegalArgumentException())
         }
     }
 
@@ -35,11 +40,11 @@ object ChatApiStub : ChatApi {
         chatName: String,
         initialMessage: Message,
         coder: Coder,
-    ): Pair<Chat.Global, PrivateCryptoKey> {
+    ): Pair<Chat.Global, CryptoKeyPair> {
         return Chat.Global(random.nextLong(), chatName).apply {
             lastMessage.value = initialMessage
             isLocked.value = false
-        } to coder.genRsaKeyPair().privateKey
+        } to coder.genRsaKeyPair()
     }
 
     override suspend fun getChatTimeline(chat: Chat.Global): List<Message> {
@@ -98,7 +103,9 @@ object ChatApiStub : ChatApi {
         )
     }
 
-    override suspend fun getAllChats(): List<Chat.Global> {
+    override suspend fun getAllChats(coder: Coder): List<Pair<Chat.Global, PublicCryptoKey>> {
+        val pk = coder.genRsaKeyPair().publicKey
+
         return listOf(
             Chat.Global(0, "Chat 1"),
             Chat.Global(1, "Chat 2"),
@@ -118,7 +125,7 @@ object ChatApiStub : ChatApi {
                     initialStatus = MessageStatus.Unread
                 )
             },
-        )
+        ).map { it to pk }
     }
 }
 

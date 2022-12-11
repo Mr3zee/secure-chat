@@ -164,7 +164,7 @@ private fun xChatDescription(chat: Chat, locked: Boolean, lastMessage: Message?)
                     is Chat.Global -> {
                         val name = (if (locked) "#${chat.id} " else "") + chat.name
 
-                        xEllipsis(name, maxSymbols = if (locked) 40 - chat.id.toString().length else 16) {
+                        xEllipsis(name, maxSymbols = if (locked) 50 else 16) {
                             applyCustomFont(font = JetBrainsMono.Bold)
                         }
                     }

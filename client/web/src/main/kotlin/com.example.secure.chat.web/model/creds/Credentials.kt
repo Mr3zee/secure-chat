@@ -1,7 +1,9 @@
 package com.example.secure.chat.web.model.creds
 
 import com.example.secure.chat.web.compose.mutableProperty
+import com.example.secure.chat.web.crypto.CryptoKeyPair
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
+import com.example.secure.chat.web.crypto.PublicCryptoKey
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.utils.downloadFile
 import kotlinx.serialization.Serializable
@@ -12,13 +14,15 @@ import kotlinx.serialization.json.Json
 
 class Credentials {
     val login = mutableProperty<String?>(null)
-    val privateKey = mutableProperty<PrivateCryptoKey?>(null)
-    val chatKeys = mutableProperty(mapOf<Long, PrivateCryptoKey>())
+    val keyPair = mutableProperty<CryptoKeyPair?>(null)
+    val chatKeys = mutableMapOf<Long, CryptoKeyPair>()
+    val chatsLonePublicKeys = mutableMapOf<Long, PublicCryptoKey>()
 
     fun clear() {
-        privateKey.value = null
+        keyPair.value = null
         login.value = null
-        chatKeys.value = emptyMap()
+        chatKeys.clear()
+        chatsLonePublicKeys.clear()
     }
 
     suspend fun dumpFile(coder: Coder) {
@@ -30,10 +34,10 @@ class Credentials {
             CredsJSON(
                 login = login.value ?: error("Cannot export null creds: login"),
                 privateKey = coder.exportPrivateRSAKeyPEM(
-                    key = privateKey.value ?: error("Cannot export null creds: login")
+                    key = keyPair.value?.privateKey ?: error("Cannot export null creds: login")
                 ),
-                chatKeys = chatKeys.value.entries.associate { (k, v) ->
-                    chatToId(k) to coder.exportPrivateRSAKeyPEM(v)
+                chatKeys = chatKeys.entries.associate { (k, v) ->
+                    chatToId(k) to coder.exportPrivateRSAKeyPEM(v.privateKey)
                 }
             )
         )

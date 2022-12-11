@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.launch
 import com.example.secure.chat.web.compose.mutableProperty
+import com.example.secure.chat.web.crypto.CryptoKeyPair
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
 import com.example.secure.chat.web.model.api.ChatApi
 import com.example.secure.chat.web.model.chat.*
@@ -127,7 +128,10 @@ class ChatModel(
     }
 
     suspend fun loadChats() {
-        chats.value = api.getAllChats().associateBy { it.id }
+        api.getAllChats(coder).let { list ->
+            chats.value = list.associateBy(keySelector = { it.first.id }) { it.first }
+            credentials.chatsLonePublicKeys.putAll(list.associateBy(keySelector = { it.first.id }) { it.second })
+        }
     }
 
     fun lockInput() {
@@ -142,9 +146,9 @@ class ChatModel(
         inputType.value = ChatInputType.Secret
     }
 
-    fun addChat(chat: Chat.Global, privateCryptoKey: PrivateCryptoKey) {
+    fun addChat(chat: Chat.Global, keyPair: CryptoKeyPair) {
         chats.value += chat.id to chat
-        credentials.chatKeys.value += chat.id to privateCryptoKey
+        credentials.chatKeys += chat.id to keyPair
     }
 
     fun cancelFileUpload() {
