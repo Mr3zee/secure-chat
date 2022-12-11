@@ -16,7 +16,7 @@ object MessageControllerImpl : MessageController, KoinComponent {
 
     private val messageService by inject<MessageService>()
 
-    override fun messageList(
+    override suspend fun messageList(
         context: WebSocketSessionContext,
         rq: MessageListRequestDto,
     ): MessageListResponseDto {
@@ -32,7 +32,7 @@ object MessageControllerImpl : MessageController, KoinComponent {
         )
     }
 
-    override fun messageSend(
+    override suspend fun messageSend(
         context: WebSocketSessionContext,
         rq: MessageSendRequestDto,
     ): MessageSendResponseDto {

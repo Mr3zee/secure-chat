@@ -14,7 +14,7 @@ object ChatControllerImpl : ChatController, KoinComponent {
 
     private val chatService by inject<ChatService>()
 
-    override fun chatList(
+    override suspend fun chatList(
         context: WebSocketSessionContext,
         rq: ChatListRequestDto,
     ): ChatListResponseDto {
@@ -26,13 +26,13 @@ object ChatControllerImpl : ChatController, KoinComponent {
         )
     }
 
-    override fun chatCreate(
+    override suspend fun chatCreate(
         context: WebSocketSessionContext,
         rq: ChatCreateRequestDto,
     ): ChatCreateResponseDto {
         val (chat, message) = chatService.createChat(
             toModel(context.currentUser, rq.chat),
-            toModel(context.currentUser, rq.startMessage),
+            toModel(rq.startMessageText),
         )
         return ChatCreateResponseDto(
             rq.requestId,
@@ -41,7 +41,7 @@ object ChatControllerImpl : ChatController, KoinComponent {
         )
     }
 
-    override fun inviteList(
+    override suspend fun inviteList(
         context: WebSocketSessionContext,
         rq: InviteListRequestDto,
     ): InviteListResponseDto {
@@ -53,7 +53,7 @@ object ChatControllerImpl : ChatController, KoinComponent {
         )
     }
 
-    override fun inviteSend(
+    override suspend fun inviteSend(
         context: WebSocketSessionContext,
         rq: InviteSendRequestDto,
     ): InviteSendResponseDto {
@@ -62,14 +62,14 @@ object ChatControllerImpl : ChatController, KoinComponent {
         ).let { InviteSendResponseDto(rq.requestId) }
     }
 
-    override fun inviteAccept(
+    override suspend fun inviteAccept(
         context: WebSocketSessionContext,
         rq: InviteAcceptRequestDto,
     ): InviteAcceptResponseDto {
         return InviteAcceptResponseDto(
             rq.requestId,
             chatService.acceptInvite(
-                toModel(context.currentUser, rq.invite),
+                toModel(context.currentUser, rq.invite, rq.chatName),
             ).let(::toDto),
         )
     }

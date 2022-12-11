@@ -13,12 +13,14 @@ data class LoginResponseDto(
 ) : AuthenticationResponseDto<LoginRequestDto, LoginResponseDto>
 
 @Serializable
-object RegisterResponseDto :
-    AuthenticationResponseDto<RegisterRequestDto, RegisterResponseDto>
+data class RegisterResponseDto(
+    val publicKey: RawBytesDto,
+) : AuthenticationResponseDto<RegisterRequestDto, RegisterResponseDto>
 
 @Serializable
-object CheckDecodedMessageResponseDto :
-    AuthenticationResponseDto<CheckDecodedMessageRequestDto, CheckDecodedMessageResponseDto>
+data class CheckDecodedMessageResponseDto(
+    val publicKey: RawBytesDto,
+) : AuthenticationResponseDto<CheckDecodedMessageRequestDto, CheckDecodedMessageResponseDto>
 
 @Serializable
 data class LogoutResponseDto(

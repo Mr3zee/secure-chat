@@ -2,17 +2,21 @@ package com.example.secure.chat.web.routing.websocket
 
 import com.example.auth.common.dto.model.byte.RawBytesDto
 import com.example.auth.common.dto.request.*
+import com.example.auth.common.dto.response.CheckDecodedMessageResponseDto
 import com.example.auth.common.dto.response.LoginResponseDto
+import com.example.auth.common.dto.response.RegisterResponseDto
 import com.example.secure.chat.base.model.user.User
 import com.example.secure.chat.base.model.user.UserCreateRq
 import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
 import com.example.secure.chat.web.controller.UserController
+import com.example.secure.chat.web.controller.impl.converter.toDto
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.isActive
 import org.koin.ktor.ext.inject
 import java.util.*
+import kotlin.NoSuchElementException
 
 fun Routing.websocketRouting() {
     webSocket("/websocket") {
@@ -29,15 +33,18 @@ suspend fun Routing.authenticate(
 
         is LoginRequestDto -> {
             val user = userController.getUser(action.userLogin)
+                ?: throw NoSuchElementException("Not found user with login = ${action.userLogin}")
             val word = UUID.randomUUID().toString().encodeToByteArray()
-            val response = LoginResponseDto(
+            val loginResponse = LoginResponseDto(
                 RawBytesDto(encode(user, word))
             )
-            session.sendSerialized(response)
+            session.sendSerialized(loginResponse)
             val request = session.receiveDeserialized<CheckDecodedMessageRequestDto>()
             if (!word.contentEquals(request.decodedMessage.content)) {
                 throw IllegalArgumentException("Original end decoded messages are not matching")
             }
+            val checkResponse = CheckDecodedMessageResponseDto(toDto(user.publicKey))
+            session.sendSerialized(checkResponse)
             user
         }
 
@@ -46,7 +53,10 @@ suspend fun Routing.authenticate(
                 action.userLogin,
                 ByteArrayWrapper(action.publicKey.content),
             )
-            userController.register(createRq)
+            val user = userController.register(createRq)
+            val response = RegisterResponseDto(toDto(user.publicKey))
+            session.sendSerialized(response)
+            user
         }
 
         else -> throw IllegalArgumentException("Unexpected action ${action::class.simpleName}")

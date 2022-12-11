@@ -28,7 +28,7 @@ abstract class DbConnection : KoinComponent {
     suspend fun init(isDebug: Boolean = false) {
         tx(db) {
             if (isDebug) {
-                addLogger(Slf4jSqlDebugLogger)
+                transaction.addLogger(Slf4jSqlDebugLogger)
             }
 
             SchemaUtils.create(*tables.toTypedArray(), inBatch = true)
