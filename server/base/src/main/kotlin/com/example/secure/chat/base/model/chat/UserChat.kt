@@ -6,4 +6,5 @@ data class UserChat(
     val userId: Long,
     val chatId: Long,
     val name: ByteArrayWrapper,
+    val publicKey: ByteArrayWrapper,
 )

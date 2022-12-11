@@ -64,7 +64,8 @@ suspend fun Routing.authenticate(
 }
 
 fun encode(user: User, message: ByteArray): ByteArray {
-    TODO()
+    // todo
+    return message
 }
 
 suspend fun handleSession(context: WebSocketSessionContext) {

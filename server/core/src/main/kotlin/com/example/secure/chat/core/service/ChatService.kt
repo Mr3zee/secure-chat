@@ -12,7 +12,11 @@ interface ChatService {
 
     suspend fun getAllChats(userId: Long): List<UserChat>
 
-    suspend fun createChat(rq: UserChatCreateRq, startMessage: ByteArrayWrapper): Pair<UserChat, Message>
+    suspend fun createChat(
+        rq: UserChatCreateRq,
+        publicKey: ByteArrayWrapper,
+        startMessage: ByteArrayWrapper,
+    ): Pair<UserChat, Message>
 
     suspend fun getAllInvites(userId: Long): List<Invite>
 

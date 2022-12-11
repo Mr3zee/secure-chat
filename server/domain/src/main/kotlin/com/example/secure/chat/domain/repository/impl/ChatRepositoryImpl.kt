@@ -13,24 +13,42 @@ import org.jetbrains.exposed.sql.select
 
 object ChatRepositoryImpl : ChatRepository {
 
-    override fun Transactional.createChat(): Long =
-        Chats.insertAndGetId { }.value
+    override fun Transactional.createChat(rqPublicKey: ByteArrayWrapper): Long =
+        Chats.insertAndGetId {
+            it[publicKey] = rqPublicKey.byteArray
+        }.value
 
-    override fun Transactional.createUserChat(rqChatId: Long, rq: UserChatCreateRq): UserChat =
+    override fun Transactional.createUserChat(rqChatId: Long, rq: UserChatCreateRq) {
         UsersChatsJoinTable.insert {
             it[userId] = rq.user.id
             it[chatId] = rqChatId
             it[name] = rq.name.byteArray
-        }.let { UserChat(rq.user.id, rqChatId, rq.name) }
+        }
+    }
 
-    override fun Transactional.getUsersChats(userId: Long): List<UserChat> =
-        UsersChatsJoinTable.select {
+    override fun Transactional.getUserChat(chatId: Long): UserChat {
+        UsersChatsJoinTable.innerJoin(Chats).select {
+            UsersChatsJoinTable.chatId.eq(chatId)
+        }.single().let { row ->
+            UserChat(
+                row[UsersChatsJoinTable.userId],
+                row[UsersChatsJoinTable.chatId],
+                ByteArrayWrapper(row[UsersChatsJoinTable.name]),
+                ByteArrayWrapper(row[Chats.publicKey]),
+            )
+        }
+        TODO("Not yet implemented")
+    }
+
+    override fun Transactional.getUserChats(userId: Long): List<UserChat> =
+        UsersChatsJoinTable.innerJoin(Chats).select {
             UsersChatsJoinTable.userId.eq(userId)
         }.map { row ->
             UserChat(
                 row[UsersChatsJoinTable.userId],
                 row[UsersChatsJoinTable.chatId],
                 ByteArrayWrapper(row[UsersChatsJoinTable.name]),
+                ByteArrayWrapper(row[Chats.publicKey]),
             )
         }
 }

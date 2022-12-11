@@ -8,7 +8,7 @@ import com.example.secure.chat.domain.repository.MessageRepository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class MessageServiceImpl : MessageService, KoinComponent {
+object MessageServiceImpl : MessageService, KoinComponent {
 
     private val messageRepository by inject<MessageRepository>()
 

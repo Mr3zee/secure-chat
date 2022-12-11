@@ -15,6 +15,7 @@ import com.example.secure.chat.base.model.user.User
 fun toDto(model: UserChat) = ChatDto(
     model.chatId,
     toDto(model.name),
+    toDto(model.publicKey),
 )
 
 fun toDto(model: Invite) = InviteDto(
