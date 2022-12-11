@@ -8,7 +8,7 @@
           <externalSystemTestTask>browserTest|:client:web|js</externalSystemTestTask>
         </externalSystemTestTasks>
         <compilerSettings>
-          <option name="additionalArguments" value="-Xir-only -Xir-per-module-output-name=secure-chat-web-test -Xir-produce-klib-dir -Xir-module-name=secure-chat.client:web_test" />
+          <option name="additionalArguments" value="-Xir-module-name=secure-chat.client:web_test -Xir-only -Xir-per-module-output-name=secure-chat-web-test -Xir-produce-klib-dir" />
         </compilerSettings>
         <compilerArguments>
           <flagArguments>
