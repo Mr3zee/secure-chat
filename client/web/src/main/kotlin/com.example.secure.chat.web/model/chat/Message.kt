@@ -11,6 +11,7 @@ data class Message(
     val text: String,
     val id: Long = Random(42).nextLong(),
     val timestamp: LocalDateTime = now(),
+    val isSecret: Boolean = false,
     private val initialStatus: MessageStatus = MessageStatus.Local,
 ) {
     val status: MutableProperty<MessageStatus> = mutableProperty(initialStatus)

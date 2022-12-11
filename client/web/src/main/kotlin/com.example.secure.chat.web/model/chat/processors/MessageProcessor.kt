@@ -1,5 +1,6 @@
 package com.example.secure.chat.web.model.chat.processors
 
+import com.example.secure.chat.web.model.chat.Author
 import com.example.secure.chat.web.model.chat.Message
 
 interface MessageProcessor {
@@ -9,5 +10,6 @@ interface MessageProcessor {
 }
 
 data class MessageContext(
+    val author: Author,
     val dispatch: (Message) -> Unit,
 )

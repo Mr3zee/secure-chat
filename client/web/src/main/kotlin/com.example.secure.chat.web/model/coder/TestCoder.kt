@@ -1,4 +1,4 @@
-package com.example.secure.chat.web.model.creds
+package com.example.secure.chat.web.model.coder
 
 import com.example.secure.chat.web.crypto.CryptoKeyPair
 import com.example.secure.chat.web.crypto.PrivateCryptoKey

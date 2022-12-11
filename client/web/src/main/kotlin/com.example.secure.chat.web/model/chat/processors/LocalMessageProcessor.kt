@@ -24,9 +24,11 @@ class LocalMessageProcessor(
         model.lockInput()
 
         handle(message) ?: run {
-            sendMessage("Unknown command, please use one of the following:")
+            sendMessage("Unknown command. If you are not logged in, please log in or register first. List of available commands:")
             sendMessage(CMD_REFERENCE)
         }
+
+        message.status.value = MessageStatus.Verified
 
         model.unlockInput()
     }
@@ -36,7 +38,31 @@ class LocalMessageProcessor(
     private val localConversation = ConversationHandler(LocalState.START, securityManagerBot) {
         state(LocalState.START) {
             command(LocalCommands.register.name) {
-                register(it.args)
+                it.args.singleOrNull() ?: run {
+                    sendMessage("Please, provide exactly one argument - desired username.")
+                    return@command LocalState.START
+                }
+
+                val (pk, sk) = model.coder.genRsaKeyPair()
+                val login = it.args[0]
+
+                if (model.api.registerUser(login, pk, model.coder)) {
+                    model.credentials.privateKey.value = sk
+                    model.credentials.login.value = login
+
+                    model.displaySecret(Credentials.PK_ID, model.coder.exportPrivateRSAKeyPEM(sk))
+
+                    sendMessage(
+                        """
+                            User profile created. Please, use the button below to copy your secret to the clipboard or save as a file.
+                        """.trimIndent()
+                    )
+
+                    LocalState.LOGGED_IN
+                } else {
+                    sendMessage("Username is already taken, please choose another.")
+                    LocalState.START
+                }
             }
 
             command(LocalCommands.login.name) {
@@ -71,7 +97,7 @@ class LocalMessageProcessor(
 
                     LocalState.AWAIT_PK
                 } else {
-                    sendMessage("Invalid username, please use with regex as a reference: ${usernameRegex.pattern} .")
+                    sendMessage("Invalid username, please use with regex as a reference: ${usernameRegex.pattern}")
                     LocalState.AWAIT_USERNAME
                 }
             }
@@ -89,8 +115,6 @@ class LocalMessageProcessor(
                     return@text LocalState.AWAIT_USERNAME
                 }
 
-                storage.clear()
-
                 val privateCryptoKey = model.coder.safeImportRSAPrivateKeyPEM(it.text) ?: run {
                     sendMessage("Invalid private key. Please, try again.")
 
@@ -98,6 +122,8 @@ class LocalMessageProcessor(
 
                     return@text LocalState.AWAIT_PK
                 }
+
+                storage.clear()
 
                 if (model.api.loginUser(username, privateCryptoKey, model.coder)) {
                     model.credentials.privateKey.value = privateCryptoKey
@@ -149,15 +175,36 @@ class LocalMessageProcessor(
                 sendMessage("Successfully logged out. Bye, ${model.credentials.login.value}!")
 
                 model.credentials.clear()
+                model.logout()
 
                 LocalState.START
             }
 
-            command(LocalCommands.chat_login.name) {
-                sendMessage("Please, enter chat's private key.")
+            command(LocalCommands.new_chat.name) {
+                val chatName = it.args.singleOrNull() ?: run {
+                    sendMessage("Please, provide exactly one argument - chat name.")
 
+                    return@command LocalState.LOGGED_IN
+                }
+
+                val initialMessage = Message(
+                    author = author,
+                    text = "${author.name} created this chat",
+                    initialStatus = MessageStatus.Verified
+                )
+
+                val (chat, sk) = model.api.createChat(chatName, initialMessage, model.coder)
+
+                sendMessage("Created new chat '$chatName'. Please, use the button bellow to copy the chat's secret.")
+
+                model.addChat(chat, sk)
+
+                LocalState.LOGGED_IN
+            }
+
+            command(LocalCommands.chat_login.name) {
                 val chatId = it.args.singleOrNull()?.toLongOrNull() ?: run {
-                    sendMessage("Please, provide only one integer argument - chat id.")
+                    sendMessage("Please, provide exactly one integer argument - chat id.")
 
                     return@command LocalState.LOGGED_IN
                 }
@@ -167,6 +214,8 @@ class LocalMessageProcessor(
 
                     return@command LocalState.LOGGED_IN
                 }
+
+                sendMessage("Please, enter chat's private key.")
 
                 storage[CHAT_NAME_STORAGE_KEY] = chatId.toString()
 
@@ -238,34 +287,6 @@ class LocalMessageProcessor(
                     LocalState.LOGGED_IN
                 }
             }
-        }
-    }
-
-    private suspend fun MessageContext.register(args: List<String>): LocalState {
-        args.singleOrNull() ?: run {
-            sendMessage("Please, provide only one argument - desired username.")
-            return LocalState.START
-        }
-
-        val (pk, sk) = model.coder.genRsaKeyPair()
-        val login = args[0]
-
-        return if (model.api.registerUser(login, pk, model.coder)) {
-            model.credentials.privateKey.value = sk
-            model.credentials.login.value = login
-
-            model.displaySecret(Credentials.PK_ID, model.coder.exportPrivateRSAKeyPEM(sk))
-
-            sendMessage(
-                """
-                    User profile created. Please, use the button below to copy your secret to clipboard or save as file.
-                """.trimIndent()
-            )
-
-            LocalState.LOGGED_IN
-        } else {
-            sendMessage("Username is already taken, please choose another.")
-            LocalState.START
         }
     }
 

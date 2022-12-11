@@ -1,4 +1,4 @@
-package com.example.secure.chat.web.model.creds
+package com.example.secure.chat.web.model.coder
 
 import com.example.secure.chat.web.crypto.*
 import org.khronos.webgl.ArrayBuffer
@@ -22,7 +22,7 @@ object DefaultCoder : Coder {
 
     override suspend fun safeImportRSAPrivateKeyPEM(string: String): PrivateCryptoKey? {
         return try {
-            crypto.importRSAPrivateKeyPEM(string)
+            importRSAPrivateKeyPEM(string)
         } catch (e: dynamic) {
             console.warn("Failed to import key", e)
             null

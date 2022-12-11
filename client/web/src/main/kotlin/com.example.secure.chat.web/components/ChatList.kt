@@ -2,6 +2,7 @@ package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.font.FontSize
@@ -9,6 +10,7 @@ import com.example.secure.chat.web.font.applyCustomFont
 import com.example.secure.chat.web.font.fonts.JetBrainsMono
 import com.example.secure.chat.web.model.ChatModel
 import com.example.secure.chat.web.model.chat.Chat
+import com.example.secure.chat.web.model.chat.Message
 import com.example.secure.chat.web.model.chat.MessageStatus
 import com.example.secure.chat.web.model.chat.processors.securityManagerBot
 import com.example.secure.chat.web.theme.DarkTheme
@@ -70,6 +72,10 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
 
     val selectedChatState by remember { model.selectedChat.asState() }
 
+    val locked by remember { chat.isLocked.asState() }
+
+    val lastMessage by remember { chat.lastMessage.asState() }
+
     vertical(
         attrs = {
             style {
@@ -77,7 +83,7 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                     backgroundColor(theme.secondaryColor)
                 }
 
-                if (chat.isLocked.value) {
+                if (locked) {
                     color(theme.secondaryColor)
                     backgroundColor(theme.secondaryColor30)
                 }
@@ -86,8 +92,10 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
             classes(ChatItemStylesheet.item)
 
             onClick {
-                if (!chat.isLocked.value) {
-                    model.selectedChat.value = chat
+                if (!locked) {
+                    if (selectedChatState != chat) {
+                        model.selectedChat.value = chat
+                    }
                 }
             }
         },
@@ -106,17 +114,22 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                 is Chat.Local -> securityManagerBot.name
             }
 
-            // good layout
-            xLogo(40.px, name, withOutline = chat.lastMessage.value?.status?.value == MessageStatus.Unread)
+            val lastMessageStatus by remember {
+                lastMessage?.status?.asState()
+                    ?: mutableStateOf(MessageStatus.Verified) // no message - no difference
+            }
 
-            xChatDescription(chat)
+            // good layout
+            xLogo(40.px, name, withOutline = !locked && lastMessageStatus == MessageStatus.Unread)
+
+            xChatDescription(chat, locked, lastMessage)
         }
     }
 }
 
 
 @Composable
-private fun xChatDescription(chat: Chat) {
+private fun xChatDescription(chat: Chat, locked: Boolean, lastMessage: Message?) {
     horizontal(
         styleBuilder = {
             flex(1, 0, auto.unsafeCast<CSSNumeric>())
@@ -145,21 +158,21 @@ private fun xChatDescription(chat: Chat) {
                                 }
                             }
                         ) {
-                            Text("Local Security Manager")
+                            Text(securityManagerBot.name)
                         }
                     }
 
                     is Chat.Global -> {
-                        val name = (if (chat.isLocked.value) "(Locked) " else "") + chat.name
+                        val name = (if (locked) "#${chat.id} " else "") + chat.name
 
-                        xEllipsis(name) {
+                        xEllipsis(name, maxSymbols = if (locked) 40 - chat.id.toString().length else 16) {
                             applyCustomFont(font = JetBrainsMono.Bold)
                         }
                     }
                 }
 
-                if (!chat.isLocked.value) {
-                    chat.lastMessage.value?.let { message ->
+                if (!locked) {
+                    lastMessage?.let { message ->
                         horizontal(
                             styleBuilder = {
                                 applyCustomFont(size = FontSize.Small)
@@ -184,14 +197,16 @@ private fun xChatDescription(chat: Chat) {
 
             val theme = XTheme.current
 
-            chat.lastMessage.value?.let { lastMessage ->
-                xEllipsis(lastMessage.author.name) {
-                    applyCustomFont(size = FontSize.Small)
-                }
+            if (!locked) {
+                lastMessage?.let { lastMessage ->
+                    xEllipsis(lastMessage.author.name) {
+                        applyCustomFont(size = FontSize.Small)
+                    }
 
-                xEllipsis(lastMessage.text) {
-                    color(theme.secondaryTextColor)
-                    applyCustomFont(size = FontSize.Small)
+                    xEllipsis(lastMessage.text) {
+                        color(theme.secondaryTextColor)
+                        applyCustomFont(size = FontSize.Small)
+                    }
                 }
             }
         }

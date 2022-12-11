@@ -4,13 +4,14 @@ import com.arkivanov.decompose.ComponentContext
 import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.launch
 import com.example.secure.chat.web.compose.mutableProperty
+import com.example.secure.chat.web.crypto.PrivateCryptoKey
 import com.example.secure.chat.web.model.api.ChatApi
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.chat.processors.GlobalMessageProcessor
 import com.example.secure.chat.web.model.chat.processors.LocalMessageProcessor
 import com.example.secure.chat.web.model.chat.processors.MessageContext
 import com.example.secure.chat.web.model.chat.processors.MessageProcessor
-import com.example.secure.chat.web.model.creds.Coder
+import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.Credentials
 import kotlinx.coroutines.Job
 
@@ -40,7 +41,6 @@ class ChatModel(
     val newMessageEvent = mutableProperty(Unit)
 
     val localMessageProcessor = LocalMessageProcessor(this)
-
     private val globalMessageProcessor = GlobalMessageProcessor(this)
 
     private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
@@ -93,6 +93,12 @@ class ChatModel(
         }
     }
 
+    fun logout() {
+        selectedChat.value = Chat.Local
+        inputByChat.clear()
+        chats.value = emptyMap()
+    }
+
     fun displaySecret(name: String, secret: String) {
         // todo
     }
@@ -117,6 +123,11 @@ class ChatModel(
         inputType.value = TextInputType.Secret
     }
 
+    fun addChat(chat: Chat.Global, privateCryptoKey: PrivateCryptoKey) {
+        chats.value += chat.id to chat
+        credentials.chatKeys.value += chat.id to privateCryptoKey
+    }
+
     fun submitMessage() {
         val text = currentInput.value
         if (text.isBlank()) return
@@ -128,21 +139,18 @@ class ChatModel(
     }
 
     private fun acceptUserInput(text: String, inputType: TextInputType) {
-        val message = textToMessage(text, Author.Me)
+        val message = textToMessage(text, Author.Me, inputType == TextInputType.Secret)
 
         launch(Ui) {
-            dispatchMessage(selectedChat.value, message, inputType)
+            dispatchMessage(selectedChat.value, message)
         }
     }
 
-    private suspend fun dispatchMessage(chat: Chat, message: Message, inputType: TextInputType) {
-        when (inputType) {
-            TextInputType.Message -> newMessage(chat, message)
-            TextInputType.Secret -> newMessage(chat, message.copy(text = "*".repeat(16)))
-        }
+    private suspend fun dispatchMessage(chat: Chat, message: Message) {
+        newMessage(chat, message)
 
         with(messageProcessor.value) {
-            val context = MessageContext {
+            val context = MessageContext(message.author) {
                 newMessage(chat, it)
             }
 
@@ -153,6 +161,10 @@ class ChatModel(
     private fun newMessage(chat: Chat, message: Message) {
         if (selectedChat.value == chat) {
             selectedChatTimeline.value += message
+        }
+
+        if (chat is Chat.Local) {
+            localChatTimeline += message
         }
 
         chat.lastMessage.value = message

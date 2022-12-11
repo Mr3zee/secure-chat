@@ -2,6 +2,7 @@ package com.example.secure.chat.web.model.creds
 
 import com.example.secure.chat.web.compose.mutableProperty
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
+import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.utils.downloadFile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -40,7 +41,7 @@ class Credentials {
 
     companion object {
         const val PK_ID = "private-key"
-        const val CREDS_FILENAME = ".sc.creds.json"
+        const val CREDS_FILENAME = "sc.creds.json"
 
         private fun chatToId(id: Long) = "chat-$id"
 

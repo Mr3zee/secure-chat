@@ -6,8 +6,9 @@ import com.example.secure.chat.web.model.chat.Author
 import com.example.secure.chat.web.model.chat.Chat
 import com.example.secure.chat.web.model.chat.Message
 import com.example.secure.chat.web.model.chat.MessageStatus
-import com.example.secure.chat.web.model.creds.Coder
+import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.utils.now
+import kotlin.random.Random
 
 object ChatApiStub : ChatApi {
     override suspend fun registerUser(username: String, publicCryptoKey: PublicCryptoKey, coder: Coder): Boolean {
@@ -28,66 +29,73 @@ object ChatApiStub : ChatApi {
         return message.copy(text = "chat-${chat.id}-message-${now()}")
     }
 
-    override suspend fun getChatTimeline(chat: Chat): List<Message> {
-        return when {
-            chat is Chat.Global && chat.id == 12L -> {
-                listOf(
-                    message.copy(
-                        text = "hello 1".repeat(100),
-                        timestamp = now(),
-                        initialStatus = MessageStatus.Failed,
-                        author = Author.Me
-                    ),
-                    message.copy(text = "hello 2", timestamp = now()),
-                    message.copy(text = "hello 3", timestamp = now()),
-                    message.copy(text = "hello 4", timestamp = now()),
-                    message.copy(text = "hello 5", timestamp = now()),
-                    message.copy(
-                        text = "hello 5",
-                        timestamp = now(),
-                        initialStatus = MessageStatus.Failed,
-                        author = Author.Me
-                    ),
-                    message.copy(text = "hello 6", timestamp = now()),
-                    message.copy(text = "hello 7", timestamp = now()),
-                    message.copy(text = "hello 8", timestamp = now()),
-                    message.copy(text = "hello 9", timestamp = now()),
-                    message.copy(
-                        text = "hello 10",
-                        timestamp = now(),
-                        initialStatus = MessageStatus.Local,
-                        author = Author.Me
-                    ),
-                    message.copy(text = "hello 11", timestamp = now()),
-                    message.copy(text = "hello 12", timestamp = now()),
-                    message.copy(text = "hello 13", timestamp = now()),
-                    message.copy(text = "hello 14", timestamp = now()),
-                    message.copy(
-                        text = "hello 15",
-                        timestamp = now(),
-                        initialStatus = MessageStatus.Failed,
-                        author = Author.Me
-                    ),
-                    message.copy(text = "hello16".repeat(100), timestamp = now()),
-                    message.copy(text = "hello 17", timestamp = now()),
-                    message.copy(text = "hello 18", timestamp = now()),
-                    message.copy(
-                        text = "hello 19",
-                        timestamp = now(),
-                        initialStatus = MessageStatus.Local,
-                        author = Author.Me
-                    ),
-                    message.copy(text = "hello 20", timestamp = now()),
-                    message.copy(text = "hello 21", timestamp = now()),
-                    message.copy(text = "hello 22", timestamp = now()),
-                    message.copy(text = "hello 23", timestamp = now()),
-                    message.copy(text = "hello 24", timestamp = now()),
-                    message.copy(text = "hello 25", timestamp = now(), initialStatus = MessageStatus.Unread),
-                )
-            }
+    private val random = Random(1234)
 
-            else -> emptyList()
-        }
+    override suspend fun createChat(
+        chatName: String,
+        initialMessage: Message,
+        coder: Coder,
+    ): Pair<Chat.Global, PrivateCryptoKey> {
+        return Chat.Global(random.nextLong(), chatName).apply {
+            lastMessage.value = initialMessage
+            isLocked.value = false
+        } to coder.genRsaKeyPair().privateKey
+    }
+
+    override suspend fun getChatTimeline(chat: Chat.Global): List<Message> {
+        return listOf(
+            message.copy(
+                text = "hello 1".repeat(100),
+                timestamp = now(),
+                initialStatus = MessageStatus.Failed,
+                author = Author.Me
+            ),
+            message.copy(text = "hello 2", timestamp = now()),
+            message.copy(text = "hello 3", timestamp = now()),
+            message.copy(text = "hello 4", timestamp = now()),
+            message.copy(text = "hello 5", timestamp = now()),
+            message.copy(
+                text = "hello 5",
+                timestamp = now(),
+                initialStatus = MessageStatus.Failed,
+                author = Author.Me
+            ),
+            message.copy(text = "hello 6", timestamp = now()),
+            message.copy(text = "hello 7", timestamp = now()),
+            message.copy(text = "hello 8", timestamp = now()),
+            message.copy(text = "hello 9", timestamp = now()),
+            message.copy(
+                text = "hello 10",
+                timestamp = now(),
+                initialStatus = MessageStatus.Local,
+                author = Author.Me
+            ),
+            message.copy(text = "hello 11", timestamp = now()),
+            message.copy(text = "hello 12", timestamp = now()),
+            message.copy(text = "hello 13", timestamp = now()),
+            message.copy(text = "hello 14", timestamp = now()),
+            message.copy(
+                text = "hello 15",
+                timestamp = now(),
+                initialStatus = MessageStatus.Failed,
+                author = Author.Me
+            ),
+            message.copy(text = "hello16".repeat(100), timestamp = now()),
+            message.copy(text = "hello 17", timestamp = now()),
+            message.copy(text = "hello 18", timestamp = now()),
+            message.copy(
+                text = "hello 19",
+                timestamp = now(),
+                initialStatus = MessageStatus.Local,
+                author = Author.Me
+            ),
+            message.copy(text = "hello 20", timestamp = now()),
+            message.copy(text = "hello 21", timestamp = now()),
+            message.copy(text = "hello 22", timestamp = now()),
+            message.copy(text = "hello 23", timestamp = now()),
+            message.copy(text = "hello 24", timestamp = now()),
+            message.copy(text = "hello 25", timestamp = now(), initialStatus = MessageStatus.Unread),
+        )
     }
 
     override suspend fun getAllChats(): List<Chat.Global> {

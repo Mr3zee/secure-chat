@@ -143,6 +143,12 @@ fun xSecretInputField(property: MutableProperty<String>, placeholder: String, on
         }
 
         onEnter { onSubmit() }
+
+        ref {
+            it.focus()
+
+            onDispose { }
+        }
     }
 }
 

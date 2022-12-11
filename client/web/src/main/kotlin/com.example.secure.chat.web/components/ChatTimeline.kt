@@ -71,7 +71,7 @@ private fun xEmptyChatMessage(model: ChatModel) {
 
         val text = when (selectedChat) {
             is Chat.Local -> """
-This is your Local Security Manager.
+This is your Security Manager.
 You can manage your chats here and do some other staff.
 List of available commands:
 
@@ -109,6 +109,9 @@ private fun xMessagesList(model: ChatModel, allMessages: List<Message>) {
                 xMessage(it)
             }
         }
+
+    gap(24.px) // gap the better distinct a message from the input
+
     flex(
         attrs = {
             ref { el ->
@@ -221,9 +224,16 @@ private fun xMessage(message: Message) {
                     color(theme.secondaryTextColor)
 
                     property("overflow-wrap", "anywhere")
+
+                    whiteSpace("pre-wrap")
                 }
             ) {
-                Text(message.text)
+                val content =when {
+                    message.isSecret -> "*".repeat(16)
+                    else -> message.text
+                }
+
+                Text(content)
             }
         }
     }
