@@ -2,10 +2,12 @@ package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.*
 import com.example.secure.chat.web.compose.base.components.*
+import com.example.secure.chat.web.compose.base.styles.applyLockedStyles
 import com.example.secure.chat.web.compose.base.types.StyleBuilder
 import com.example.secure.chat.web.model.ChatInputType
 import com.example.secure.chat.web.model.ChatModel
 import com.example.secure.chat.web.theme.DarkTheme
+import com.example.secure.chat.web.theme.XTheme
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
@@ -37,9 +39,16 @@ object ChatInputStyleSheet : StyleSheet() {
 
 @Composable
 fun xChatInput(model: ChatModel) {
+    val locked by remember { model.inputLocked.asState() }
+    val theme = XTheme.current
+
     horizontal(
         styleBuilder = {
             width(100.percent)
+
+            if (locked) {
+                applyLockedStyles(theme)
+            }
         }
     ) {
         val inputType by remember { model.inputType.asState() }
@@ -54,7 +63,7 @@ fun xChatInput(model: ChatModel) {
                     flex(1, 0, auto.unsafeCast<CSSNumeric>())
                 }
             ) {
-                xChatButton("Copy private key") {
+                xChatButton("Copy private key", locked) {
                     model.copySecretToClipboard()
                 }
             }
@@ -90,7 +99,7 @@ fun xChatInput(model: ChatModel) {
                     }
                 }
 
-                xChatButton("Upload file") {
+                xChatButton("Upload file", locked) {
                     fileInputEl?.click()
                 }
             }
@@ -110,12 +119,20 @@ fun xChatInput(model: ChatModel) {
                         property = model.currentInput,
                         resetProperty = model.resetInput,
                         placeholder = "Write a message..."
-                    ) { model.submitMessage() }
+                    ) {
+                        if (!locked) {
+                            model.submitMessage()
+                        }
+                    }
 
                     ChatInputType.Secret -> xSecretInputField(
                         property = model.currentInput,
                         placeholder = "Write your secret..."
-                    ) { model.submitMessage() }
+                    ) {
+                        if (!locked) {
+                            model.submitMessage()
+                        }
+                    }
 
                     else -> {} // unreachable
                 }
@@ -126,13 +143,13 @@ fun xChatInput(model: ChatModel) {
 
         when (inputType) {
             ChatInputType.Message, ChatInputType.Secret -> {
-                xChatButton("Send") {
+                xChatButton("Send", locked) {
                     model.submitMessage()
                 }
             }
 
             ChatInputType.File -> {
-                xChatButton("Cancel") {
+                xChatButton("Cancel", locked) {
                     model.cancelFileUpload()
                 }
             }
@@ -143,7 +160,7 @@ fun xChatInput(model: ChatModel) {
 }
 
 @Composable
-private fun xChatButton(text: String, styleBuilder: StyleBuilder = {}, doOnClick: () -> Unit) {
+private fun xChatButton(text: String, disabled: Boolean, styleBuilder: StyleBuilder = {}, doOnClick: () -> Unit) {
     Button(
         attrs = {
             style {
@@ -153,7 +170,9 @@ private fun xChatButton(text: String, styleBuilder: StyleBuilder = {}, doOnClick
             classes(ChatInputStyleSheet.button)
 
             onClick {
-                doOnClick()
+                if (!disabled) {
+                    doOnClick()
+                }
             }
         }
     ) {

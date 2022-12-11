@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.components.*
+import com.example.secure.chat.web.compose.base.styles.applyLockedStyles
 import com.example.secure.chat.web.font.FontSize
 import com.example.secure.chat.web.font.applyCustomFont
 import com.example.secure.chat.web.font.fonts.JetBrainsMono
@@ -83,8 +84,7 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                 }
 
                 if (locked) {
-                    color(theme.secondaryColor)
-                    backgroundColor(theme.secondaryColor30)
+                    applyLockedStyles(theme)
                 }
             }
 

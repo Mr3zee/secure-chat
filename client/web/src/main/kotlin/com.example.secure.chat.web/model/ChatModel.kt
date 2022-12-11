@@ -33,6 +33,7 @@ class ChatModel(
     private var chatTimelineRequestJob: Job? = null
 
     // input properties
+    val inputLocked = mutableProperty(false)
     val inputType = mutableProperty(ChatInputType.Message)
     val currentInput = mutableProperty("")
     val resetInput = mutableProperty(currentInput.value)
@@ -130,11 +131,11 @@ class ChatModel(
     }
 
     fun lockInput() {
-        // todo
+        inputLocked.value = true
     }
 
     fun unlockInput() {
-        // todo
+        inputLocked.value = false
     }
 
     fun prepareSecretInput() {
