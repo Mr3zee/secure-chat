@@ -3,7 +3,7 @@ package com.example.secure.chat.web.models.chat
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import com.example.auth.common.chat.ChatDto
+import com.example.auth.common.dto.model.chat.ChatDto
 
 sealed interface Chat {
     val key: MutableState<String?>

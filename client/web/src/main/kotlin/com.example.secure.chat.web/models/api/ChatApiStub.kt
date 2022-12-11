@@ -1,7 +1,7 @@
 package com.example.secure.chat.web.models.api
 
 import androidx.compose.runtime.mutableStateOf
-import com.example.auth.common.chat.ChatDto
+import com.example.auth.common.dto.model.chat.ChatDto
 import com.example.secure.chat.web.models.chat.Author
 import com.example.secure.chat.web.models.chat.Chat
 import com.example.secure.chat.web.models.chat.Message
