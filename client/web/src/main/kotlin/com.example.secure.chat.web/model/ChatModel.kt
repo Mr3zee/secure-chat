@@ -40,6 +40,9 @@ class ChatModel(
     val resetInput = mutableProperty(currentInput.value)
     private val inputByChat = mutableMapOf<Chat, String>()
 
+    // all invites
+    val invites = mutableProperty(emptyMap<Long, Invite>())
+
     val newMessageEvent = mutableProperty(Unit)
 
     private val localMessageProcessor = LocalMessageProcessor(this)
@@ -133,14 +136,7 @@ class ChatModel(
         }
 
         reader.onerror = {
-            newMessage(
-                chat = selectedChat.value,
-                message = Message(
-                    author = securityManagerBot,
-                    text = "Failed to upload a file.",
-                    initialStatus = MessageStatus.Local
-                )
-            )
+            sendLocalMessage("Failed to upload a file.")
 
             unlockInput()
         }
@@ -153,6 +149,19 @@ class ChatModel(
             chats.value = list.associateBy(keySelector = { it.first.id }) { it.first }
             credentials.chatsLonePublicKeys.putAll(list.associateBy(keySelector = { it.first.id }) { it.second })
         }
+    }
+
+    suspend fun acceptInvite(chatName: String, id: Invite): Boolean {
+        val res = api.acceptInvite(chatName, id)
+
+        if (res.isFailure) {
+            return false
+        }
+
+        val (chat, keyPair) = res.getOrNull() ?: error("unreachable")
+        addChat(chat, keyPair)
+
+        return true
     }
 
     fun lockInput() {
@@ -235,6 +244,17 @@ class ChatModel(
         chat.lastMessage.value = message
 
         newMessageEvent.fire()
+    }
+
+    private fun sendLocalMessage(text: String) {
+        newMessage(
+            chat = Chat.Local,
+            message = Message(
+                author = securityManagerBot,
+                text = text,
+                initialStatus = MessageStatus.Local
+            )
+        )
     }
 }
 

@@ -4,6 +4,7 @@ import com.example.secure.chat.web.crypto.CryptoKeyPair
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
 import com.example.secure.chat.web.crypto.PublicCryptoKey
 import com.example.secure.chat.web.model.chat.Chat
+import com.example.secure.chat.web.model.chat.Invite
 import com.example.secure.chat.web.model.chat.Message
 import com.example.secure.chat.web.model.coder.Coder
 
@@ -25,4 +26,6 @@ interface ChatApi {
     suspend fun inviteMember(chat: Chat.Global, username: String): Boolean
 
     suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean
+
+    suspend fun acceptInvite(chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>>
 }

@@ -196,6 +196,45 @@ class LocalMessageProcessor(
                 LocalState.START
             }
 
+            command(LocalCommands.invites.name) {
+                val list = model.invites.value.values.joinToString("\n") {
+                    "Invite to chat ${it.chatId}."
+                }
+
+                if (list.isBlank()) {
+                    sendMessage("No invites available.")
+                } else {
+                    sendMessage(list)
+                }
+
+                LocalState.LOGGED_IN
+            }
+
+            command(LocalCommands.accept.name) {
+                val id = it.args.getOrNull(0)?.toLongOrNull()
+                val chatName = it.args.getOrNull(1)
+
+                if (it.args.size != 2 || id == null || chatName == null) {
+                    sendMessage("Please, provide exactly two arguments (int, string) - invite id like in the /invites command.")
+
+                    return@command LocalState.LOGGED_IN
+                }
+
+                val inviteId = model.invites.value[id] ?: run {
+                    sendMessage("Invalid invite id.")
+
+                    return@command LocalState.LOGGED_IN
+                }
+
+                if (model.acceptInvite(chatName, inviteId)) {
+                    sendMessage("Invite accepted successfully.")
+                } else {
+                    sendMessage("Failed to accept the invite.")
+                }
+
+                LocalState.LOGGED_IN
+            }
+
             command(LocalCommands.new_chat.name) {
                 val chatName = it.args.singleOrNull() ?: run {
                     sendMessage("Please, provide exactly one argument - chat name.")
@@ -382,11 +421,13 @@ class LocalMessageProcessor(
 /${LocalCommands.login} - login into your profile.
 /${LocalCommands.file_login} - login using ${Credentials.CREDS_FILENAME} file.
 /${LocalCommands.register} <username> - create a new profile.
-/${LocalCommands.new_chat} <name> - create a new chat.
-/${LocalCommands.chat_login} <id> - login into the chat.
+/${LocalCommands.new_chat} <name> - create a new chat with name <name>.
+/${LocalCommands.chat_login} <id> - login into the chat with <id>.
 /${LocalCommands.logout} - logout from current profile.
 /${LocalCommands.dump} - download ${Credentials.CREDS_FILENAME} file with all keys.
 /${LocalCommands.load} - upload ${Credentials.CREDS_FILENAME} file.
+/${LocalCommands.invites} - list all available invites.
+/${LocalCommands.accept} <id> <chat_name> - accept invite with <id> as chat with name <chat_name>.
 /cancel - abort current operation.
         """.trimIndent()
 
@@ -401,7 +442,7 @@ private enum class LocalState {
 
 @Suppress("EnumEntryName")
 private enum class LocalCommands {
-    login, file_login, logout, register, new_chat, chat_login, dump, load
+    login, file_login, logout, register, new_chat, chat_login, dump, load, invites, accept
 }
 
 private fun botMessage(text: String) = Message(
