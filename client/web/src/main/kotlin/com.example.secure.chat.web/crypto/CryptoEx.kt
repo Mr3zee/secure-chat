@@ -55,7 +55,6 @@ suspend fun Crypto.exportPrivateRSAKeyPEM(key: PrivateCryptoKey): String {
 
 suspend fun Crypto.importRSAPrivateKeyPEM(string: String): PrivateCryptoKey {
     val data = string.trim().removePrefix(PRIVATE_PEM_BEGIN).removeSuffix(PRIVATE_PEM_END).trim()
-    console.log(data)
     val raw = window.atob(data)
     val binaryDer = raw.toArrayBuffer()
     return importKey(

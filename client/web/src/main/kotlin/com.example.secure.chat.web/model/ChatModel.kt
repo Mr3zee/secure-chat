@@ -7,14 +7,13 @@ import com.example.secure.chat.web.compose.mutableProperty
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
 import com.example.secure.chat.web.model.api.ChatApi
 import com.example.secure.chat.web.model.chat.*
-import com.example.secure.chat.web.model.chat.processors.GlobalMessageProcessor
-import com.example.secure.chat.web.model.chat.processors.LocalMessageProcessor
-import com.example.secure.chat.web.model.chat.processors.MessageContext
-import com.example.secure.chat.web.model.chat.processors.MessageProcessor
+import com.example.secure.chat.web.model.chat.processors.*
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.Credentials
 import com.example.secure.chat.web.utils.clipboard
 import kotlinx.coroutines.Job
+import org.w3c.files.File
+import org.w3c.files.FileReader
 
 class ChatModel(
     val credentials: Credentials,
@@ -100,12 +99,30 @@ class ChatModel(
         chats.value = emptyMap()
     }
 
-    fun displaySecret(name: String, secret: String) {
-        // todo
+    fun prepareFileInput() {
+        inputType.value = ChatInputType.File
     }
 
-    fun acceptFile() {
-        // todo
+    fun acceptFile(file: File) {
+        lockInput()
+        val reader = FileReader()
+        reader.onload = {
+            val text = it.target.asDynamic().result as String
+
+            inputType.value = ChatInputType.Secret
+            currentInput.value = text
+            submitMessage()
+
+            unlockInput()
+        }
+
+        reader.onerror = {
+            newMessage(selectedChat.value, Message(securityManagerBot, "Failed to upload a file."))
+
+            unlockInput()
+        }
+
+        reader.readAsText(file)
     }
 
     suspend fun loadChats() {
@@ -120,7 +137,7 @@ class ChatModel(
         // todo
     }
 
-    fun acceptSecret() {
+    fun prepareSecretInput() {
         inputType.value = ChatInputType.Secret
     }
 

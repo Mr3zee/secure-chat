@@ -50,8 +50,6 @@ class LocalMessageProcessor(
                     model.credentials.privateKey.value = sk
                     model.credentials.login.value = login
 
-                    model.displaySecret(Credentials.PK_ID, model.coder.exportPrivateRSAKeyPEM(sk))
-
                     model.prepareSecretToCopy(sk)
 
                     sendMessage(
@@ -76,7 +74,7 @@ class LocalMessageProcessor(
             command(LocalCommands.file_login.name) {
                 sendMessage("Please, use the button bellow to select a file.")
 
-                model.acceptFile()
+                model.prepareFileInput()
 
                 LocalState.AWAIT_LOGIN_FILE
             }
@@ -95,7 +93,7 @@ class LocalMessageProcessor(
 
                     storage[USERNAME_STORAGE_KEY] = it.text
 
-                    model.acceptSecret()
+                    model.prepareSecretInput()
 
                     LocalState.AWAIT_PK
                 } else {
@@ -120,7 +118,7 @@ class LocalMessageProcessor(
                 val privateCryptoKey = model.coder.safeImportRSAPrivateKeyPEM(it.text) ?: run {
                     sendMessage("Invalid private key. Please, try again.")
 
-                    model.acceptSecret()
+                    model.prepareSecretInput()
 
                     return@text LocalState.AWAIT_PK
                 }
@@ -148,6 +146,8 @@ class LocalMessageProcessor(
         }
 
         state(LocalState.AWAIT_LOGIN_FILE) {
+            cancel(LocalState.START)
+
             text {
                 withFile(it.text, errorState = LocalState.START) { creds ->
                     if (model.api.loginUser(creds.login, creds.privateKey, model.coder)) {
@@ -223,7 +223,7 @@ class LocalMessageProcessor(
 
                 storage[CHAT_NAME_STORAGE_KEY] = chatId.toString()
 
-                model.acceptSecret()
+                model.prepareSecretInput()
 
                 LocalState.AWAIT_CHAT_PK
             }
@@ -241,7 +241,7 @@ class LocalMessageProcessor(
             command(LocalCommands.load.name) {
                 sendMessage("Please, use the button bellow to select a file.")
 
-                model.acceptFile()
+                model.prepareFileInput()
 
                 LocalState.AWAIT_FILE
             }
@@ -254,7 +254,7 @@ class LocalMessageProcessor(
                 val privateKey = model.coder.safeImportRSAPrivateKeyPEM(it.text) ?: run {
                     sendMessage("Invalid private key. Please, try again.")
 
-                    model.acceptSecret()
+                    model.prepareSecretInput()
 
                     return@text LocalState.AWAIT_PK
                 }
@@ -284,8 +284,12 @@ class LocalMessageProcessor(
         }
 
         state(LocalState.AWAIT_FILE) {
+            cancel(LocalState.LOGGED_IN)
+
             text {
                 withFile(it.text, LocalState.LOGGED_IN) { creds ->
+                    sendMessage("Found ${creds.chatKeys.size} chat keys.")
+
                     loginIntoChats(creds)
 
                     LocalState.LOGGED_IN

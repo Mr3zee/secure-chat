@@ -1,17 +1,19 @@
 package com.example.secure.chat.web.components
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.compose.base.types.StyleBuilder
 import com.example.secure.chat.web.model.ChatInputType
 import com.example.secure.chat.web.model.ChatModel
 import com.example.secure.chat.web.theme.DarkTheme
+import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Button
+import org.jetbrains.compose.web.dom.Input
 import org.jetbrains.compose.web.dom.Text
+import org.w3c.dom.HTMLInputElement
+import org.w3c.files.get
 
 object ChatInputStyleSheet : StyleSheet() {
     val button by style {
@@ -44,8 +46,8 @@ fun xChatInput(model: ChatModel) {
 
         Style(ChatInputStyleSheet)
 
-        if (inputType == ChatInputType.Copy) {
-            vertical(
+        when (inputType) {
+            ChatInputType.Copy -> vertical(
                 styleBuilder = {
                     height(40.px) // input min width: 20px margin + 20px input
 
@@ -56,8 +58,44 @@ fun xChatInput(model: ChatModel) {
                     model.copySecretToClipboard()
                 }
             }
-        } else {
-            vertical(
+
+            ChatInputType.File -> vertical(
+                styleBuilder = {
+                    height(40.px) // input min width: 20px margin + 20px input
+
+                    flex(1, 0, auto.unsafeCast<CSSNumeric>())
+                }
+            ) {
+                var fileInputEl by remember { mutableStateOf<HTMLInputElement?>(null) }
+
+                Input(InputType.File) {
+                    ref {
+                        fileInputEl = it
+
+                        onDispose {
+                            fileInputEl = null
+                        }
+                    }
+
+                    style {
+                        display(DisplayStyle.None)
+                    }
+
+                    classes(ChatInputStyleSheet.button)
+
+                    onInput {
+                        it.target.files?.get(0)?.let { file ->
+                            model.acceptFile(file)
+                        }
+                    }
+                }
+
+                xChatButton("Upload file") {
+                    fileInputEl?.click()
+                }
+            }
+
+            else -> vertical(
                 styleBuilder = {
                     flex(1, 0, auto.unsafeCast<CSSNumeric>()) // not magic, learn css flex-grow
 
@@ -79,29 +117,27 @@ fun xChatInput(model: ChatModel) {
                         placeholder = "Write your secret..."
                     ) { model.submitMessage() }
 
-                    ChatInputType.File -> {}
-
                     else -> {} // unreachable
                 }
             }
+        }
 
-            xVerticalSeparator()
+        xVerticalSeparator()
 
-            when (inputType) {
-                ChatInputType.Message, ChatInputType.Secret -> {
-                    xChatButton("Send") {
-                        model.submitMessage()
-                    }
+        when (inputType) {
+            ChatInputType.Message, ChatInputType.Secret -> {
+                xChatButton("Send") {
+                    model.submitMessage()
                 }
-
-                ChatInputType.File -> {
-                    xChatButton("Cancel") {
-                        model.cancelFileUpload()
-                    }
-                }
-
-                else -> {} // unreachable
             }
+
+            ChatInputType.File -> {
+                xChatButton("Cancel") {
+                    model.cancelFileUpload()
+                }
+            }
+
+            else -> {} // unreachable
         }
     }
 }

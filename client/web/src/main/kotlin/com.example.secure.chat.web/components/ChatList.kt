@@ -17,6 +17,7 @@ import com.example.secure.chat.web.theme.DarkTheme
 import com.example.secure.chat.web.theme.XTheme
 import com.example.secure.chat.web.utils.consts.CHAT_LIST_ITEM_HEIGHT
 import com.example.secure.chat.web.utils.consts.CHAT_LIST_WIDTH
+import com.example.secure.chat.web.utils.consts.SECRET_PLACEHOLDER
 import com.example.secure.chat.web.utils.now
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
@@ -201,7 +202,12 @@ private fun xChatDescription(chat: Chat, locked: Boolean, lastMessage: Message?)
                         applyCustomFont(size = FontSize.Small)
                     }
 
-                    xEllipsis(lastMessage.text) {
+                    val text = when {
+                        lastMessage.isSecret -> SECRET_PLACEHOLDER
+                        else -> lastMessage.text
+                    }
+
+                    xEllipsis(text) {
                         color(theme.secondaryTextColor)
                         applyCustomFont(size = FontSize.Small)
                     }

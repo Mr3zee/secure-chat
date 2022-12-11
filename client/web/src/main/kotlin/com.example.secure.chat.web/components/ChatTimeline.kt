@@ -16,6 +16,7 @@ import com.example.secure.chat.web.model.chat.processors.LocalMessageProcessor
 import com.example.secure.chat.web.theme.XTheme
 import com.example.secure.chat.web.utils.capitalized
 import com.example.secure.chat.web.utils.consts.MESSAGES_DAY_LABEL_HEIGHT
+import com.example.secure.chat.web.utils.consts.SECRET_PLACEHOLDER
 import com.example.secure.chat.web.utils.ensureScrollTo
 import com.example.secure.chat.web.utils.today
 import kotlinx.datetime.LocalDate
@@ -229,7 +230,7 @@ private fun xMessage(message: Message) {
                 }
             ) {
                 val content =when {
-                    message.isSecret -> "*".repeat(16)
+                    message.isSecret -> SECRET_PLACEHOLDER
                     else -> message.text
                 }
 
