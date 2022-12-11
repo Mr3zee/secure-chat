@@ -4,5 +4,6 @@ import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
 
 data class Message(
     val id: Long,
+    val userLogin: String,
     val text: ByteArrayWrapper,
 )

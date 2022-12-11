@@ -9,19 +9,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LoginResponseDto(
-    override val requestId: Long,
-    val textToDecode: RawBytesDto,
-) : ServerResponseDto<LoginRequestDto, LoginResponseDto>
+    val encodedMessage: RawBytesDto,
+) : AuthenticationResponseDto<LoginRequestDto, LoginResponseDto>
 
 @Serializable
-data class RegisterResponseDto(
-    override val requestId: Long,
-) : ServerResponseDto<RegisterRequestDto, RegisterResponseDto>
+object RegisterResponseDto :
+    AuthenticationResponseDto<RegisterRequestDto, RegisterResponseDto>
 
 @Serializable
-data class CheckDecodedMessageResponseDto(
-    override val requestId: Long,
-) : ServerResponseDto<CheckDecodedMessageRequestDto, CheckDecodedMessageResponseDto>
+object CheckDecodedMessageResponseDto :
+    AuthenticationResponseDto<CheckDecodedMessageRequestDto, CheckDecodedMessageResponseDto>
 
 @Serializable
 data class LogoutResponseDto(

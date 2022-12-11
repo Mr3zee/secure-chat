@@ -2,10 +2,8 @@ package com.example.auth.common.dto.request
 
 import com.example.auth.common.dto.model.chat.ChatDraftDto
 import com.example.auth.common.dto.model.invite.InviteDto
-import com.example.auth.common.dto.response.AcceptInviteResponseDto
-import com.example.auth.common.dto.response.ChatListResponseDto
-import com.example.auth.common.dto.response.CreateChatResponseDto
-import com.example.auth.common.dto.response.InviteListResponseDto
+import com.example.auth.common.dto.model.message.MessageDraftDto
+import com.example.auth.common.dto.response.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,19 +12,27 @@ data class ChatListRequestDto(
 ) : ClientRequestDto<ChatListRequestDto, ChatListResponseDto>
 
 @Serializable
+data class ChatCreateRequestDto(
+    override val requestId: Long,
+    val chat: ChatDraftDto,
+    val startMessage: MessageDraftDto,
+) : ClientRequestDto<ChatCreateRequestDto, ChatCreateResponseDto>
+
+@Serializable
 data class InviteListRequestDto(
     override val requestId: Long,
 ) : ClientRequestDto<InviteListRequestDto, InviteListResponseDto>
 
 @Serializable
-data class AcceptInviteRequestDto(
+data class InviteAcceptRequestDto(
     override val requestId: Long,
     val invite: InviteDto,
     val chatName: String,
-) : ClientRequestDto<AcceptInviteRequestDto, AcceptInviteResponseDto>
+) : ClientRequestDto<InviteAcceptRequestDto, InviteAcceptResponseDto>
 
 @Serializable
-data class CreateChatRequestDto(
+data class InviteSendRequestDto(
     override val requestId: Long,
-    val chat: ChatDraftDto,
-) : ClientRequestDto<CreateChatRequestDto, CreateChatResponseDto>
+    val userLogin: String,
+    val invite: InviteDto,
+) : ClientRequestDto<InviteSendRequestDto, InviteSendResponseDto>
