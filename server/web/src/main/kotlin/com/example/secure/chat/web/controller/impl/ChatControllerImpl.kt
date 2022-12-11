@@ -42,6 +42,16 @@ object ChatControllerImpl : ChatController, KoinComponent {
         )
     }
 
+    override suspend fun chatLeave(
+        context: WebSocketSessionContext,
+        rq: ChatLeaveRequestDto,
+    ): ChatLeaveResponseDto {
+        return chatService.leaveChat(
+            context.currentUser.id,
+            rq.chatId,
+        ).let { ChatLeaveResponseDto(rq.requestId) }
+    }
+
     override suspend fun inviteList(
         context: WebSocketSessionContext,
         rq: InviteListRequestDto,

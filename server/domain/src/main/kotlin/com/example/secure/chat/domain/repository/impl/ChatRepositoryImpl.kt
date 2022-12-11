@@ -7,9 +7,8 @@ import com.example.secure.chat.domain.db.tables.ChatTables.Chats
 import com.example.secure.chat.domain.db.tables.JoinTables.UsersChatsJoinTable
 import com.example.secure.chat.domain.db.util.Transactional
 import com.example.secure.chat.domain.repository.ChatRepository
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 object ChatRepositoryImpl : ChatRepository {
 
@@ -51,4 +50,10 @@ object ChatRepositoryImpl : ChatRepository {
                 ByteArrayWrapper(row[Chats.publicKey]),
             )
         }
+
+    override fun Transactional.deleteUserChat(rqUserId: Long, rqChatId: Long) {
+        UsersChatsJoinTable.deleteWhere {
+            userId.eq(rqUserId).and(chatId.eq(rqChatId))
+        }
+    }
 }

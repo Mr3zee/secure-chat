@@ -73,4 +73,10 @@ object ChatServiceImpl : ChatService, KoinComponent {
             getUserChat(rq.chatId)
         }
     }
+
+    override suspend fun leaveChat(userId: Long, chatId: Long) = tx {
+        with(chatRepository) {
+            deleteUserChat(userId, chatId)
+        }
+    }
 }

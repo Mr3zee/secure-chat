@@ -10,4 +10,5 @@ interface ChatRepository {
     fun Transactional.createUserChat(rqChatId: Long, rq: UserChatCreateRq)
     fun Transactional.getUserChat(chatId: Long): UserChat
     fun Transactional.getUserChats(userId: Long): List<UserChat>
+    fun Transactional.deleteUserChat(rqUserId: Long, rqChatId: Long)
 }

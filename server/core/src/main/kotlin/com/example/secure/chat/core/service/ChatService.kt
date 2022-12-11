@@ -23,4 +23,6 @@ interface ChatService {
     suspend fun sendInvite(rq: InviteCreateRq)
 
     suspend fun acceptInvite(rq: InviteAcceptRq): UserChat
+
+    suspend fun leaveChat(userId: Long, chatId: Long)
 }
