@@ -13,6 +13,7 @@ import com.example.secure.chat.web.model.chat.processors.MessageContext
 import com.example.secure.chat.web.model.chat.processors.MessageProcessor
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.Credentials
+import com.example.secure.chat.web.utils.clipboard
 import kotlinx.coroutines.Job
 
 class ChatModel(
@@ -33,7 +34,7 @@ class ChatModel(
     private var chatTimelineRequestJob: Job? = null
 
     // input properties
-    val inputType = mutableProperty(TextInputType.Message)
+    val inputType = mutableProperty(ChatInputType.Message)
     val currentInput = mutableProperty("")
     val resetInput = mutableProperty(currentInput.value)
     private val inputByChat = mutableMapOf<Chat, String>()
@@ -120,12 +121,33 @@ class ChatModel(
     }
 
     fun acceptSecret() {
-        inputType.value = TextInputType.Secret
+        inputType.value = ChatInputType.Secret
     }
 
     fun addChat(chat: Chat.Global, privateCryptoKey: PrivateCryptoKey) {
         chats.value += chat.id to chat
         credentials.chatKeys.value += chat.id to privateCryptoKey
+    }
+
+    fun cancelFileUpload() {
+        currentInput.value = "/cancel"
+
+        submitMessage()
+    }
+
+    private val secretToCopy = mutableProperty<String?>(null)
+
+    suspend fun prepareSecretToCopy(secret: PrivateCryptoKey) {
+        secretToCopy.value = coder.exportPrivateRSAKeyPEM(secret)
+        inputType.value = ChatInputType.Copy
+    }
+
+    fun copySecretToClipboard() {
+        inputType.value = ChatInputType.Message
+        secretToCopy.value?.let {
+            clipboard.writeText(it)
+        }
+        secretToCopy.value = null
     }
 
     fun submitMessage() {
@@ -134,12 +156,12 @@ class ChatModel(
 
         resetInput.value = ""
         val inputTypeVal = inputType.value
-        inputType.value = TextInputType.Message
+        inputType.value = ChatInputType.Message
         acceptUserInput(text, inputTypeVal)
     }
 
-    private fun acceptUserInput(text: String, inputType: TextInputType) {
-        val message = textToMessage(text, Author.Me, inputType == TextInputType.Secret)
+    private fun acceptUserInput(text: String, inputType: ChatInputType) {
+        val message = textToMessage(text, Author.Me, inputType == ChatInputType.Secret)
 
         launch(Ui) {
             dispatchMessage(selectedChat.value, message)
@@ -173,6 +195,6 @@ class ChatModel(
     }
 }
 
-enum class TextInputType {
-    Message, Secret
+enum class ChatInputType {
+    Message, Secret, Copy, File
 }

@@ -72,7 +72,7 @@ private fun xEmptyChatMessage(model: ChatModel) {
         val text = when (selectedChat) {
             is Chat.Local -> """
 This is your Security Manager.
-You can manage your chats here and do some other staff.
+You can manage your chats here and do some other stuff.
 List of available commands:
 
 ${LocalMessageProcessor.CMD_REFERENCE}

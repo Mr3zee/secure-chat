@@ -4,8 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.components.*
+import com.example.secure.chat.web.compose.base.types.StyleBuilder
+import com.example.secure.chat.web.model.ChatInputType
 import com.example.secure.chat.web.model.ChatModel
-import com.example.secure.chat.web.model.TextInputType
 import com.example.secure.chat.web.theme.DarkTheme
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
@@ -43,41 +44,83 @@ fun xChatInput(model: ChatModel) {
 
         Style(ChatInputStyleSheet)
 
-        vertical(
-            styleBuilder = {
-                flex(1, 0, auto.unsafeCast<CSSNumeric>()) // not magic, learn css flex-grow
+        if (inputType == ChatInputType.Copy) {
+            vertical(
+                styleBuilder = {
+                    height(40.px) // input min width: 20px margin + 20px input
 
-                margin(10.px, 16.px, 10.px, 16.px) //  this input margin, it just looks good with these values, no magic
-
-                width(0.percent) // css hack
-            },
-        ) {
-            when (inputType) {
-                TextInputType.Message -> xInputField(
-                    property = model.currentInput,
-                    resetProperty = model.resetInput,
-                    placeholder = "Write a message..."
-                ) { model.submitMessage() }
-
-                TextInputType.Secret -> xSecretInputField(
-                    property = model.currentInput,
-                    placeholder = "Write your secret..."
-                ) { model.submitMessage() }
-            }
-        }
-
-        xVerticalSeparator()
-
-        Button(
-            attrs = {
-                classes(ChatInputStyleSheet.button)
-
-                onClick {
-                    model.submitMessage()
+                    flex(1, 0, auto.unsafeCast<CSSNumeric>())
+                }
+            ) {
+                xChatButton("Copy private key") {
+                    model.copySecretToClipboard()
                 }
             }
-        ) {
-            Text("Send")
+        } else {
+            vertical(
+                styleBuilder = {
+                    flex(1, 0, auto.unsafeCast<CSSNumeric>()) // not magic, learn css flex-grow
+
+                    //  this input margin, it just looks good with these values, no magic
+                    margin(10.px, 16.px, 10.px, 16.px)
+
+                    width(0.percent) // css hack
+                },
+            ) {
+                when (inputType) {
+                    ChatInputType.Message -> xInputField(
+                        property = model.currentInput,
+                        resetProperty = model.resetInput,
+                        placeholder = "Write a message..."
+                    ) { model.submitMessage() }
+
+                    ChatInputType.Secret -> xSecretInputField(
+                        property = model.currentInput,
+                        placeholder = "Write your secret..."
+                    ) { model.submitMessage() }
+
+                    ChatInputType.File -> {}
+
+                    else -> {} // unreachable
+                }
+            }
+
+            xVerticalSeparator()
+
+            when (inputType) {
+                ChatInputType.Message, ChatInputType.Secret -> {
+                    xChatButton("Send") {
+                        model.submitMessage()
+                    }
+                }
+
+                ChatInputType.File -> {
+                    xChatButton("Cancel") {
+                        model.cancelFileUpload()
+                    }
+                }
+
+                else -> {} // unreachable
+            }
         }
+    }
+}
+
+@Composable
+private fun xChatButton(text: String, styleBuilder: StyleBuilder = {}, doOnClick: () -> Unit) {
+    Button(
+        attrs = {
+            style {
+                styleBuilder()
+            }
+
+            classes(ChatInputStyleSheet.button)
+
+            onClick {
+                doOnClick()
+            }
+        }
+    ) {
+        Text(text)
     }
 }

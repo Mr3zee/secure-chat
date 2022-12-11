@@ -17,9 +17,7 @@ import com.example.secure.chat.web.theme.DarkTheme
 import com.example.secure.chat.web.theme.XTheme
 import com.example.secure.chat.web.utils.consts.CHAT_LIST_ITEM_HEIGHT
 import com.example.secure.chat.web.utils.consts.CHAT_LIST_WIDTH
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import com.example.secure.chat.web.utils.now
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.css.keywords.auto
 import org.jetbrains.compose.web.dom.Span
@@ -184,7 +182,7 @@ private fun xChatDescription(chat: Chat, locked: Boolean, lastMessage: Message?)
 
                             Span {
                                 val date = message.timestamp
-                                if (date.date == Clock.System.now().toLocalDateTime(TimeZone.UTC).date) {
+                                if (date.date == now().date) {
                                     Text("${date.time}")
                                 } else {
                                     Text("${date.date}")

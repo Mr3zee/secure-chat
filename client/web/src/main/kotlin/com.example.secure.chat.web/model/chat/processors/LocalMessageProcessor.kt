@@ -52,6 +52,8 @@ class LocalMessageProcessor(
 
                     model.displaySecret(Credentials.PK_ID, model.coder.exportPrivateRSAKeyPEM(sk))
 
+                    model.prepareSecretToCopy(sk)
+
                     sendMessage(
                         """
                             User profile created. Please, use the button below to copy your secret to the clipboard or save as a file.
@@ -194,6 +196,8 @@ class LocalMessageProcessor(
                 )
 
                 val (chat, sk) = model.api.createChat(chatName, initialMessage, model.coder)
+
+                model.prepareSecretToCopy(sk)
 
                 sendMessage("Created new chat '$chatName'. Please, use the button bellow to copy the chat's secret.")
 
