@@ -7,6 +7,6 @@ object UserTables : TableHolder {
 
     object Users : LongIdTable("users") {
         val login = varchar("login", 128 - 1).uniqueIndex()
-        val publicKey = binary("public_key", 4096 - 2)
+        val publicKey = binary("public_key")
     }
 }

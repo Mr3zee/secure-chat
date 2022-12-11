@@ -1,10 +1,11 @@
 package com.example.secure.chat.domain.repository
 
 import com.example.secure.chat.base.model.invite.Invite
-import com.example.secure.chat.base.model.invite.InviteDeleteRq
-import org.jetbrains.exposed.sql.Transaction
+import com.example.secure.chat.base.model.invite.InviteAcceptRq
+import com.example.secure.chat.domain.db.util.Transactional
 
 interface InviteRepository {
-    fun Transaction.createInvite(invite: Invite)
-    fun Transaction.deleteInvite(rq: InviteDeleteRq)
+    fun Transactional.createInvite(invite: Invite)
+    fun Transactional.getUserInvites(rqUserId: Long): List<Invite>
+    fun Transactional.deleteInvite(rq: InviteAcceptRq)
 }

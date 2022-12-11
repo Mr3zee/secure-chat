@@ -1,10 +1,12 @@
 package com.example.secure.chat.domain.repository
 
+import com.example.secure.chat.base.model.user.User
 import com.example.secure.chat.base.model.user.UserCreateRq
 import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
-import org.jetbrains.exposed.sql.Transaction
+import com.example.secure.chat.domain.db.util.Transactional
 
 interface UserRepository {
-    fun Transaction.createUser(rq: UserCreateRq)
-    fun Transaction.getPublicKey(userId: Long): ByteArrayWrapper?
+    fun Transactional.createUser(rq: UserCreateRq): User
+    fun Transactional.getUser(userLogin: String): User?
+    fun Transactional.getPublicKey(userId: Long): ByteArrayWrapper?
 }
