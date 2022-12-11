@@ -1,4 +1,4 @@
-package com.example.auth.common.byte
+package com.example.auth.common.dto.model.byte
 
 import kotlinx.serialization.Serializable
 
