@@ -1,4 +1,4 @@
-package com.example.auth.common.chat
+package com.example.auth.common.dto.model.chat
 
 import kotlinx.serialization.Serializable
 

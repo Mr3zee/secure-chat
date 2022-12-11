@@ -1,6 +1,6 @@
-package com.example.auth.common.chat
+package com.example.auth.common.dto.model.invite
 
-import com.example.auth.common.byte.RawBytesDto
+import com.example.auth.common.dto.model.byte.RawBytesDto
 import kotlinx.serialization.Serializable
 
 @Serializable
