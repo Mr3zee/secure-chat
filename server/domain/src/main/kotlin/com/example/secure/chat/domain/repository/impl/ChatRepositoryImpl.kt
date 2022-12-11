@@ -3,7 +3,7 @@ package com.example.secure.chat.domain.repository.impl
 import com.example.secure.chat.domain.db.tables.ChatTables.Chats
 import com.example.secure.chat.domain.db.tables.JoinTables.UsersChatsJoinTable
 import com.example.secure.chat.base.model.chat.ChatCreateRq
-import com.example.secure.chat.base.model.chat.UsersChat
+import com.example.secure.chat.base.model.chat.UserChat
 import com.example.secure.chat.domain.repository.ChatRepository
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.insert
@@ -21,11 +21,11 @@ object ChatRepositoryImpl : ChatRepository {
         }
     }
 
-    override fun Transaction.getUsersChats(userId: Long): List<UsersChat> =
+    override fun Transaction.getUsersChats(userId: Long): List<UserChat> =
         UsersChatsJoinTable.select {
             UsersChatsJoinTable.userId.eq(userId)
         }.map { row ->
-            UsersChat(
+            UserChat(
                 row[UsersChatsJoinTable.userId],
                 row[UsersChatsJoinTable.chatId],
                 row[UsersChatsJoinTable.name],
