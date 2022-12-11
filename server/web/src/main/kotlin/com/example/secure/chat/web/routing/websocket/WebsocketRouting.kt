@@ -29,7 +29,7 @@ suspend fun Routing.authenticate(
     session: WebSocketServerSession,
 ): User {
     val userController by inject<UserController>()
-    return when (val action = session.receiveDeserialized<AuthenticationRequestDto<*, *>>()) {
+    return when (val action = session.receiveDeserialized<SerializableAuthenticationRequestDto>()) {
 
         is LoginRequestDto -> {
             val user = userController.getUser(action.userLogin)
@@ -71,8 +71,9 @@ fun encode(user: User, message: ByteArray): ByteArray {
 suspend fun handleSession(context: WebSocketSessionContext) {
     try {
         do {
-            val action = context.receiveDeserialized<ClientRequestDto<*, *>>()
-            RequestProcessorStrategy.process(context, action)
+            when (val action = context.receiveDeserialized<SerializableClientRequestDto>()) {
+                is ClientRequestDto<*, *> -> RequestProcessorStrategy.process(context, action)
+            }
         } while (context.isActive)
     } catch (e: Exception) {
         context.closeExceptionally(e)
