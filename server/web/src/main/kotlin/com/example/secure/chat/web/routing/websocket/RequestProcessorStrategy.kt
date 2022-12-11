@@ -25,6 +25,7 @@ object RequestProcessorStrategy : KoinComponent {
         return when (request) {
             is ChatCreateRequestDto -> { context -> chatController.chatCreate(context, request) }
             is ChatListRequestDto -> { context -> chatController.chatList(context, request) }
+            is ChatLeaveRequestDto -> { context -> chatController.chatLeave(context, request) }
             is InviteAcceptRequestDto -> { context -> chatController.inviteAccept(context, request) }
             is InviteListRequestDto -> { context -> chatController.inviteList(context, request) }
             is InviteSendRequestDto -> { context -> chatController.inviteSend(context, request) }
