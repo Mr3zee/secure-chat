@@ -6,7 +6,7 @@ import com.example.secure.chat.base.model.invite.Invite
 import com.example.secure.chat.base.model.invite.InviteAcceptRq
 import com.example.secure.chat.base.model.invite.InviteCreateRq
 import com.example.secure.chat.base.model.message.Message
-import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
+import com.example.secure.chat.base.model.wrapper.Base64Bytes
 
 interface ChatService {
 
@@ -14,8 +14,8 @@ interface ChatService {
 
     suspend fun createChat(
         rq: UserChatCreateRq,
-        publicKey: ByteArrayWrapper,
-        startMessage: ByteArrayWrapper,
+        publicKey: Base64Bytes,
+        startMessage: Base64Bytes,
     ): Pair<UserChat, Message>
 
     suspend fun getAllInvites(userId: Long): List<Invite>

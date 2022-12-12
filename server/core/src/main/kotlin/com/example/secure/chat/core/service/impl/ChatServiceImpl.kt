@@ -7,7 +7,7 @@ import com.example.secure.chat.base.model.invite.InviteAcceptRq
 import com.example.secure.chat.base.model.invite.InviteCreateRq
 import com.example.secure.chat.base.model.message.Message
 import com.example.secure.chat.base.model.message.MessageCreateRq
-import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
+import com.example.secure.chat.base.model.wrapper.Base64Bytes
 import com.example.secure.chat.core.service.ChatService
 import com.example.secure.chat.domain.db.util.tx
 import com.example.secure.chat.domain.repository.ChatRepository
@@ -30,8 +30,8 @@ object ChatServiceImpl : ChatService, KoinComponent {
 
     override suspend fun createChat(
         rq: UserChatCreateRq,
-        publicKey: ByteArrayWrapper,
-        startMessage: ByteArrayWrapper,
+        publicKey: Base64Bytes,
+        startMessage: Base64Bytes,
     ): Pair<UserChat, Message> = tx {
         val userChat: UserChat = with(chatRepository) {
             val chatId = createChat(publicKey)

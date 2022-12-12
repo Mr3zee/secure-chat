@@ -1,6 +1,6 @@
 package com.example.secure.chat.web.controller.impl.converter
 
-import com.example.auth.common.dto.model.byte.RawBytesDto
+import com.example.auth.common.dto.model.byte.Base64BytesDto
 import com.example.auth.common.dto.model.chat.ChatDraftDto
 import com.example.auth.common.dto.model.chat.ChatDto
 import com.example.auth.common.dto.model.invite.InviteDraftDto
@@ -34,7 +34,7 @@ fun toModel(invitedUser: User, dto: InviteDraftDto) = InviteCreateRq(
     toModel(dto.encodedKey),
 )
 
-fun toModel(user: User, invite: InviteDto, chatName: RawBytesDto) = InviteAcceptRq(
+fun toModel(user: User, invite: InviteDto, chatName: Base64BytesDto) = InviteAcceptRq(
     user,
     invite.chatId,
     toModel(chatName),

@@ -4,7 +4,7 @@ import com.example.secure.chat.domain.db.tables.ChatTables.Invites
 import com.example.secure.chat.base.model.invite.Invite
 import com.example.secure.chat.base.model.invite.InviteAcceptRq
 import com.example.secure.chat.base.model.invite.InviteCreateRq
-import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
+import com.example.secure.chat.base.model.wrapper.Base64Bytes
 import com.example.secure.chat.domain.db.util.Transactional
 import com.example.secure.chat.domain.repository.InviteRepository
 import org.jetbrains.exposed.sql.*
@@ -16,7 +16,7 @@ object InviteRepositoryImpl : InviteRepository {
         Invites.insertIgnore {
             it[userId] = invite.userId
             it[chatId] = invite.chatId
-            it[encodedKey] = invite.encodedKey.byteArray
+            it[encodedKey] = invite.encodedKey.content
         }
     }
 
@@ -28,7 +28,7 @@ object InviteRepositoryImpl : InviteRepository {
                 row[Invites.id].value,
                 row[Invites.userId],
                 row[Invites.chatId],
-                ByteArrayWrapper(row[Invites.encodedKey]),
+                Base64Bytes(row[Invites.encodedKey]),
                 row[Invites.createdTs],
             )
         }
@@ -50,7 +50,7 @@ object InviteRepositoryImpl : InviteRepository {
                 row[Invites.id].value,
                 row[Invites.userId],
                 row[Invites.chatId],
-                ByteArrayWrapper(row[Invites.encodedKey]),
+                Base64Bytes(row[Invites.encodedKey]),
                 row[Invites.createdTs],
             )
         }

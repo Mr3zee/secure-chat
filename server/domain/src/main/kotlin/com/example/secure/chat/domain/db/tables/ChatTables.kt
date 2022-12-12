@@ -9,13 +9,13 @@ import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 object ChatTables : TableHolder {
 
     object Chats : LongIdTable("chats") {
-        val publicKey = binary("public_key")
+        val publicKey = varchar("public_key", 8192 - 2)
     }
 
     object Invites : LongIdTable("chat_invites") {
         val userId = long("user_id").references(Users.id)
         val chatId = long("chat_id").references(Chats.id)
-        val encodedKey = binary("encoded_key")
+        val encodedKey = varchar("encoded_key", 8192 - 2)
         val createdTs = timestamp("created_ts").defaultExpression(CurrentTimestamp())
 
         init {

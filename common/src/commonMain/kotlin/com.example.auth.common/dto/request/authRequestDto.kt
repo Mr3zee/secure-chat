@@ -1,6 +1,6 @@
 package com.example.auth.common.dto.request
 
-import com.example.auth.common.dto.model.byte.RawBytesDto
+import com.example.auth.common.dto.model.byte.Base64BytesDto
 import com.example.auth.common.dto.response.*
 import kotlinx.serialization.Serializable
 
@@ -12,13 +12,13 @@ data class LoginRequestDto(
 @Serializable
 data class RegisterRequestDto(
     val userLogin: String,
-    val publicKey: RawBytesDto,
+    val publicKey: Base64BytesDto,
 ) : AuthenticationRequestDto<RegisterRequestDto, RegisterResponseDto>
 
 @Serializable
 data class CheckDecodedMessageRequestDto(
     val userLogin: String,
-    val decodedMessage: RawBytesDto,
+    val decodedMessage: Base64BytesDto,
 ) : AuthenticationRequestDto<CheckDecodedMessageRequestDto, CheckDecodedMessageResponseDto>
 
 @Serializable

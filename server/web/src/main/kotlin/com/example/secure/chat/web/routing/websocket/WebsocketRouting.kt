@@ -1,13 +1,13 @@
 package com.example.secure.chat.web.routing.websocket
 
-import com.example.auth.common.dto.model.byte.RawBytesDto
+import com.example.auth.common.dto.model.byte.Base64BytesDto
 import com.example.auth.common.dto.request.*
 import com.example.auth.common.dto.response.CheckDecodedMessageResponseDto
 import com.example.auth.common.dto.response.LoginResponseDto
 import com.example.auth.common.dto.response.RegisterResponseDto
 import com.example.secure.chat.base.model.user.User
 import com.example.secure.chat.base.model.user.UserCreateRq
-import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
+import com.example.secure.chat.base.model.wrapper.Base64Bytes
 import com.example.secure.chat.web.controller.UserController
 import com.example.secure.chat.web.controller.impl.converter.toDto
 import io.ktor.server.routing.*
@@ -56,13 +56,14 @@ suspend fun Routing.authenticate(
         is LoginRequestDto -> {
             val user = userController.getUser(action.userLogin)
                 ?: throw NoSuchElementException("Not found user with login = ${action.userLogin}")
-            val word = UUID.randomUUID().toString().encodeToByteArray()
+            val word = UUID.randomUUID().toString().toByteArray(Charsets.UTF_8)
+            val content = encode(user, word)
             val loginResponse = LoginResponseDto(
-                RawBytesDto(encode(user, word))
+                Base64BytesDto(Base64.getEncoder().encodeToString(content))
             )
             session.sendSerialized(loginResponse)
             val request = session.receiveDeserialized<CheckDecodedMessageRequestDto>()
-            if (!word.contentEquals(request.decodedMessage.content)) {
+            if (!word.contentEquals(Base64.getDecoder().decode(request.decodedMessage.content))) {
                 throw IllegalArgumentException("Original end decoded messages are not matching")
             }
             val checkResponse = CheckDecodedMessageResponseDto(toDto(user.publicKey))
@@ -73,7 +74,7 @@ suspend fun Routing.authenticate(
         is RegisterRequestDto -> {
             val createRq = UserCreateRq(
                 action.userLogin,
-                ByteArrayWrapper(action.publicKey.content),
+                Base64Bytes(action.publicKey.content),
             )
             val user = userController.register(createRq)
             val response = RegisterResponseDto(toDto(user.publicKey))
@@ -86,7 +87,8 @@ suspend fun Routing.authenticate(
 }
 
 fun encode(user: User, message: ByteArray): ByteArray {
-    val keySpec = X509EncodedKeySpec(user.publicKey.byteArray)
+    val rawBytes = Base64.getDecoder().decode(user.publicKey.content)
+    val keySpec = X509EncodedKeySpec(rawBytes)
     val key: PublicKey = KeyFactory.getInstance("RSA")
         .generatePublic(keySpec)
     val params = OAEPParameterSpec(
@@ -109,6 +111,7 @@ suspend fun handleSession(context: WebSocketSessionContext) {
             }
         } while (context.isActive)
     } catch (e: Exception) {
+        logger.error(e) { "Failed to handle session" }
         context.closeExceptionally(e)
     }
 }
