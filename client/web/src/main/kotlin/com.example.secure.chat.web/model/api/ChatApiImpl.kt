@@ -1,13 +1,7 @@
 package com.example.secure.chat.web.model.api
 
-import com.example.auth.common.dto.request.CheckDecodedMessageRequestDto
-import com.example.auth.common.dto.request.LoginRequestDto
-import com.example.auth.common.dto.request.RegisterRequestDto
-import com.example.auth.common.dto.request.SerializableAuthenticationRequestDto
-import com.example.auth.common.dto.response.CheckDecodedMessageResponseDto
-import com.example.auth.common.dto.response.LoginResponseDto
-import com.example.auth.common.dto.response.RegisterResponseDto
-import com.example.auth.common.dto.response.SerializableServerResponseDto
+import com.example.auth.common.dto.request.*
+import com.example.auth.common.dto.response.*
 import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.backoff
 import com.example.secure.chat.platform.client
@@ -23,12 +17,29 @@ import com.example.secure.chat.web.utils.toArrayBuffer
 import com.example.secure.chat.web.utils.toBase64Bytes
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.js.jso
 
 object ChatApiImpl : ChatApi {
     private var session: DefaultClientWebSocketSession? = null
+
+    private val requestId = atomic(0L)
+
+    private suspend fun createSession(): DefaultClientWebSocketSession {
+        return client.webSocketSession("/websocket") {
+            url {
+                if (isDevEnv()) {
+                    protocol = URLProtocol.WS
+                    port = 8080
+                } else {
+                    protocol = URLProtocol.WSS // secure
+                    port = 80
+                }
+            }
+        }
+    }
 
     private suspend fun <T> LoginContext.withSession(body: suspend DefaultClientWebSocketSession.() -> T): T {
         val s = session ?: error("Session uninitialized")
@@ -44,6 +55,12 @@ object ChatApiImpl : ChatApi {
         return s.body()
     }
 
+    private suspend fun <T> LoginContext.backoffWithSession(body: suspend DefaultClientWebSocketSession.() -> T): T? {
+        return backoff {
+            withSession(body)
+        }
+    }
+
     private val backlog = mutableListOf<SerializableServerResponseDto>()
 
     private val channel = Channel<SerializableServerResponseDto>(Channel.UNLIMITED)
@@ -57,8 +74,10 @@ object ChatApiImpl : ChatApi {
         }
     }
 
-    private suspend inline fun <reified T : SerializableServerResponseDto> LoginContext.receiveExact(): T {
-        val response = backlog.filterIsInstance<T>().singleOrNull()
+    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> LoginContext.receiveExact(id: Long): RESPONSE_TYPE
+            where RESPONSE_TYPE : ServerResponseDto<REQUEST_TYPE, RESPONSE_TYPE>,
+                  REQUEST_TYPE : ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE> {
+        val response = backlog.filterIsInstance<RESPONSE_TYPE>().singleOrNull { it.requestId == id }
 
         response?.let {
             backlog.remove(it)
@@ -70,7 +89,7 @@ object ChatApiImpl : ChatApi {
             if (response == null) {
                 while (isActive) {
                     val new = channel.receive()
-                    if (new is T) {
+                    if (new is RESPONSE_TYPE && new.requestId == id) {
                         return@withSession new
                     }
                     backlog.add(new)
@@ -83,17 +102,19 @@ object ChatApiImpl : ChatApi {
         return res
     }
 
-    private suspend fun createSession(): DefaultClientWebSocketSession {
-        return client.webSocketSession("/websocket") {
-            url {
-                if (isDevEnv()) {
-                    protocol = URLProtocol.WS
-                    port = 8080
-                } else {
-                    protocol = URLProtocol.WSS // secure
-                    port = 80
-                }
-            }
+    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> LoginContext.sendAndReceive(
+        requestDto: (id: Long) -> ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE>,
+    ): RESPONSE_TYPE? where RESPONSE_TYPE : ServerResponseDto<REQUEST_TYPE, RESPONSE_TYPE>,
+                            REQUEST_TYPE : ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE> {
+        val id = requestId.getAndIncrement()
+        val request = requestDto(id)
+
+        backoffWithSession {
+            sendSerialized<SerializableClientRequestDto>(request)
+        }
+
+        return backoff {
+            receiveExact<REQUEST_TYPE, RESPONSE_TYPE>(id)
         }
     }
 
