@@ -25,48 +25,48 @@ object ChatApiStub : ChatApi {
         }
     }
 
-    override suspend fun getLastMessage(chat: Chat.Global, key: PrivateCryptoKey, coder: Coder): Message {
+    override suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Message {
         return message.copy(text = "chat-${chat.id}-message-${now()}")
     }
 
     private val random = Random(1234)
 
     override suspend fun createChat(
+        context: LoginContext,
         chatName: String,
         initialMessage: Message,
-        coder: Coder,
     ): Pair<Chat.Global, CryptoKeyPair> {
         return Chat.Global(random.nextLong(), chatName).apply {
             lastMessage.value = initialMessage
             isLocked.value = false
-        } to coder.genRsaKeyPair()
+        } to context.coder.genRsaKeyPair()
     }
 
-    override suspend fun leaveChat(chat: Chat.Global): Boolean {
+    override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {
         return true
     }
 
-    override suspend fun inviteMember(chat: Chat.Global, username: String): Boolean {
+    override suspend fun inviteMember(context: LoginContext, chat: Chat.Global, username: String): Boolean {
         return true
     }
 
-    override suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean {
+    override suspend fun sendMessage(context: LoginContext, chat: Chat.Global, message: Message): Boolean {
         return true
     }
 
-    override suspend fun acceptInvite(chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>> {
+    override suspend fun acceptInvite(context: LoginContext, chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>> {
         return Result.success(Chat.Global(random.nextLong(), chatName) to crypto.genRsaKeyPair())
     }
 
-    override suspend fun subscribeOnNewInvites(handler: (List<Invite>) -> Unit) {
+    override suspend fun subscribeOnNewInvites(context: LoginContext, handler: (List<Invite>) -> Unit) {
         // unsupported
     }
 
-    override suspend fun subscribeOnNewMessages(handler: (List<Pair<Long, Message>>) -> Unit) {
+    override suspend fun subscribeOnNewMessages(context: LoginContext, handler: (List<Pair<Long, Message>>) -> Unit) {
         // unsupported
     }
 
-    override suspend fun getChatTimeline(chat: Chat.Global): List<Message> {
+    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): List<Message> {
         return listOf(
             message.copy(
                 text = "hello 1".repeat(100),
@@ -122,8 +122,8 @@ object ChatApiStub : ChatApi {
         )
     }
 
-    override suspend fun getAllChats(coder: Coder): List<Pair<Chat.Global, PublicCryptoKey>> {
-        val pk = coder.genRsaKeyPair().publicKey
+    override suspend fun getAllChats(context: LoginContext): List<Pair<Chat.Global, PublicCryptoKey>> {
+        val pk = context.coder.genRsaKeyPair().publicKey
 
         return listOf(
             Chat.Global(0, "Chat 1"),

@@ -11,6 +11,7 @@ import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.chat.processors.*
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.Credentials
+import com.example.secure.chat.web.model.creds.LoginContext
 import com.example.secure.chat.web.utils.clipboard
 import kotlinx.coroutines.Job
 import org.w3c.files.File
@@ -50,22 +51,9 @@ class ChatModel(
 
     private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
 
+    val loginContext: LoginContext get() = credentials.loginContext(coder)
+
     init {
-        launch(Ui) {
-            api.subscribeOnNewInvites {
-                invites.value += it.associateBy { invite -> invite.chatId }
-            }
-
-            api.subscribeOnNewMessages { messages ->
-                val chats = chats.value
-                messages.forEach { (chatId, message) ->
-                    chats[chatId]?.let { chat ->
-                        newMessage(chat, message)
-                    }
-                }
-            }
-        }
-
         resetInput.subscribe {
             currentInput.value = it
         }
@@ -96,7 +84,7 @@ class ChatModel(
                 is Chat.Global -> {
                     chatTimelineRequestJob?.cancel()
                     chatTimelineRequestJob = launch(Ui) {
-                        selectedChatTimeline.value = api.getChatTimeline(chat)
+                        selectedChatTimeline.value = api.getChatTimeline(loginContext, chat)
                         selectedChat.value.lastMessage.value = selectedChatTimeline.value.lastOrNull()
 
                         chat.lastMessage.value?.status?.let {
@@ -112,8 +100,25 @@ class ChatModel(
         }
     }
 
+    private fun subscribeOnServerEvents() {
+        launch(Ui) {
+            api.subscribeOnNewInvites(loginContext) {
+                invites.value += it.associateBy { invite -> invite.chatId }
+            }
+
+            api.subscribeOnNewMessages(loginContext) { messages ->
+                val chats = chats.value
+                messages.forEach { (chatId, message) ->
+                    chats[chatId]?.let { chat ->
+                        newMessage(chat, message)
+                    }
+                }
+            }
+        }
+    }
+
     suspend fun leaveChat(chat: Chat.Global): Boolean {
-        return if (api.leaveChat(chat)) {
+        return if (api.leaveChat(loginContext, chat)) {
             if (chat == selectedChat.value) {
                 selectedChat.value = Chat.Local
             }
@@ -159,14 +164,14 @@ class ChatModel(
     }
 
     suspend fun loadChats() {
-        api.getAllChats(coder).let { list ->
+        api.getAllChats(loginContext).let { list ->
             chats.value = list.associateBy(keySelector = { it.first.id }) { it.first }
             credentials.chatsLonePublicKeys.putAll(list.associateBy(keySelector = { it.first.id }) { it.second })
         }
     }
 
     suspend fun acceptInvite(chatName: String, id: Invite): Boolean {
-        val res = api.acceptInvite(chatName, id)
+        val res = api.acceptInvite(loginContext, chatName, id)
 
         if (res.isFailure) {
             return false
@@ -176,6 +181,10 @@ class ChatModel(
         addChat(chat, keyPair)
 
         return true
+    }
+
+    fun onLogin() {
+        subscribeOnServerEvents()
     }
 
     fun lockInput() {

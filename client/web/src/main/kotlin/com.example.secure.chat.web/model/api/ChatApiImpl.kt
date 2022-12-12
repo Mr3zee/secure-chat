@@ -7,8 +7,11 @@ import com.example.auth.common.dto.request.SerializableAuthenticationRequestDto
 import com.example.auth.common.dto.response.CheckDecodedMessageResponseDto
 import com.example.auth.common.dto.response.LoginResponseDto
 import com.example.auth.common.dto.response.RegisterResponseDto
+import com.example.auth.common.dto.response.SerializableServerResponseDto
+import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.backoff
 import com.example.secure.chat.platform.client
+import com.example.secure.chat.platform.launch
 import com.example.secure.chat.web.crypto.*
 import com.example.secure.chat.web.model.chat.Chat
 import com.example.secure.chat.web.model.chat.Invite
@@ -20,20 +23,64 @@ import com.example.secure.chat.web.utils.toArrayBuffer
 import com.example.secure.chat.web.utils.toBase64Bytes
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.js.jso
 
 object ChatApiImpl : ChatApi {
     private var session: DefaultClientWebSocketSession? = null
 
-    private suspend fun <T> LoginContext.withSession(body: DefaultClientWebSocketSession.() -> T): T {
+    private suspend fun <T> LoginContext.withSession(body: suspend DefaultClientWebSocketSession.() -> T): T {
         val s = session ?: error("Session uninitialized")
 
         if (!s.isActive) {
             loginUser(this)
+
+            return withSession(body)
         }
 
+        s.collectServerResponses()
+
         return s.body()
+    }
+
+    private val backlog = mutableListOf<SerializableServerResponseDto>()
+
+    private val channel = Channel<SerializableServerResponseDto>(Channel.UNLIMITED)
+
+    private fun DefaultClientWebSocketSession.collectServerResponses() {
+        launch(Ui) {
+            while (isActive) {
+                val response = receiveDeserialized<SerializableServerResponseDto>()
+                channel.send(response)
+            }
+        }
+    }
+
+    private suspend inline fun <reified T : SerializableServerResponseDto> LoginContext.receiveExact(): T {
+        val response = backlog.filterIsInstance<T>().singleOrNull()
+
+        response?.let {
+            backlog.remove(it)
+
+            return it
+        }
+
+        val res = withSession {
+            if (response == null) {
+                while (isActive) {
+                    val new = channel.receive()
+                    if (new is T) {
+                        return@withSession new
+                    }
+                    backlog.add(new)
+                }
+            }
+
+            null
+        } ?: error("Session closed.")
+
+        return res
     }
 
     private suspend fun createSession(): DefaultClientWebSocketSession {
@@ -111,47 +158,51 @@ object ChatApiImpl : ChatApi {
         })
     }
 
-    override suspend fun getLastMessage(chat: Chat.Global, key: PrivateCryptoKey, coder: Coder): Message? {
+    override suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Message? {
         TODO("Not yet implemented")
     }
 
     override suspend fun createChat(
+        context: LoginContext,
         chatName: String,
         initialMessage: Message,
-        coder: Coder,
     ): Pair<Chat.Global, CryptoKeyPair> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllChats(coder: Coder): List<Pair<Chat.Global, PublicCryptoKey>> {
+    override suspend fun getAllChats(context: LoginContext): List<Pair<Chat.Global, PublicCryptoKey>> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getChatTimeline(chat: Chat.Global): List<Message> {
+    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): List<Message> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun leaveChat(chat: Chat.Global): Boolean {
+    override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun inviteMember(chat: Chat.Global, username: String): Boolean {
+    override suspend fun inviteMember(context: LoginContext, chat: Chat.Global, username: String): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean {
+    override suspend fun sendMessage(context: LoginContext, chat: Chat.Global, message: Message): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun acceptInvite(chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>> {
+    override suspend fun acceptInvite(
+        context: LoginContext,
+        chatName: String,
+        invite: Invite,
+    ): Result<Pair<Chat.Global, CryptoKeyPair>> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun subscribeOnNewInvites(handler: (List<Invite>) -> Unit) {
-        // todo
+    override suspend fun subscribeOnNewInvites(context: LoginContext, handler: (List<Invite>) -> Unit) {
+        TODO("Not yet implemented")
     }
 
-    override suspend fun subscribeOnNewMessages(handler: (List<Pair<Long, Message>>) -> Unit) {
-        // todo
+    override suspend fun subscribeOnNewMessages(context: LoginContext, handler: (List<Pair<Long, Message>>) -> Unit) {
+        TODO("Not yet implemented")
     }
 }

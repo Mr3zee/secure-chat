@@ -62,7 +62,7 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
                     return@command GlobalState.ERROR
                 }
 
-                if (model.api.inviteMember(chat, username)) {
+                if (model.api.inviteMember(model.loginContext, chat, username)) {
                     globalMessage("'${author.name}' invited '$username' to the chat.")
 
                     GlobalState.OK
@@ -104,7 +104,7 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
 
     private fun MessageContext.sendGlobalMessage(chat: Chat.Global, globalMessage: Message) {
         launch(Ui) {
-            if (model.api.sendMessage(chat, globalMessage)) {
+            if (model.api.sendMessage(model.loginContext, chat, globalMessage)) {
                 globalMessage.status.value = MessageStatus.Verified
             } else {
                 globalMessage.status.value = MessageStatus.Failed
@@ -137,6 +137,7 @@ private enum class GlobalState {
     DEFAULT, OK, ERROR, PENDING
 }
 
+@Suppress("EnumEntryName")
 private enum class GlobalCommand {
     leave, invite
 }

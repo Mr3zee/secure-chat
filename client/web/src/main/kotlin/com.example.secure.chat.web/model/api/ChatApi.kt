@@ -14,23 +14,31 @@ interface ChatApi {
 
     suspend fun loginUser(context: LoginContext): Result<CryptoKeyPair>
 
-    suspend fun getLastMessage(chat: Chat.Global, key: PrivateCryptoKey, coder: Coder): Message?
+    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Message?
 
-    suspend fun createChat(chatName: String, initialMessage: Message, coder: Coder): Pair<Chat.Global, CryptoKeyPair>
+    suspend fun createChat(
+        context: LoginContext,
+        chatName: String,
+        initialMessage: Message,
+    ): Pair<Chat.Global, CryptoKeyPair>
 
-    suspend fun getAllChats(coder: Coder): List<Pair<Chat.Global, PublicCryptoKey>>
+    suspend fun getAllChats(context: LoginContext): List<Pair<Chat.Global, PublicCryptoKey>>
 
-    suspend fun getChatTimeline(chat: Chat.Global): List<Message>
+    suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): List<Message>
 
-    suspend fun leaveChat(chat: Chat.Global): Boolean
+    suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean
 
-    suspend fun inviteMember(chat: Chat.Global, username: String): Boolean
+    suspend fun inviteMember(context: LoginContext, chat: Chat.Global, username: String): Boolean
 
-    suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean
+    suspend fun sendMessage(context: LoginContext, chat: Chat.Global, message: Message): Boolean
 
-    suspend fun acceptInvite(chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>>
+    suspend fun acceptInvite(
+        context: LoginContext,
+        chatName: String,
+        invite: Invite,
+    ): Result<Pair<Chat.Global, CryptoKeyPair>>
 
-    suspend fun subscribeOnNewInvites(handler: (List<Invite>) -> Unit)
+    suspend fun subscribeOnNewInvites(context: LoginContext, handler: (List<Invite>) -> Unit)
 
-    suspend fun subscribeOnNewMessages(handler: (List<Pair<Long, Message>>) -> Unit)
+    suspend fun subscribeOnNewMessages(context: LoginContext, handler: (List<Pair<Long, Message>>) -> Unit)
 }

@@ -53,6 +53,7 @@ class LocalMessageProcessor(
                     model.credentials.keyPair.value = keyPair
                     model.credentials.login.value = login
 
+                    model.onLogin()
                     model.prepareSecretToCopy(keyPair.privateKey)
 
                     sendMessage(
@@ -141,6 +142,8 @@ class LocalMessageProcessor(
                         launch(Ui) {
                             model.loadChats()
                         }
+
+                        model.onLogin()
 
                         sendMessage("Login successful. Welcome, $username!")
 
@@ -254,7 +257,7 @@ class LocalMessageProcessor(
                     initialStatus = MessageStatus.Verified
                 )
 
-                val (chat, keyPair) = model.api.createChat(chatName, initialMessage, model.coder)
+                val (chat, keyPair) = model.api.createChat(model.loginContext, chatName, initialMessage)
 
                 model.prepareSecretToCopy(keyPair.privateKey)
 
@@ -391,7 +394,7 @@ class LocalMessageProcessor(
         chat: Chat.Global,
         privateCryptoKey: PrivateCryptoKey,
     ): Boolean {
-        val lastMessage = model.api.getLastMessage(chat, privateCryptoKey, model.coder) ?: run {
+        val lastMessage = model.api.getLastMessage(model.loginContext, chat, privateCryptoKey) ?: run {
             sendMessage("Failed to login into ${chat.name} chat.")
             return false
         }
