@@ -1,6 +1,5 @@
 package com.example.secure.chat.web.controller.impl
 
-import com.example.auth.common.dto.event.NewMessagesEventDto
 import com.example.auth.common.dto.request.*
 import com.example.auth.common.dto.response.*
 import com.example.secure.chat.core.registry.NewMessagesRegistry

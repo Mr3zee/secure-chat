@@ -1,4 +1,4 @@
-package com.example.auth.common.dto.event
+package com.example.auth.common.dto.response
 
 import com.example.auth.common.dto.model.message.MessageDto
 import kotlinx.serialization.Serializable
