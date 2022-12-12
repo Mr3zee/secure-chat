@@ -137,10 +137,12 @@ class ChatModel(
         } else false
     }
 
-    fun logout() {
+    suspend fun logout() {
         selectedChat.value = Chat.Local
         inputByChat.clear()
         chats.value = emptyMap()
+
+        api.logoutUser()
     }
 
     fun prepareFileInput() {

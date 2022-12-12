@@ -5,6 +5,7 @@ import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.LoginContext
 import com.example.secure.chat.web.utils.now
+import com.example.secure.chat.web.utils.success
 import kotlin.random.Random
 
 @Suppress("unused")
@@ -25,12 +26,17 @@ object ChatApiStub : ChatApi {
         }
     }
 
+    override suspend fun logoutUser(): Boolean {
+        return true
+    }
+
     override suspend fun getLastMessage(
         context: LoginContext,
         chat: Chat.Global,
         key: PrivateCryptoKey,
-    ): Result<Message?> {
-        return message.copy(text = "chat-${chat.id}-message-${now()}").let { Result.success(it) }
+    ): Result<Pair<Message?, PublicCryptoKey>> {
+        val pk = context.genRsaKeyPair()
+        return (message.copy(text = "chat-${chat.id}-message-${now()}") to pk.publicKey).success()
     }
 
     private val random = Random(1234)

@@ -24,7 +24,7 @@ fun xEllipsis(content: String, maxSymbols: Int = 35, styleBuilder: StyleBuilder 
         }
     ) {
         val text = if (content.length > maxSymbols) {
-            content.dropLast(content.length - maxSymbols - 3)
+            content.dropLast(maxOf(0, minOf(content.length - maxSymbols - 3, content.length)))
         } else content
 
         Text(text.trim())

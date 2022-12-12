@@ -347,19 +347,7 @@ class LocalMessageProcessor(
                     return@text LocalState.LOGGED_IN
                 }
 
-                val publicKey = model.credentials.chatsLonePublicKeys[chatId] ?: run {
-                    console.warn("Expected public key to be present.")
-
-                    sendMessage("Unexpected error happened, performing update...")
-
-                    model.loadChats()
-
-                    sendMessage("Updated, please try again with /${LocalCommands.chat_login} command.")
-
-                    return@text LocalState.LOGGED_IN
-                }
-
-                if (tryLoginIntoChat(chat, privateKey)) {
+                tryLoginIntoChat(chat, privateKey)?.let { publicKey ->
                     model.credentials.chatKeys += chatId to jso {
                         this.privateKey = privateKey
                         this.publicKey = publicKey
@@ -387,39 +375,39 @@ class LocalMessageProcessor(
 
     private suspend fun MessageContext.loginIntoChats(credsDTO: CredsDTO) {
         val chats = model.chats.value
-        val unused = mutableSetOf<Long>()
 
-        credsDTO.chatKeys.entries.forEach { (k, v) ->
+        credsDTO.chatKeys.entries.forEach { (k, privateKey) ->
             chats[k]?.let { chat ->
-                tryLoginIntoChat(chat, v)
-            } ?: run {
-                unused.add(k)
+                tryLoginIntoChat(chat, privateKey)?.let { publicKey ->
+                    model.credentials.chatKeys += k to jso {
+                        this.privateKey = privateKey
+                        this.publicKey = publicKey
+                    }
+                }
             }
         }
-
-        model.credentials.chatKeys -= unused
     }
 
     private suspend fun MessageContext.tryLoginIntoChat(
         chat: Chat.Global,
         privateCryptoKey: PrivateCryptoKey,
-    ): Boolean {
+    ): PublicCryptoKey? {
         val result = model.api.getLastMessage(model.loginContext, chat, privateCryptoKey)
 
         if (result.isFailure) {
             sendMessage("Failed to login into ${chat.name} chat.")
 
-            return false
+            return null
         }
 
-        val lastMessage = result.getOrNull()
+        val (lastMessage, key) = result.get()
 
         sendMessage("Logged in into '${chat.name}' chat.")
 
         chat.lastMessage.value = lastMessage
         chat.isLocked.value = false
 
-        return true
+        return key
     }
 
     private suspend fun MessageContext.withFile(

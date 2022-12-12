@@ -14,7 +14,9 @@ interface ChatApi {
 
     suspend fun loginUser(context: LoginContext): Result<CryptoKeyPair>
 
-    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Result<Message?>
+    suspend fun logoutUser(): Boolean
+
+    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Result<Pair<Message?, PublicCryptoKey>>
 
     suspend fun createChat(
         context: LoginContext,

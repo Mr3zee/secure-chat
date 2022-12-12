@@ -16,6 +16,7 @@ import com.example.secure.chat.web.model.creds.unsureKey
 import com.example.secure.chat.web.utils.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
+import io.ktor.websocket.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
@@ -49,8 +50,6 @@ object ChatApiImpl : ChatApi {
             return withSession(body)
         }
 
-        s.collectServerResponses()
-
         return s.body()
     }
 
@@ -62,15 +61,28 @@ object ChatApiImpl : ChatApi {
 
     private val backlog = mutableListOf<SerializableServerResponseDto>()
 
-    private val channel = Channel<SerializableServerResponseDto>(Channel.UNLIMITED)
+    private var channel: Channel<SerializableServerResponseDto>? = null
+
+    private val serverChannel: Channel<SerializableServerResponseDto> get() = channel ?: error("Channel closed")
 
     private fun DefaultClientWebSocketSession.collectServerResponses() {
         launch(Ui) {
-            while (isActive) {
-                val response = receiveDeserialized<SerializableServerResponseDto>()
-                channel.send(response)
+            try {
+                while (isActive) {
+                    val response = receiveDeserialized<SerializableServerResponseDto>()
+                    serverChannel.send(response)
+                }
+            } catch (e: dynamic) {
+                console.warn(e)
             }
         }
+    }
+
+    private fun initSession(session: DefaultClientWebSocketSession) {
+        this.session = session
+        this.channel = Channel(Channel.UNLIMITED)
+
+        this.session?.collectServerResponses()
     }
 
     private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> LoginContext.receiveExact(id: Long): RESPONSE_TYPE
@@ -87,7 +99,7 @@ object ChatApiImpl : ChatApi {
         val res = withSession {
             if (response == null) {
                 while (isActive) {
-                    val new = channel.receive()
+                    val new = serverChannel.receive()
                     if (new is RESPONSE_TYPE && new.requestId == id) {
                         return@withSession new
                     }
@@ -134,7 +146,7 @@ object ChatApiImpl : ChatApi {
             localSession.receiveDeserialized<RegisterResponseDto>()
         } ?: return false
 
-        session = localSession
+        initSession(localSession)
 
         return true
     }
@@ -170,7 +182,7 @@ object ChatApiImpl : ChatApi {
         val publicCryptoKey = coder.safeImportRSAPublicKey(publicKeyBytes.toArrayBuffer())
             ?: return fail("Failed to import public key")
 
-        session = localSession
+        initSession(localSession)
 
         return Result.success(jso {
             privateKey = privateCryptoKey
@@ -178,18 +190,28 @@ object ChatApiImpl : ChatApi {
         })
     }
 
+    override suspend fun logoutUser(): Boolean {
+        session?.close()
+        session = null
+        backlog.clear()
+        channel?.close()
+        return true
+    }
+
     override suspend fun getLastMessage(
         context: LoginContext,
         chat: Chat.Global,
         key: PrivateCryptoKey,
-    ): Result<Message?> {
+    ): Result<Pair<Message?, PublicCryptoKey>> {
         val response = context.requestAndReceive {
             MessageListRequestDto(it, chat.id, null, 1)
         } ?: return failBackoff()
 
-        val message = response.messages.firstOrNull()?.toMessage(context)
+        val message = response.messages.firstOrNull()?.toMessage(context, key)
 
-        return Result.success(message)
+        val pk = context.importRSAPublicKey(response.publicKey.toArrayBuffer()).unsureKey()
+
+        return Result.success(message to pk)
     }
 
     override suspend fun createChat(
@@ -243,7 +265,10 @@ object ChatApiImpl : ChatApi {
             MessageListRequestDto(it, chat.id, null, 1000)
         } ?: return failBackoff()
 
-        return response.messages.map { it.toMessage(context) }.success()
+        val privateCryptoKey = context.chatKeys[chat.id]?.privateKey
+            ?: error("Expected private key for chat ${chat.id}")
+
+        return response.messages.map { it.toMessage(context, privateCryptoKey) }.success()
     }
 
     override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {
@@ -275,11 +300,11 @@ object ChatApiImpl : ChatApi {
     }
 }
 
-private suspend fun MessageDto.toMessage(context: LoginContext) = Message(
+private suspend fun MessageDto.toMessage(context: LoginContext, privateCryptoKey: PrivateCryptoKey) = Message(
     author = Author.User(userLogin),
     text = context.safeDecryptRSA(
-        context.chatKeys[chatId]?.privateKey ?: error("Expected private key for chat $chatId"),
-        encodedText.toArrayBuffer()
+        privateKey = privateCryptoKey,
+        data = encodedText.toArrayBuffer()
     )?.asString() ?: error("Failed to decrypt message"),
     id = id,
     timestamp = timestamp.zoned(),
