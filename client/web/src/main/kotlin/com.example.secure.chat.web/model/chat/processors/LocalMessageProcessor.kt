@@ -32,6 +32,7 @@ class LocalMessageProcessor(
             }
         } catch (e: dynamic) {
             sendMessage("Failed to perform operation.")
+            console.error(e)
         } finally {
             model.unlockInput()
         }
@@ -131,7 +132,7 @@ class LocalMessageProcessor(
 
                 storage.clear()
 
-                val res = model.api.loginUser(LoginContext(username, privateCryptoKey, model.coder))
+                val res = model.api.loginUser(LoginContext(username, privateCryptoKey, null, model.coder))
 
                 when {
                     res.isSuccess -> {
@@ -166,7 +167,7 @@ class LocalMessageProcessor(
 
             text {
                 withFile(it.text, errorState = LocalState.START) { creds ->
-                    val res = model.api.loginUser(LoginContext(creds.login, creds.privateKey, model.coder))
+                    val res = model.api.loginUser(LoginContext(creds.login, creds.privateKey, null, model.coder))
 
                     when {
                         res.isSuccess -> {
@@ -258,7 +259,15 @@ class LocalMessageProcessor(
                     initialStatus = MessageStatus.Verified
                 )
 
-                val (chat, keyPair) = model.api.createChat(model.loginContext, chatName, initialMessage)
+                val res = model.api.createChat(model.loginContext, chatName, initialMessage)
+
+                if (res.isFailure) {
+                    sendMessage("Failed to create chat.")
+
+                    return@command LocalState.LOGGED_IN
+                }
+
+                val (chat, keyPair) = res.get()
 
                 model.prepareSecretToCopy(keyPair.privateKey)
 
@@ -403,9 +412,9 @@ class LocalMessageProcessor(
             return false
         }
 
-        val lastMessage = result.get()
+        val lastMessage = result.getOrNull()
 
-        sendMessage("Logged in into ${chat.name} chat.")
+        sendMessage("Logged in into '${chat.name}' chat.")
 
         chat.lastMessage.value = lastMessage
         chat.isLocked.value = false

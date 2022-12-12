@@ -29,7 +29,7 @@ object ChatApiStub : ChatApi {
         context: LoginContext,
         chat: Chat.Global,
         key: PrivateCryptoKey,
-    ): Result<Message> {
+    ): Result<Message?> {
         return message.copy(text = "chat-${chat.id}-message-${now()}").let { Result.success(it) }
     }
 
@@ -39,11 +39,11 @@ object ChatApiStub : ChatApi {
         context: LoginContext,
         chatName: String,
         initialMessage: Message,
-    ): Pair<Chat.Global, CryptoKeyPair> {
-        return Chat.Global(random.nextLong(), chatName).apply {
+    ): Result<Pair<Chat.Global, CryptoKeyPair>> {
+        return (Chat.Global(random.nextLong(), chatName).apply {
             lastMessage.value = initialMessage
             isLocked.value = false
-        } to context.coder.genRsaKeyPair()
+        } to context.coder.genRsaKeyPair()).let { Result.success(it) }
     }
 
     override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {

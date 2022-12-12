@@ -14,13 +14,13 @@ interface ChatApi {
 
     suspend fun loginUser(context: LoginContext): Result<CryptoKeyPair>
 
-    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Result<Message>
+    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Result<Message?>
 
     suspend fun createChat(
         context: LoginContext,
         chatName: String,
         initialMessage: Message,
-    ): Pair<Chat.Global, CryptoKeyPair>
+    ): Result<Pair<Chat.Global, CryptoKeyPair>>
 
     suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>>
 

@@ -1,5 +1,7 @@
 package com.example.secure.chat.web.model.api
 
+import com.example.auth.common.dto.model.chat.ChatDraftDto
+import com.example.auth.common.dto.model.message.MessageDto
 import com.example.auth.common.dto.request.*
 import com.example.auth.common.dto.response.*
 import com.example.secure.chat.platform.Ui
@@ -7,15 +9,11 @@ import com.example.secure.chat.platform.backoff
 import com.example.secure.chat.platform.client
 import com.example.secure.chat.platform.launch
 import com.example.secure.chat.web.crypto.*
-import com.example.secure.chat.web.model.chat.Chat
-import com.example.secure.chat.web.model.chat.Invite
-import com.example.secure.chat.web.model.chat.Message
+import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.LoginContext
-import com.example.secure.chat.web.utils.asString
-import com.example.secure.chat.web.utils.isDevEnv
-import com.example.secure.chat.web.utils.toArrayBuffer
-import com.example.secure.chat.web.utils.toBase64Bytes
+import com.example.secure.chat.web.model.creds.unsureKey
+import com.example.secure.chat.web.utils.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import kotlinx.atomicfu.atomic
@@ -103,7 +101,7 @@ object ChatApiImpl : ChatApi {
         return res
     }
 
-    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> LoginContext.sendAndReceive(
+    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> LoginContext.requestAndReceive(
         requestDto: (id: Long) -> ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE>,
     ): RESPONSE_TYPE? where RESPONSE_TYPE : ServerResponseDto<REQUEST_TYPE, RESPONSE_TYPE>,
                             REQUEST_TYPE : ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE> {
@@ -184,25 +182,54 @@ object ChatApiImpl : ChatApi {
         context: LoginContext,
         chat: Chat.Global,
         key: PrivateCryptoKey,
-    ): Result<Message> {
-        TODO("Not yet implemented")
+    ): Result<Message?> {
+        val response = context.requestAndReceive {
+            MessageListRequestDto(it, chat.id, null, 1)
+        } ?: return failBackoff()
+
+        val message = response.messages.firstOrNull()?.toMessage(context)
+
+        return Result.success(message)
     }
 
     override suspend fun createChat(
         context: LoginContext,
         chatName: String,
         initialMessage: Message,
-    ): Pair<Chat.Global, CryptoKeyPair> {
-        TODO("Not yet implemented")
+    ): Result<Pair<Chat.Global, CryptoKeyPair>> {
+        val encodedName = context.safeEncryptRSA(context.publicCryptoKey.unsureKey(), chatName)?.toBase64Bytes()
+            ?: error("Unable to encrypt chatName")
+
+        val keyPair = context.genRsaKeyPair()
+        val encodedPublicKey = context.exportPublicRSAKey(keyPair.publicKey).toBase64Bytes()
+
+        val draft = ChatDraftDto(encodedName, encodedPublicKey)
+        val startMessageText = context.safeEncryptRSA(keyPair.publicKey, initialMessage.text)?.toBase64Bytes()
+            ?: error("Unable to encrypt message")
+
+        val chatDto = context.requestAndReceive { ChatCreateRequestDto(it, draft, startMessageText) }
+            ?: return failBackoff()
+
+
+        val newChat = Chat.Global(chatDto.chat.id, chatName)
+
+        newChat.isLocked.value = false
+        newChat.lastMessage.value = initialMessage.copy(
+            timestamp = chatDto.startMessage.timestamp.zoned(),
+            id = chatDto.startMessage.id,
+            initialStatus = MessageStatus.Verified
+        )
+
+        return Result.success(newChat to keyPair)
     }
 
     override suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
-        val chats = context.sendAndReceive { ChatListRequestDto(it) }?.chats ?: return failBackoff()
+        val chats = context.requestAndReceive { ChatListRequestDto(it) }?.chats ?: return failBackoff()
 
         return chats.map {
-            val pk = context.coder.importRSAPublicKey(it.publicKey.toArrayBuffer())
+            val pk = context.importRSAPublicKey(it.publicKey.toArrayBuffer())
 
-            val name = context.coder.safeDecryptRSA(context.privateCryptoKey, it.name.toArrayBuffer())?.asString()
+            val name = context.safeDecryptRSA(context.privateCryptoKey, it.name.toArrayBuffer())?.asString()
                 ?: error("Failed to decrypt chat name")
 
             val chat = Chat.Global(it.id, name)
@@ -243,3 +270,13 @@ object ChatApiImpl : ChatApi {
         // todo
     }
 }
+
+private suspend fun MessageDto.toMessage(context: LoginContext) = Message(
+    author = Author.User(userLogin),
+    text = context.safeDecryptRSA(context.privateCryptoKey, encodedText.toArrayBuffer())?.asString()
+        ?: error("Failed to decode message"),
+    id = id,
+    timestamp = timestamp.zoned(),
+    isSecret = false,
+    initialStatus = MessageStatus.Verified,
+)

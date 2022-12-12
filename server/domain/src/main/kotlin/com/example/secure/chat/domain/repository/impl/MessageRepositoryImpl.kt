@@ -49,20 +49,22 @@ object MessageRepositoryImpl : MessageRepository {
         }
 
     override fun Transactional.getNewMessages(idGt: Long, limit: Int): List<Message> =
-        Messages.select {
-            Messages.id.greater(idGt)
-        }.orderBy(
-            Messages.id,
-            SortOrder.ASC,
-        ).limit(limit).map { row ->
-            Message(
-                row[Messages.id].value,
-                row[Messages.chatId],
-                row[Users.login],
-                row[Messages.text].let(::Base64Bytes),
-                row[Messages.createdTs],
-            )
-        }
+        Messages
+            .innerJoin(Users, { userId }, { Users.id })
+            .select {
+                Messages.id.greater(idGt)
+            }.orderBy(
+                Messages.id,
+                SortOrder.ASC,
+            ).limit(limit).map { row ->
+                Message(
+                    row[Messages.id].value,
+                    row[Messages.chatId],
+                    row[Users.login],
+                    row[Messages.text].let(::Base64Bytes),
+                    row[Messages.createdTs],
+                )
+            }
 
     override fun Transactional.getLastMessageId(): Long =
         Messages.slice(Messages.id.max())

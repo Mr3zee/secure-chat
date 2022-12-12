@@ -26,7 +26,7 @@ object ChatRepositoryImpl : ChatRepository {
     }
 
     override fun Transactional.getUserChat(chatId: Long): UserChat {
-        UsersChatsJoinTable.innerJoin(Chats).select {
+        return UsersChatsJoinTable.innerJoin(Chats).select {
             UsersChatsJoinTable.chatId.eq(chatId)
         }.single().let { row ->
             UserChat(
@@ -36,7 +36,6 @@ object ChatRepositoryImpl : ChatRepository {
                 Base64Bytes(row[Chats.publicKey]),
             )
         }
-        TODO("Not yet implemented")
     }
 
     override fun Transactional.getUserChats(userId: Long): List<UserChat> =

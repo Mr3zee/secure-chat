@@ -21,6 +21,7 @@ class Credentials {
     fun loginContext(coder: Coder): LoginContext = LoginContext(
         username = login.value ?: error("Expected username"),
         privateCryptoKey = keyPair.value?.privateKey ?: error("Expected privateKey"),
+        publicCryptoKey = keyPair.value?.publicKey,
         coder = coder
     )
 
@@ -91,5 +92,8 @@ data class CredsDTO(
 data class LoginContext(
     val username: String,
     val privateCryptoKey: PrivateCryptoKey,
+    val publicCryptoKey: PublicCryptoKey?,
     val coder: Coder,
-)
+) : Coder by coder
+
+fun PublicCryptoKey?.unsureKey() = this ?: error("Expected publicKey")
