@@ -2,7 +2,6 @@ package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.components.*
 import com.example.secure.chat.web.compose.base.styles.applyLockedStyles
@@ -113,13 +112,12 @@ private fun xChatItem(model: ChatModel, chat: Chat) {
                 is Chat.Local -> securityManagerBot.name
             }
 
-            val lastMessageStatus by remember {
+            val lastMessageStatus = remember {
                 lastMessage?.status?.asState()
-                    ?: mutableStateOf(MessageStatus.Verified) // no message - no difference
             }
 
             // good layout
-            xLogo(40.px, name, withOutline = !locked && lastMessageStatus == MessageStatus.Unread)
+            xLogo(40.px, name, withOutline = !locked && lastMessageStatus?.value == MessageStatus.Unread)
 
             xChatDescription(chat, locked, lastMessage)
         }
@@ -164,7 +162,7 @@ private fun xChatDescription(chat: Chat, locked: Boolean, lastMessage: Message?)
                     is Chat.Global -> {
                         val name = (if (locked) "#${chat.id} " else "") + chat.name
 
-                        xEllipsis(name, maxSymbols = if (locked) 50 else 16) {
+                        xEllipsis(name, maxSymbols = if (locked) 35 else 16) {
                             applyCustomFont(font = JetBrainsMono.Bold)
                         }
                     }

@@ -6,9 +6,13 @@ import com.example.secure.chat.web.model.chat.processors.MessageContext
 
 class ConversationHandler<E : Enum<E>>(
     startState: E,
-    bot: Author.Bot,
+    bot: Author.Bot? = null,
     conversation: ConversationBuilder<E>.() -> Unit,
 ) : Handler<E> {
+    fun setState(state: E) {
+        currentState = state
+    }
+
     private var currentState = startState
 
     private val conversation = ConversationBuilder<E>(bot).also(conversation).build()
@@ -33,7 +37,7 @@ data class Conversation<E : Enum<E>>(
     val states: Map<E, List<Handler<E>>>,
 )
 
-class ConversationBuilder<E : Enum<E>>(private val bot: Author.Bot) {
+class ConversationBuilder<E : Enum<E>>(private val bot: Author.Bot?) {
     private val states = mutableMapOf<E, List<Handler<E>>>()
 
     fun state(state: E, stateBuilder: ConversationStateBuilder<E>.() -> Unit) {
@@ -44,7 +48,7 @@ class ConversationBuilder<E : Enum<E>>(private val bot: Author.Bot) {
     fun build() = Conversation(states)
 }
 
-class ConversationStateBuilder<E : Enum<E>>(private val bot: Author.Bot) {
+class ConversationStateBuilder<E : Enum<E>>(private val bot: Author.Bot?) {
     private val handlers = mutableListOf<Handler<E>>()
 
     fun text(handler: suspend MessageContext.(Message) -> E?) {
@@ -56,10 +60,12 @@ class ConversationStateBuilder<E : Enum<E>>(private val bot: Author.Bot) {
     }
 
     fun cancel(state: E) {
-        command("cancel") {
-            dispatch(Message(bot, "Operation canceled."))
+        bot?.let {
+            command("cancel") {
+                dispatch(Message(bot, "Operation canceled."))
 
-            state
+                state
+            }
         }
     }
 

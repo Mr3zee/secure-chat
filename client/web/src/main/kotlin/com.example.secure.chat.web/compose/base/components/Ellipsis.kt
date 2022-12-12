@@ -10,7 +10,7 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
-fun xEllipsis(content: String, maxSymbols: Int = 40, styleBuilder: StyleBuilder = {}) {
+fun xEllipsis(content: String, maxSymbols: Int = 35, styleBuilder: StyleBuilder = {}) {
     Span(
         attrs = {
             style {
@@ -23,9 +23,11 @@ fun xEllipsis(content: String, maxSymbols: Int = 40, styleBuilder: StyleBuilder 
             }
         }
     ) {
-        val text = if (content.length > maxSymbols) content.dropLast(3) else content
+        val text = if (content.length > maxSymbols) {
+            content.dropLast(content.length - maxSymbols - 3)
+        } else content
 
-        Text(text)
+        Text(text.trim())
 
         if (content.length > maxSymbols) {
             Span {

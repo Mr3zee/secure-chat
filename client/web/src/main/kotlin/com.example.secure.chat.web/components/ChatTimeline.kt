@@ -209,7 +209,7 @@ private fun xMessage(message: Message) {
 
                 horizontal {
                     if (message.author is Author.Me) {
-                        xMessageStatus(message) {
+                        xMessageStatus(message, displayLocal = true) {
                             gap(8.px)
                         }
                     }

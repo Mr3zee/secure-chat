@@ -40,15 +40,32 @@ class ChatModel(
     val resetInput = mutableProperty(currentInput.value)
     private val inputByChat = mutableMapOf<Chat, String>()
 
+    // all invites
+    val invites = mutableProperty(emptyMap<Long, Invite>())
+
     val newMessageEvent = mutableProperty(Unit)
 
-    val localMessageProcessor = LocalMessageProcessor(this)
+    private val localMessageProcessor = LocalMessageProcessor(this)
     private val globalMessageProcessor = GlobalMessageProcessor(this)
 
     private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
 
-
     init {
+        launch(Ui) {
+            api.subscribeOnNewInvites {
+                invites.value += it.associateBy { invite -> invite.chatId }
+            }
+
+            api.subscribeOnNewMessages { messages ->
+                val chats = chats.value
+                messages.forEach { (chatId, message) ->
+                    chats[chatId]?.let { chat ->
+                        newMessage(chat, message)
+                    }
+                }
+            }
+        }
+
         resetInput.subscribe {
             currentInput.value = it
         }
@@ -95,6 +112,20 @@ class ChatModel(
         }
     }
 
+    suspend fun leaveChat(chat: Chat.Global): Boolean {
+        return if (api.leaveChat(chat)) {
+            if (chat == selectedChat.value) {
+                selectedChat.value = Chat.Local
+            }
+
+            chats.value -= chat.id
+            credentials.chatsLonePublicKeys -= chat.id
+            credentials.chatKeys -= chat.id
+
+            true
+        } else false
+    }
+
     fun logout() {
         selectedChat.value = Chat.Local
         inputByChat.clear()
@@ -119,7 +150,7 @@ class ChatModel(
         }
 
         reader.onerror = {
-            newMessage(selectedChat.value, Message(securityManagerBot, "Failed to upload a file."))
+            sendLocalMessage("Failed to upload a file.")
 
             unlockInput()
         }
@@ -132,6 +163,19 @@ class ChatModel(
             chats.value = list.associateBy(keySelector = { it.first.id }) { it.first }
             credentials.chatsLonePublicKeys.putAll(list.associateBy(keySelector = { it.first.id }) { it.second })
         }
+    }
+
+    suspend fun acceptInvite(chatName: String, id: Invite): Boolean {
+        val res = api.acceptInvite(chatName, id)
+
+        if (res.isFailure) {
+            return false
+        }
+
+        val (chat, keyPair) = res.getOrNull() ?: error("unreachable")
+        addChat(chat, keyPair)
+
+        return true
     }
 
     fun lockInput() {
@@ -191,14 +235,14 @@ class ChatModel(
     }
 
     private suspend fun dispatchMessage(chat: Chat, message: Message) {
-        newMessage(chat, message)
-
         with(messageProcessor.value) {
-            val context = MessageContext(message.author) {
+            val user = credentials.login.value?.let { Author.User(it) } ?: Author.Me
+
+            val context = MessageContext(chat, user, message) {
                 newMessage(chat, it)
             }
 
-            context.processMessage(message)
+            context.processMessage()
         }
     }
 
@@ -214,6 +258,17 @@ class ChatModel(
         chat.lastMessage.value = message
 
         newMessageEvent.fire()
+    }
+
+    private fun sendLocalMessage(text: String) {
+        newMessage(
+            chat = Chat.Local,
+            message = Message(
+                author = securityManagerBot,
+                text = text,
+                initialStatus = MessageStatus.Local
+            )
+        )
     }
 }
 

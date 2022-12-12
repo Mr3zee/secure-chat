@@ -10,12 +10,15 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
-fun xMessageStatus(message: Message, content: Content = {}) {
+fun xMessageStatus(message: Message, displayLocal: Boolean = false, content: Content = {}) {
     val theme = XTheme.current
 
-    val text = when (message.status.value) {
-        MessageStatus.Local -> "Pending" to theme.warningColor // todo retry
-        MessageStatus.Failed -> "Failed" to theme.errorColor
+    val status = message.status.value
+
+    val text = when {
+        status == MessageStatus.Pending -> "Pending" to theme.warningColor
+        status == MessageStatus.Failed -> "Failed" to theme.errorColor
+        displayLocal && status == MessageStatus.Local -> "Local" to theme.secondaryTextColor60
         else -> null
     }
 
