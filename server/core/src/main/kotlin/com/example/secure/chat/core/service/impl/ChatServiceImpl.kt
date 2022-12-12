@@ -13,7 +13,6 @@ import com.example.secure.chat.domain.db.util.tx
 import com.example.secure.chat.domain.repository.ChatRepository
 import com.example.secure.chat.domain.repository.InviteRepository
 import com.example.secure.chat.domain.repository.MessageRepository
-import com.example.secure.chat.domain.repository.UserRepository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -22,7 +21,6 @@ object ChatServiceImpl : ChatService, KoinComponent {
     private val chatRepository by inject<ChatRepository>()
     private val inviteRepository by inject<InviteRepository>()
     private val messageRepository by inject<MessageRepository>()
-    private val userRepository by inject<UserRepository>()
 
     override suspend fun getAllChats(userId: Long): List<UserChat> = tx {
         with(chatRepository) {
@@ -55,11 +53,9 @@ object ChatServiceImpl : ChatService, KoinComponent {
     }
 
     override suspend fun sendInvite(rq: InviteCreateRq) = tx {
-        val user = with(userRepository) { getUser(rq.userLogin) }
-            ?: throw NoSuchElementException("Failed to find user with login = ${rq.userLogin}")
         with(inviteRepository) {
             createInvite(
-                Invite(user.id, rq.chatId, rq.encodedKey)
+                InviteCreateRq(rq.userId, rq.chatId, rq.encodedKey)
             )
         }
     }

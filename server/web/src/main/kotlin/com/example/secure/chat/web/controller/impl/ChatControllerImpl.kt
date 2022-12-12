@@ -1,18 +1,28 @@
 package com.example.secure.chat.web.controller.impl
 
+import com.example.auth.common.dto.event.NewMessagesEventDto
 import com.example.auth.common.dto.request.*
 import com.example.auth.common.dto.response.*
+import com.example.secure.chat.core.registry.NewMessagesRegistry
 import com.example.secure.chat.core.service.ChatService
+import com.example.secure.chat.core.service.UserService
 import com.example.secure.chat.web.controller.ChatController
 import com.example.secure.chat.web.controller.impl.converter.toDto
 import com.example.secure.chat.web.controller.impl.converter.toModel
 import com.example.secure.chat.web.routing.websocket.WebSocketSessionContext
+import io.ktor.server.websocket.*
+import kotlinx.coroutines.isActive
+import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 object ChatControllerImpl : ChatController, KoinComponent {
 
+    private val logger = KotlinLogging.logger { }
+
     private val chatService by inject<ChatService>()
+    private val userService by inject<UserService>()
+    private val newMessagesRegistry by inject<NewMessagesRegistry>()
 
     override suspend fun chatList(
         context: WebSocketSessionContext,
@@ -52,6 +62,30 @@ object ChatControllerImpl : ChatController, KoinComponent {
         ).let { ChatLeaveResponseDto(rq.requestId) }
     }
 
+    override suspend fun chatSubscribe(
+        context: WebSocketSessionContext,
+        rq: ChatSubscribeRequestDto,
+    ): ChatSubscribeResponseDto {
+        return newMessagesRegistry.subscribe(
+            rq.chatId,
+            context.sessionId,
+        ) { messages ->
+            try {
+                if (!context.isActive) {
+                    return@subscribe false
+                }
+                val event = NewMessagesEventDto(messages.map(::toDto))
+                context.sendSerialized(event)
+                logger.debug { "Sent ${messages.size} events to session ${context.sessionId}" }
+            } catch (e: Exception) {
+                logger.error(e) {
+                    "Failed to send message to session"
+                }
+            }
+            true
+        }.let { ChatSubscribeResponseDto(rq.requestId) }
+    }
+
     override suspend fun inviteList(
         context: WebSocketSessionContext,
         rq: InviteListRequestDto,
@@ -68,8 +102,10 @@ object ChatControllerImpl : ChatController, KoinComponent {
         context: WebSocketSessionContext,
         rq: InviteSendRequestDto,
     ): InviteSendResponseDto {
+        val invitedUser = userService.load(rq.userLogin)
+            ?: throw NoSuchElementException("Failed to find user with login = ${rq.userLogin}")
         return chatService.sendInvite(
-            toModel(rq.invite),
+            toModel(invitedUser, rq.invite),
         ).let { InviteSendResponseDto(rq.requestId) }
     }
 

@@ -26,6 +26,12 @@ data class ChatLeaveRequestDto(
 ) : ClientRequestDto<ChatLeaveRequestDto, ChatLeaveResponseDto>
 
 @Serializable
+data class ChatSubscribeRequestDto(
+    override val requestId: Long,
+    val chatId: Long,
+) : ClientRequestDto<ChatSubscribeRequestDto, ChatSubscribeResponseDto>
+
+@Serializable
 data class InviteListRequestDto(
     override val requestId: Long,
 ) : ClientRequestDto<InviteListRequestDto, InviteListResponseDto>

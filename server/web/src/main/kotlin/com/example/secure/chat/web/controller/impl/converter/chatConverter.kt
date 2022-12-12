@@ -28,8 +28,8 @@ fun toModel(user: User, dto: ChatDraftDto) = UserChatCreateRq(
     toModel(dto.name),
 )
 
-fun toModel(dto: InviteDraftDto) = InviteCreateRq(
-    dto.userLogin,
+fun toModel(invitedUser: User, dto: InviteDraftDto) = InviteCreateRq(
+    invitedUser.id,
     dto.chatId,
     toModel(dto.encodedKey),
 )

@@ -13,7 +13,7 @@ import org.koin.core.component.inject
 
 object RequestProcessorStrategy : KoinComponent {
 
-    private val logger = KotlinLogging.logger {}
+    private val logger = KotlinLogging.logger { }
 
     private val chatController by inject<ChatController>()
     private val messageController by inject<MessageController>()
@@ -26,6 +26,7 @@ object RequestProcessorStrategy : KoinComponent {
             is ChatCreateRequestDto -> { context -> chatController.chatCreate(context, request) }
             is ChatListRequestDto -> { context -> chatController.chatList(context, request) }
             is ChatLeaveRequestDto -> { context -> chatController.chatLeave(context, request) }
+            is ChatSubscribeRequestDto -> { context -> chatController.chatSubscribe(context, request) }
             is InviteAcceptRequestDto -> { context -> chatController.inviteAccept(context, request) }
             is InviteListRequestDto -> { context -> chatController.inviteList(context, request) }
             is InviteSendRequestDto -> { context -> chatController.inviteSend(context, request) }

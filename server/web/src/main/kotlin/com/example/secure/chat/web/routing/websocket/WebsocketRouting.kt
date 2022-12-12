@@ -14,19 +14,35 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.isActive
+import mu.KotlinLogging
 import org.koin.ktor.ext.inject
 import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.spec.MGF1ParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
+import java.util.concurrent.atomic.AtomicLong
 import javax.crypto.Cipher
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 
+private val sessionId = AtomicLong()
+
+private val logger = KotlinLogging.logger { }
+
 fun Routing.websocketRouting() {
     webSocket("/websocket") {
-        val context = WebSocketSessionContext(this, authenticate(this))
+        val context = try {
+            WebSocketSessionContext(
+                sessionId.incrementAndGet(),
+                authenticate(this),
+                this,
+            )
+        } catch (e: Exception) {
+            closeExceptionally(e)
+            logger.error(e) { "Failed to authenticate user" }
+            return@webSocket
+        }
         handleSession(context)
     }
 }

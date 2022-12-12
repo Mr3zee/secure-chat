@@ -3,6 +3,7 @@ package com.example.secure.chat.application
 import com.example.secure.chat.base.koinLevel
 import com.example.secure.chat.base.loggerLevel
 import com.example.secure.chat.core.coreModule
+import com.example.secure.chat.core.registry.Registry
 import com.example.secure.chat.domain.db.connection.postgres
 import com.example.secure.chat.domain.dbModules
 import com.example.secure.chat.web.routing.setUpRouting
@@ -25,6 +26,7 @@ import io.ktor.server.websocket.*
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import org.koin.environmentProperties
+import org.koin.ktor.ext.getKoin
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.slf4j.event.*
@@ -78,6 +80,8 @@ fun Application.module() {
     }
 
     postgres(isDebug = loggerLevel != Level.INFO)
+
+    getKoin().getAll<Registry<*, *>>().forEach(Registry<*, *>::startPolling)
 
     setUpRouting()
 }

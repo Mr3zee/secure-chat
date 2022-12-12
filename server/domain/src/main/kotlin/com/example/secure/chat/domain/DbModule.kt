@@ -16,14 +16,14 @@ import com.example.secure.chat.domain.repository.impl.UserRepositoryImpl
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-val tablesModule = module {
+private val tablesModule = module {
     single { ChatTables }.bind<TableHolder>()
     single { JoinTables }.bind<TableHolder>()
     single { MessageTables }.bind<TableHolder>()
     single { UserTables }.bind<TableHolder>()
 }
 
-val repositoryModule = module {
+private val repositoryModule = module {
     single { ChatRepositoryImpl }.bind<ChatRepository>()
     single { InviteRepositoryImpl }.bind<InviteRepository>()
     single { MessageRepositoryImpl }.bind<MessageRepository>()
