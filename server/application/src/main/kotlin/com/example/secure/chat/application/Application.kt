@@ -43,7 +43,11 @@ fun Application.module() {
         json()
     }
     install(WebSockets) {
-        contentConverter = KotlinxWebsocketSerializationConverter(Json)
+        contentConverter = KotlinxWebsocketSerializationConverter(
+            Json {
+                this.ignoreUnknownKeys = true
+            }
+        )
     }
 
     configureCORS()
@@ -60,8 +64,8 @@ fun Application.module() {
 
         modules(
             dbModules +
-            coreModule +
-            webModule
+                    coreModule +
+                    webModule
         )
     }
 
