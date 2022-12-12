@@ -1,12 +1,7 @@
 package com.example.secure.chat.web.model.api
 
-import com.example.secure.chat.web.crypto.CryptoKeyPair
-import com.example.secure.chat.web.crypto.PrivateCryptoKey
-import com.example.secure.chat.web.crypto.PublicCryptoKey
-import com.example.secure.chat.web.model.chat.Author
-import com.example.secure.chat.web.model.chat.Chat
-import com.example.secure.chat.web.model.chat.Message
-import com.example.secure.chat.web.model.chat.MessageStatus
+import com.example.secure.chat.web.crypto.*
+import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.utils.now
 import kotlin.random.Random
@@ -57,6 +52,18 @@ object ChatApiStub : ChatApi {
 
     override suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean {
         return true
+    }
+
+    override suspend fun acceptInvite(chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>> {
+        return Result.success(Chat.Global(random.nextLong(), chatName) to crypto.genRsaKeyPair())
+    }
+
+    override suspend fun subscribeOnNewInvites(handler: (List<Invite>) -> Unit) {
+        // unsupported
+    }
+
+    override suspend fun subscribeOnNewMessages(handler: (List<Pair<Long, Message>>) -> Unit) {
+        // unsupported
     }
 
     override suspend fun getChatTimeline(chat: Chat.Global): List<Message> {
