@@ -2,6 +2,7 @@ package com.example.secure.chat.web.model.api
 
 import com.example.auth.common.dto.model.chat.ChatDraftDto
 import com.example.auth.common.dto.model.invite.InviteDraftDto
+import com.example.auth.common.dto.model.invite.InviteDto
 import com.example.auth.common.dto.model.message.MessageDraftDto
 import com.example.auth.common.dto.model.message.MessageDto
 import com.example.auth.common.dto.request.*
@@ -281,11 +282,17 @@ object ChatApiImpl : ChatApi {
     }
 
     override suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean {
-        val chatPk = context.chatKeys[chat.id]?.publicKey ?: error("Expected chat ${chat.id} public key")
+        val chatSk = context.chatKeys[chat.id]?.privateKey ?: error("Expected chat ${chat.id} private key")
 
-        val encodedPk = context.exportPublicRSAKey(chatPk).toBase64Bytes()
+        val userPkEncoded = context.requestAndReceive { GetUserPublicKeyRequestDto(it, username) }?.publicKey
+            ?: return false
 
-        val draft = InviteDraftDto(username, chat.id, encodedPk)
+        val userPk = context.importRSAPublicKey(userPkEncoded.toArrayBuffer())
+
+        val encodedSk = context.safeEncryptRSA(userPk, context.exportPrivateRSAKey(chatSk))?.toBase64Bytes()
+            ?: error("Failed to export private key")
+
+        val draft = InviteDraftDto(username, chat.id, encodedSk)
 
         context.requestAndReceive { InviteSendRequestDto(it, username, draft) }
             ?: return false
@@ -312,7 +319,26 @@ object ChatApiImpl : ChatApi {
         chatName: String,
         invite: Invite,
     ): Result<Pair<Chat.Global, CryptoKeyPair>> {
-        TODO("Not yet implemented")
+        val inviteDto = InviteDto(invite.chatId, invite.encodedKey)
+
+        val privateKeyDer = context.safeDecryptRSA(context.privateCryptoKey, invite.encodedKey.toArrayBuffer())
+            ?: error("Failed to decode chat's private key")
+        val privateKey = context.importRSAPrivateKey(privateKeyDer)
+
+        val encodedName = context.safeEncryptRSA(context.publicCryptoKey.unsureKey(), chatName)?.toBase64Bytes()
+            ?: error("Failed to encode chat name")
+
+        val response = context.requestAndReceive { InviteAcceptRequestDto(it, inviteDto, encodedName) }
+            ?: return failBackoff()
+
+        val publicKey = context.importRSAPublicKey(response.acceptedChat.publicKey.toArrayBuffer())
+
+        val chat = Chat.Global(response.acceptedChat.id, chatName)
+
+        return (chat to jso<CryptoKeyPair> {
+            this.privateKey = privateKey
+            this.publicKey = publicKey
+        }).success()
     }
 
     override suspend fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
