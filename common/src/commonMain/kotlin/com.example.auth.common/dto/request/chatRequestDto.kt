@@ -1,6 +1,6 @@
 package com.example.auth.common.dto.request
 
-import com.example.auth.common.dto.model.byte.RawBytesDto
+import com.example.auth.common.dto.model.byte.Base64BytesDto
 import com.example.auth.common.dto.model.chat.ChatDraftDto
 import com.example.auth.common.dto.model.invite.InviteDraftDto
 import com.example.auth.common.dto.model.invite.InviteDto
@@ -16,7 +16,7 @@ data class ChatListRequestDto(
 data class ChatCreateRequestDto(
     override val requestId: Long,
     val chat: ChatDraftDto,
-    val startMessageText: RawBytesDto,
+    val startMessageText: Base64BytesDto,
 ) : ClientRequestDto<ChatCreateRequestDto, ChatCreateResponseDto>
 
 @Serializable
@@ -40,7 +40,7 @@ data class InviteListRequestDto(
 data class InviteAcceptRequestDto(
     override val requestId: Long,
     val invite: InviteDto,
-    val chatName: RawBytesDto,
+    val chatName: Base64BytesDto,
 ) : ClientRequestDto<InviteAcceptRequestDto, InviteAcceptResponseDto>
 
 @Serializable

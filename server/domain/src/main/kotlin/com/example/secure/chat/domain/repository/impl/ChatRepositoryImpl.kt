@@ -2,7 +2,7 @@ package com.example.secure.chat.domain.repository.impl
 
 import com.example.secure.chat.base.model.chat.UserChat
 import com.example.secure.chat.base.model.chat.UserChatCreateRq
-import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
+import com.example.secure.chat.base.model.wrapper.Base64Bytes
 import com.example.secure.chat.domain.db.tables.ChatTables.Chats
 import com.example.secure.chat.domain.db.tables.JoinTables.UsersChatsJoinTable
 import com.example.secure.chat.domain.db.util.Transactional
@@ -12,16 +12,16 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 object ChatRepositoryImpl : ChatRepository {
 
-    override fun Transactional.createChat(rqPublicKey: ByteArrayWrapper): Long =
+    override fun Transactional.createChat(rqPublicKey: Base64Bytes): Long =
         Chats.insertAndGetId {
-            it[publicKey] = rqPublicKey.byteArray
+            it[publicKey] = rqPublicKey.content
         }.value
 
     override fun Transactional.createUserChat(rqChatId: Long, rq: UserChatCreateRq) {
         UsersChatsJoinTable.insert {
             it[userId] = rq.user.id
             it[chatId] = rqChatId
-            it[name] = rq.name.byteArray
+            it[name] = rq.name.content
         }
     }
 
@@ -32,8 +32,8 @@ object ChatRepositoryImpl : ChatRepository {
             UserChat(
                 row[UsersChatsJoinTable.userId],
                 row[UsersChatsJoinTable.chatId],
-                ByteArrayWrapper(row[UsersChatsJoinTable.name]),
-                ByteArrayWrapper(row[Chats.publicKey]),
+                Base64Bytes(row[UsersChatsJoinTable.name]),
+                Base64Bytes(row[Chats.publicKey]),
             )
         }
         TODO("Not yet implemented")
@@ -46,8 +46,8 @@ object ChatRepositoryImpl : ChatRepository {
             UserChat(
                 row[UsersChatsJoinTable.userId],
                 row[UsersChatsJoinTable.chatId],
-                ByteArrayWrapper(row[UsersChatsJoinTable.name]),
-                ByteArrayWrapper(row[Chats.publicKey]),
+                Base64Bytes(row[UsersChatsJoinTable.name]),
+                Base64Bytes(row[Chats.publicKey]),
             )
         }
 

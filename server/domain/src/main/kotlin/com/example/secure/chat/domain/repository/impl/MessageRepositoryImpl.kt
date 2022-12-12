@@ -2,7 +2,7 @@ package com.example.secure.chat.domain.repository.impl
 
 import com.example.secure.chat.base.model.message.Message
 import com.example.secure.chat.base.model.message.MessageCreateRq
-import com.example.secure.chat.base.model.wrapper.ByteArrayWrapper
+import com.example.secure.chat.base.model.wrapper.Base64Bytes
 import com.example.secure.chat.domain.db.tables.MessageTables.Messages
 import com.example.secure.chat.domain.db.tables.UserTables.Users
 import com.example.secure.chat.domain.db.util.Transactional
@@ -15,7 +15,7 @@ object MessageRepositoryImpl : MessageRepository {
         Messages.insertAndGetId {
             it[chatId] = rq.user.id
             it[userId] = rq.user.id
-            it[text] = rq.text.byteArray
+            it[text] = rq.text.content
         }.value
 
     override fun Transactional.getMessage(id: Long): Message =
@@ -26,7 +26,7 @@ object MessageRepositoryImpl : MessageRepository {
                 row[Messages.id].value,
                 row[Messages.chatId],
                 row[Users.login],
-                row[Messages.text].let(::ByteArrayWrapper),
+                row[Messages.text].let(::Base64Bytes),
                 row[Messages.createdTs],
             )
         }
@@ -43,7 +43,7 @@ object MessageRepositoryImpl : MessageRepository {
                 row[Messages.id].value,
                 row[Messages.chatId],
                 row[Users.login],
-                row[Messages.text].let(::ByteArrayWrapper),
+                row[Messages.text].let(::Base64Bytes),
                 row[Messages.createdTs],
             )
         }
@@ -59,7 +59,7 @@ object MessageRepositoryImpl : MessageRepository {
                 row[Messages.id].value,
                 row[Messages.chatId],
                 row[Users.login],
-                row[Messages.text].let(::ByteArrayWrapper),
+                row[Messages.text].let(::Base64Bytes),
                 row[Messages.createdTs],
             )
         }
