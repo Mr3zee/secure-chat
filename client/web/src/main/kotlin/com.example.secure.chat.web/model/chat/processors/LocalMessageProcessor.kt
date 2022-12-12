@@ -8,9 +8,9 @@ import com.example.secure.chat.web.model.chat.Chat
 import com.example.secure.chat.web.model.chat.Message
 import com.example.secure.chat.web.model.chat.MessageStatus
 import com.example.secure.chat.web.model.chat.processors.handler.ConversationHandler
+import com.example.secure.chat.web.model.creds.ApiContext
 import com.example.secure.chat.web.model.creds.Credentials
 import com.example.secure.chat.web.model.creds.CredsDTO
-import com.example.secure.chat.web.model.creds.LoginContext
 import com.example.secure.chat.web.utils.get
 import kotlinx.js.jso
 
@@ -132,7 +132,7 @@ class LocalMessageProcessor(
 
                 storage.clear()
 
-                val res = model.api.loginUser(LoginContext(username, privateCryptoKey, null, model.coder))
+                val res = model.api.loginUser(ApiContext(username, privateCryptoKey, null, model.coder))
 
                 when {
                     res.isSuccess -> {
@@ -167,7 +167,7 @@ class LocalMessageProcessor(
 
             text {
                 withFile(it.text, errorState = LocalState.START) { creds ->
-                    val res = model.api.loginUser(LoginContext(creds.login, creds.privateKey, null, model.coder))
+                    val res = model.api.loginUser(ApiContext(creds.login, creds.privateKey, null, model.coder))
 
                     when {
                         res.isSuccess -> {
@@ -259,7 +259,7 @@ class LocalMessageProcessor(
                     initialStatus = MessageStatus.Verified
                 )
 
-                val res = model.api.createChat(model.loginContext, chatName, initialMessage)
+                val res = model.api.createChat(model.apiContext, chatName, initialMessage)
 
                 if (res.isFailure) {
                     sendMessage("Failed to create chat.")
@@ -392,7 +392,7 @@ class LocalMessageProcessor(
         chat: Chat.Global,
         privateCryptoKey: PrivateCryptoKey,
     ): PublicCryptoKey? {
-        val result = model.api.getLastMessage(model.loginContext, chat, privateCryptoKey)
+        val result = model.api.getLastMessage(model.apiContext, chat, privateCryptoKey)
 
         if (result.isFailure) {
             sendMessage("Failed to login into ${chat.name} chat.")

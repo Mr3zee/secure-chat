@@ -3,7 +3,7 @@ package com.example.secure.chat.web.model.api
 import com.example.secure.chat.web.crypto.*
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
-import com.example.secure.chat.web.model.creds.LoginContext
+import com.example.secure.chat.web.model.creds.ApiContext
 import com.example.secure.chat.web.utils.now
 import com.example.secure.chat.web.utils.success
 import kotlin.random.Random
@@ -18,7 +18,7 @@ object ChatApiStub : ChatApi {
     }
 
     override suspend fun loginUser(
-        context: LoginContext,
+        context: ApiContext,
     ): Result<CryptoKeyPair> = with(context) {
         return when (username) {
             "admin", "user" -> Result.success(coder.genRsaKeyPair())
@@ -31,7 +31,7 @@ object ChatApiStub : ChatApi {
     }
 
     override suspend fun getLastMessage(
-        context: LoginContext,
+        context: ApiContext,
         chat: Chat.Global,
         key: PrivateCryptoKey,
     ): Result<Pair<Message?, PublicCryptoKey>> {
@@ -42,7 +42,7 @@ object ChatApiStub : ChatApi {
     private val random = Random(1234)
 
     override suspend fun createChat(
-        context: LoginContext,
+        context: ApiContext,
         chatName: String,
         initialMessage: Message,
     ): Result<Pair<Chat.Global, CryptoKeyPair>> {
@@ -52,35 +52,35 @@ object ChatApiStub : ChatApi {
         } to context.coder.genRsaKeyPair()).let { Result.success(it) }
     }
 
-    override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {
+    override suspend fun leaveChat(context: ApiContext, chat: Chat.Global): Boolean {
         return true
     }
 
-    override suspend fun inviteMember(context: LoginContext, chat: Chat.Global, username: String): Boolean {
+    override suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean {
         return true
     }
 
-    override suspend fun sendMessage(context: LoginContext, chat: Chat.Global, message: Message): Boolean {
+    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
         return true
     }
 
     override suspend fun acceptInvite(
-        context: LoginContext,
+        context: ApiContext,
         chatName: String,
         invite: Invite,
     ): Result<Pair<Chat.Global, CryptoKeyPair>> {
         return Result.success(Chat.Global(random.nextLong(), chatName) to crypto.genRsaKeyPair())
     }
 
-    override suspend fun subscribeOnNewInvites(context: LoginContext, handler: (List<Invite>) -> Unit) {
+    override suspend fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
         // unsupported
     }
 
-    override suspend fun subscribeOnNewMessages(context: LoginContext, handler: (List<Pair<Long, Message>>) -> Unit) {
+    override suspend fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
         // unsupported
     }
 
-    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): Result<List<Message>> {
+    override suspend fun getChatTimeline(context: ApiContext, chat: Chat.Global): Result<List<Message>> {
         return listOf(
             message.copy(
                 text = "hello 1".repeat(100),
@@ -136,7 +136,7 @@ object ChatApiStub : ChatApi {
         ).let { Result.success(it) }
     }
 
-    override suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
+    override suspend fun getAllChats(context: ApiContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
         val pk = context.coder.genRsaKeyPair().publicKey
 
         return listOf(

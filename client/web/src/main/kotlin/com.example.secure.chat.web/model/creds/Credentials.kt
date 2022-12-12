@@ -18,7 +18,7 @@ class Credentials {
     val chatKeys = mutableMapOf<Long, CryptoKeyPair>()
     val chatsLonePublicKeys = mutableMapOf<Long, PublicCryptoKey>()
 
-    fun loginContext(coder: Coder): LoginContext = LoginContext(
+    fun loginContext(coder: Coder): ApiContext = ApiContext(
         username = login.value ?: error("Expected username"),
         privateCryptoKey = keyPair.value?.privateKey ?: error("Expected privateKey"),
         publicCryptoKey = keyPair.value?.publicKey,
@@ -90,7 +90,7 @@ data class CredsDTO(
     val chatKeys: Map<Long, PrivateCryptoKey>,
 )
 
-data class LoginContext(
+data class ApiContext(
     val username: String,
     val privateCryptoKey: PrivateCryptoKey,
     val publicCryptoKey: PublicCryptoKey?,

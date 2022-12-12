@@ -7,40 +7,40 @@ import com.example.secure.chat.web.model.chat.Chat
 import com.example.secure.chat.web.model.chat.Invite
 import com.example.secure.chat.web.model.chat.Message
 import com.example.secure.chat.web.model.coder.Coder
-import com.example.secure.chat.web.model.creds.LoginContext
+import com.example.secure.chat.web.model.creds.ApiContext
 
 interface ChatApi {
     suspend fun registerUser(username: String, keyPair: CryptoKeyPair, coder: Coder): Boolean
 
-    suspend fun loginUser(context: LoginContext): Result<CryptoKeyPair>
+    suspend fun loginUser(context: ApiContext): Result<CryptoKeyPair>
 
     suspend fun logoutUser(): Boolean
 
-    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Result<Pair<Message?, PublicCryptoKey>>
+    suspend fun getLastMessage(context: ApiContext, chat: Chat.Global, key: PrivateCryptoKey): Result<Pair<Message?, PublicCryptoKey>>
 
     suspend fun createChat(
-        context: LoginContext,
+        context: ApiContext,
         chatName: String,
         initialMessage: Message,
     ): Result<Pair<Chat.Global, CryptoKeyPair>>
 
-    suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>>
+    suspend fun getAllChats(context: ApiContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>>
 
-    suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): Result<List<Message>>
+    suspend fun getChatTimeline(context: ApiContext, chat: Chat.Global): Result<List<Message>>
 
-    suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean
+    suspend fun leaveChat(context: ApiContext, chat: Chat.Global): Boolean
 
-    suspend fun inviteMember(context: LoginContext, chat: Chat.Global, username: String): Boolean
+    suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean
 
-    suspend fun sendMessage(context: LoginContext, chat: Chat.Global, message: Message): Boolean
+    suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean
 
     suspend fun acceptInvite(
-        context: LoginContext,
+        context: ApiContext,
         chatName: String,
         invite: Invite,
     ): Result<Pair<Chat.Global, CryptoKeyPair>>
 
-    suspend fun subscribeOnNewInvites(context: LoginContext, handler: (List<Invite>) -> Unit)
+    suspend fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit)
 
-    suspend fun subscribeOnNewMessages(context: LoginContext, handler: (List<Pair<Long, Message>>) -> Unit)
+    suspend fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit)
 }

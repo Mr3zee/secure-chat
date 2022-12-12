@@ -62,7 +62,7 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
                     return@command GlobalState.ERROR
                 }
 
-                if (model.api.inviteMember(model.loginContext, chat, username)) {
+                if (model.api.inviteMember(model.apiContext, chat, username)) {
                     globalMessage("'${author.name}' invited '$username' to the chat.")
 
                     GlobalState.OK
@@ -104,7 +104,7 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
 
     private fun MessageContext.sendGlobalMessage(chat: Chat.Global, globalMessage: Message) {
         launch(Ui) {
-            if (model.api.sendMessage(model.loginContext, chat, globalMessage)) {
+            if (model.api.sendMessage(model.apiContext, chat, globalMessage)) {
                 globalMessage.status.value = MessageStatus.Verified
             } else {
                 globalMessage.status.value = MessageStatus.Failed

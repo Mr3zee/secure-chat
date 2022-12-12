@@ -1,6 +1,7 @@
 package com.example.secure.chat.web.model.api
 
 import com.example.auth.common.dto.model.chat.ChatDraftDto
+import com.example.auth.common.dto.model.message.MessageDraftDto
 import com.example.auth.common.dto.model.message.MessageDto
 import com.example.auth.common.dto.request.*
 import com.example.auth.common.dto.response.*
@@ -11,7 +12,7 @@ import com.example.secure.chat.platform.launch
 import com.example.secure.chat.web.crypto.*
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
-import com.example.secure.chat.web.model.creds.LoginContext
+import com.example.secure.chat.web.model.creds.ApiContext
 import com.example.secure.chat.web.model.creds.unsureKey
 import com.example.secure.chat.web.utils.*
 import io.ktor.client.plugins.websocket.*
@@ -41,7 +42,7 @@ object ChatApiImpl : ChatApi {
         }
     }
 
-    private suspend fun <T> LoginContext.withSession(body: suspend DefaultClientWebSocketSession.() -> T): T {
+    private suspend fun <T> ApiContext.withSession(body: suspend DefaultClientWebSocketSession.() -> T): T {
         val s = session ?: error("Session uninitialized")
 
         if (!s.isActive) {
@@ -53,7 +54,7 @@ object ChatApiImpl : ChatApi {
         return s.body()
     }
 
-    private suspend fun <T> LoginContext.backoffWithSession(body: suspend DefaultClientWebSocketSession.() -> T): T? {
+    private suspend fun <T> ApiContext.backoffWithSession(body: suspend DefaultClientWebSocketSession.() -> T): T? {
         return backoff {
             withSession(body)
         }
@@ -85,7 +86,7 @@ object ChatApiImpl : ChatApi {
         this.session?.collectServerResponses()
     }
 
-    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> LoginContext.receiveExact(id: Long): RESPONSE_TYPE
+    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> ApiContext.receiveExact(id: Long): RESPONSE_TYPE
             where RESPONSE_TYPE : ServerResponseDto<REQUEST_TYPE, RESPONSE_TYPE>,
                   REQUEST_TYPE : ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE> {
         val response = backlog.filterIsInstance<RESPONSE_TYPE>().singleOrNull { it.requestId == id }
@@ -113,7 +114,7 @@ object ChatApiImpl : ChatApi {
         return res
     }
 
-    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> LoginContext.requestAndReceive(
+    private suspend inline fun <REQUEST_TYPE, reified RESPONSE_TYPE> ApiContext.requestAndReceive(
         requestDto: (id: Long) -> ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE>,
     ): RESPONSE_TYPE? where RESPONSE_TYPE : ServerResponseDto<REQUEST_TYPE, RESPONSE_TYPE>,
                             REQUEST_TYPE : ClientRequestDto<REQUEST_TYPE, RESPONSE_TYPE> {
@@ -151,7 +152,7 @@ object ChatApiImpl : ChatApi {
         return true
     }
 
-    override suspend fun loginUser(context: LoginContext): Result<CryptoKeyPair> = with(context) {
+    override suspend fun loginUser(context: ApiContext): Result<CryptoKeyPair> = with(context) {
         val localSession = backoff { createSession() } ?: return failBackoff()
 
         backoff {
@@ -199,7 +200,7 @@ object ChatApiImpl : ChatApi {
     }
 
     override suspend fun getLastMessage(
-        context: LoginContext,
+        context: ApiContext,
         chat: Chat.Global,
         key: PrivateCryptoKey,
     ): Result<Pair<Message?, PublicCryptoKey>> {
@@ -215,7 +216,7 @@ object ChatApiImpl : ChatApi {
     }
 
     override suspend fun createChat(
-        context: LoginContext,
+        context: ApiContext,
         chatName: String,
         initialMessage: Message,
     ): Result<Pair<Chat.Global, CryptoKeyPair>> {
@@ -245,7 +246,7 @@ object ChatApiImpl : ChatApi {
         return Result.success(newChat to keyPair)
     }
 
-    override suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
+    override suspend fun getAllChats(context: ApiContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
         val chats = context.requestAndReceive { ChatListRequestDto(it) }?.chats ?: return failBackoff()
 
         return chats.map {
@@ -260,7 +261,7 @@ object ChatApiImpl : ChatApi {
         }.let { Result.success(it) }
     }
 
-    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): Result<List<Message>> {
+    override suspend fun getChatTimeline(context: ApiContext, chat: Chat.Global): Result<List<Message>> {
         val response = context.requestAndReceive {
             MessageListRequestDto(it, chat.id, null, 1000)
         } ?: return failBackoff()
@@ -271,39 +272,49 @@ object ChatApiImpl : ChatApi {
         return response.messages.map { it.toMessage(context, privateCryptoKey) }.success()
     }
 
-    override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {
+    override suspend fun leaveChat(context: ApiContext, chat: Chat.Global): Boolean {
         context.requestAndReceive { ChatLeaveRequestDto(it, chat.id) }
             ?: return false
 
         return true
     }
 
-    override suspend fun inviteMember(context: LoginContext, chat: Chat.Global, username: String): Boolean {
+    override suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean {
         TODO("Not yet implemented")
     }
 
-    override suspend fun sendMessage(context: LoginContext, chat: Chat.Global, message: Message): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
+        val chatPk = context.chatKeys[chat.id]?.publicKey ?: error("Expected chat ${chat.id} public key")
+
+        val encodedText = context.safeEncryptRSA(chatPk, message.text)?.toBase64Bytes()
+            ?: error("Failed to encrypt message")
+
+        val draft = MessageDraftDto(chat.id, encodedText)
+
+        context.requestAndReceive { MessageSendRequestDto(it, draft) }
+            ?: return false
+
+        return true
     }
 
     override suspend fun acceptInvite(
-        context: LoginContext,
+        context: ApiContext,
         chatName: String,
         invite: Invite,
     ): Result<Pair<Chat.Global, CryptoKeyPair>> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun subscribeOnNewInvites(context: LoginContext, handler: (List<Invite>) -> Unit) {
+    override suspend fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
         // todo
     }
 
-    override suspend fun subscribeOnNewMessages(context: LoginContext, handler: (List<Pair<Long, Message>>) -> Unit) {
+    override suspend fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
         // todo
     }
 }
 
-private suspend fun MessageDto.toMessage(context: LoginContext, privateCryptoKey: PrivateCryptoKey) = Message(
+private suspend fun MessageDto.toMessage(context: ApiContext, privateCryptoKey: PrivateCryptoKey) = Message(
     author = Author.User(userLogin),
     text = context.safeDecryptRSA(
         privateKey = privateCryptoKey,

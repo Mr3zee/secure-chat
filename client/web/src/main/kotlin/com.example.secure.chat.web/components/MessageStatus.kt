@@ -1,6 +1,8 @@
 package com.example.secure.chat.web.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import com.example.secure.chat.web.compose.base.types.Content
 import com.example.secure.chat.web.model.chat.Message
 import com.example.secure.chat.web.model.chat.MessageStatus
@@ -13,7 +15,7 @@ import org.jetbrains.compose.web.dom.Text
 fun xMessageStatus(message: Message, displayLocal: Boolean = false, content: Content = {}) {
     val theme = XTheme.current
 
-    val status = message.status.value
+    val status by remember { message.status.asState() }
 
     val text = when {
         status == MessageStatus.Pending -> "Pending" to theme.warningColor

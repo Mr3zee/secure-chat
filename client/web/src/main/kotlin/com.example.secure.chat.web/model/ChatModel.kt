@@ -10,8 +10,8 @@ import com.example.secure.chat.web.model.api.ChatApi
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.chat.processors.*
 import com.example.secure.chat.web.model.coder.Coder
+import com.example.secure.chat.web.model.creds.ApiContext
 import com.example.secure.chat.web.model.creds.Credentials
-import com.example.secure.chat.web.model.creds.LoginContext
 import com.example.secure.chat.web.utils.clipboard
 import com.example.secure.chat.web.utils.get
 import kotlinx.coroutines.Job
@@ -52,7 +52,7 @@ class ChatModel(
 
     private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
 
-    val loginContext: LoginContext get() = credentials.loginContext(coder)
+    val apiContext: ApiContext get() = credentials.loginContext(coder)
 
     init {
         resetInput.subscribe {
@@ -85,7 +85,7 @@ class ChatModel(
                 is Chat.Global -> {
                     chatTimelineRequestJob?.cancel()
                     chatTimelineRequestJob = launch(Ui) {
-                        selectedChatTimeline.value = api.getChatTimeline(loginContext, chat).let {
+                        selectedChatTimeline.value = api.getChatTimeline(apiContext, chat).let {
                             if (it.isFailure) {
                                 console.error("Failed to load chat's timeline")
                                 emptyList()
@@ -108,11 +108,11 @@ class ChatModel(
 
     private fun subscribeOnServerEvents() {
         launch(Ui) {
-            api.subscribeOnNewInvites(loginContext) {
+            api.subscribeOnNewInvites(apiContext) {
                 invites.value += it.associateBy { invite -> invite.chatId }
             }
 
-            api.subscribeOnNewMessages(loginContext) { messages ->
+            api.subscribeOnNewMessages(apiContext) { messages ->
                 val chats = chats.value
                 messages.forEach { (chatId, message) ->
                     chats[chatId]?.let { chat ->
@@ -124,7 +124,7 @@ class ChatModel(
     }
 
     suspend fun leaveChat(chat: Chat.Global): Boolean {
-        return if (api.leaveChat(loginContext, chat)) {
+        return if (api.leaveChat(apiContext, chat)) {
             if (chat == selectedChat.value) {
                 selectedChat.value = Chat.Local
             }
@@ -172,7 +172,7 @@ class ChatModel(
     }
 
     suspend fun loadChats() {
-        api.getAllChats(loginContext).let { res ->
+        api.getAllChats(apiContext).let { res ->
             val list = if (res.isFailure) {
                 console.error("Failed to load chat list")
                 return
@@ -184,7 +184,7 @@ class ChatModel(
     }
 
     suspend fun acceptInvite(chatName: String, id: Invite): Boolean {
-        val res = api.acceptInvite(loginContext, chatName, id)
+        val res = api.acceptInvite(apiContext, chatName, id)
 
         if (res.isFailure) {
             return false
