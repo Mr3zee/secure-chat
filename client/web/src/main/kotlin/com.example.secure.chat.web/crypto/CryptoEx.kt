@@ -68,13 +68,27 @@ suspend fun Crypto.importRSAPrivateKeyPEM(string: String): PrivateCryptoKey {
     val data = string.trim().removePrefix(PRIVATE_PEM_BEGIN).removeSuffix(PRIVATE_PEM_END).trim()
     val raw = window.atob(data)
     val binaryDer = raw.toArrayBuffer()
+    return importRSAPrivateKey(binaryDer)
+}
+
+suspend fun Crypto.importRSAPrivateKey(data: ArrayBuffer): PrivateCryptoKey {
     return importKey(
         format = PKCS8_FORMAT,
-        keyData = binaryDer,
+        keyData = data,
         algorithm = ImportRsaParams,
         extractable = true,
         keyUsages = arrayOf(DECRYPT_KEY_USAGE)
     ).await().unsafeCast<PrivateCryptoKey>()
+}
+
+suspend fun Crypto.importRSAPublicKey(data: ArrayBuffer): PublicCryptoKey {
+    return importKey(
+        format = SPKI_FORMAT,
+        keyData = data,
+        algorithm = ImportRsaParams,
+        extractable = true,
+        keyUsages = arrayOf(ENCRYPT_KEY_USAGE)
+    ).await().unsafeCast<PublicCryptoKey>()
 }
 
 suspend fun Crypto.genRsaKeyPair(): CryptoKeyPair {

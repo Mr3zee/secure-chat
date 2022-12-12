@@ -2,7 +2,9 @@
 
 package com.example.secure.chat.web.utils
 
+import com.example.auth.common.dto.model.byte.Base64BytesDto
 import io.ktor.utils.io.core.*
+import kotlinx.browser.window
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.set
@@ -23,6 +25,22 @@ inline fun ArrayBuffer.asString(): String {
 
 inline fun ArrayBuffer.toByteArray(): ByteArray {
     return Uint8Array(this).toByteArray()
+}
+
+fun String.decodeBase64(): String {
+    return window.atob(this)
+}
+
+fun String.encodeBase64(): String {
+    return window.btoa(this)
+}
+
+inline fun ArrayBuffer.toBase64Bytes(): Base64BytesDto {
+    return Base64BytesDto(asString().encodeBase64())
+}
+
+fun Base64BytesDto.toArrayBuffer(): ArrayBuffer {
+    return content.decodeBase64().toArrayBuffer()
 }
 
 

@@ -10,17 +10,21 @@ import com.example.secure.chat.web.model.chat.processors.handler.ConversationHan
 
 class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
     override suspend fun MessageContext.processMessage(): Unit = with(globalConversation) {
-        when (handle(message) ?: error("unreachable")) {
-            GlobalState.OK, GlobalState.DEFAULT -> MessageStatus.Verified
+        try {
+            when (handle(message) ?: error("unreachable")) {
+                GlobalState.OK, GlobalState.DEFAULT -> MessageStatus.Verified
 
-            GlobalState.ERROR -> MessageStatus.Failed
+                GlobalState.ERROR -> MessageStatus.Failed
 
-            else -> null
-        }?.let {
-            message.status.value = it
+                else -> null
+            }?.let {
+                message.status.value = it
+            }
+        } catch (e: dynamic) {
+            localMessage("Failed to perform operation.")
+        } finally {
+            globalConversation.setState(GlobalState.DEFAULT)
         }
-
-        globalConversation.setState(GlobalState.DEFAULT)
     }
 
     private val globalConversation = ConversationHandler(GlobalState.DEFAULT) {

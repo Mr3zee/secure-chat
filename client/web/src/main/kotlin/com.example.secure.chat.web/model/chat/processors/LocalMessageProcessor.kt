@@ -10,6 +10,7 @@ import com.example.secure.chat.web.model.chat.MessageStatus
 import com.example.secure.chat.web.model.chat.processors.handler.ConversationHandler
 import com.example.secure.chat.web.model.creds.Credentials
 import com.example.secure.chat.web.model.creds.CredsDTO
+import com.example.secure.chat.web.model.creds.LoginContext
 import kotlinx.js.jso
 
 class LocalMessageProcessor(
@@ -23,12 +24,16 @@ class LocalMessageProcessor(
 
         model.lockInput()
 
-        handle(message) ?: run {
-            sendMessage("Unknown command. If you are not logged in, please log in or register first. List of available commands:")
-            sendMessage(CMD_REFERENCE)
+        try {
+            handle(message) ?: run {
+                sendMessage("Unknown command. If you are not logged in, please log in or register first. List of available commands:")
+                sendMessage(CMD_REFERENCE)
+            }
+        } catch (e: dynamic) {
+            sendMessage("Failed to perform operation.")
+        } finally {
+            model.unlockInput()
         }
-
-        model.unlockInput()
     }
 
     private val usernameRegex = Regex("^[a-zA-Z0-9_\\-]{5,}$")
@@ -59,6 +64,7 @@ class LocalMessageProcessor(
                     LocalState.LOGGED_IN
                 } else {
                     sendMessage("Username is already taken, please choose another.")
+
                     LocalState.START
                 }
             }
@@ -123,7 +129,7 @@ class LocalMessageProcessor(
 
                 storage.clear()
 
-                val res = model.api.loginUser(username, privateCryptoKey, model.coder)
+                val res = model.api.loginUser(LoginContext(username, privateCryptoKey, model.coder))
 
                 when {
                     res.isSuccess -> {
@@ -156,7 +162,7 @@ class LocalMessageProcessor(
 
             text {
                 withFile(it.text, errorState = LocalState.START) { creds ->
-                    val res = model.api.loginUser(creds.login, creds.privateKey, model.coder)
+                    val res = model.api.loginUser(LoginContext(creds.login, creds.privateKey, model.coder))
 
                     when {
                         res.isSuccess -> {

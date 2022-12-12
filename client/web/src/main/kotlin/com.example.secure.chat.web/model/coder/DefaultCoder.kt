@@ -20,9 +20,35 @@ object DefaultCoder : Coder {
         return crypto.importRSAPrivateKeyPEM(string)
     }
 
+    override suspend fun importRSAPrivateKey(data: ArrayBuffer): PrivateCryptoKey {
+        return crypto.importRSAPrivateKey(data)
+    }
+
+    override suspend fun importRSAPublicKey(data: ArrayBuffer): PublicCryptoKey {
+        return crypto.importRSAPublicKey(data)
+    }
+
     override suspend fun safeImportRSAPrivateKeyPEM(string: String): PrivateCryptoKey? {
-        return try {
+        return safeImport {
             importRSAPrivateKeyPEM(string)
+        }
+    }
+
+    override suspend fun safeImportRSAPrivateKey(data: ArrayBuffer): PrivateCryptoKey? {
+        return safeImport {
+            importRSAPrivateKey(data)
+        }
+    }
+
+    override suspend fun safeImportRSAPublicKey(data: ArrayBuffer): PublicCryptoKey? {
+        return safeImport {
+            importRSAPublicKey(data)
+        }
+    }
+
+    private suspend fun <T> safeImport(body: suspend () -> T): T? {
+        return try {
+            body()
         } catch (e: dynamic) {
             console.warn("Failed to import key", e)
             null

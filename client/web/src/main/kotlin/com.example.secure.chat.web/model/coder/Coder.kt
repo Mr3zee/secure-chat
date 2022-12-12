@@ -14,7 +14,15 @@ interface Coder {
 
     suspend fun importRSAPrivateKeyPEM(string: String): PrivateCryptoKey
 
+    suspend fun importRSAPrivateKey(data: ArrayBuffer): PrivateCryptoKey
+
+    suspend fun importRSAPublicKey(data: ArrayBuffer): PublicCryptoKey
+
     suspend fun safeImportRSAPrivateKeyPEM(string: String): PrivateCryptoKey?
+
+    suspend fun safeImportRSAPrivateKey(data: ArrayBuffer): PrivateCryptoKey?
+
+    suspend fun safeImportRSAPublicKey(data: ArrayBuffer): PublicCryptoKey?
 
     suspend fun genRsaKeyPair(): CryptoKeyPair
 

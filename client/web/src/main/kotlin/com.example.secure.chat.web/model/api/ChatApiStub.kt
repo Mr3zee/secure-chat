@@ -3,9 +3,11 @@ package com.example.secure.chat.web.model.api
 import com.example.secure.chat.web.crypto.*
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
+import com.example.secure.chat.web.model.creds.LoginContext
 import com.example.secure.chat.web.utils.now
 import kotlin.random.Random
 
+@Suppress("unused")
 object ChatApiStub : ChatApi {
     override suspend fun registerUser(username: String, keyPair: CryptoKeyPair, coder: Coder): Boolean {
         return when (username) {
@@ -15,10 +17,8 @@ object ChatApiStub : ChatApi {
     }
 
     override suspend fun loginUser(
-        username: String,
-        privateCryptoKey: PrivateCryptoKey,
-        coder: Coder,
-    ): Result<CryptoKeyPair> {
+        context: LoginContext,
+    ): Result<CryptoKeyPair> = with(context) {
         return when (username) {
             "admin", "user" -> Result.success(coder.genRsaKeyPair())
             else -> Result.failure(IllegalArgumentException())

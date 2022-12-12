@@ -24,7 +24,9 @@ val client by lazy {
         }
 
         install(WebSockets) {
-            contentConverter = KotlinxWebsocketSerializationConverter(Json)
+            contentConverter = KotlinxWebsocketSerializationConverter(Json {
+                ignoreUnknownKeys = true
+            })
         }
     }
 }
