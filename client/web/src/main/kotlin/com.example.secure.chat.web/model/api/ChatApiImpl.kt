@@ -272,7 +272,10 @@ object ChatApiImpl : ChatApi {
     }
 
     override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {
-        TODO("Not yet implemented")
+        context.requestAndReceive { ChatLeaveRequestDto(it, chat.id) }
+            ?: return false
+
+        return true
     }
 
     override suspend fun inviteMember(context: LoginContext, chat: Chat.Global, username: String): Boolean {
