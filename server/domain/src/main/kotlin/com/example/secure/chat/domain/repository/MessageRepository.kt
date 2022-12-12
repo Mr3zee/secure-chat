@@ -8,4 +8,6 @@ interface MessageRepository {
     fun Transactional.createMessage(rq: MessageCreateRq): Long
     fun Transactional.getMessage(id: Long): Message
     fun Transactional.getMessages(chatId: Long, idLt: Long, limit: Int): List<Message>
+    fun Transactional.getNewMessages(idGt: Long, limit: Int): List<Message>
+    fun Transactional.getLastMessageId(): Long
 }

@@ -21,6 +21,11 @@ interface ChatController {
         rq: ChatLeaveRequestDto,
     ): ChatLeaveResponseDto
 
+    suspend fun chatSubscribe(
+        context: WebSocketSessionContext,
+        rq: ChatSubscribeRequestDto,
+    ): ChatSubscribeResponseDto
+
     suspend fun inviteList(
         context: WebSocketSessionContext,
         rq: InviteListRequestDto,
