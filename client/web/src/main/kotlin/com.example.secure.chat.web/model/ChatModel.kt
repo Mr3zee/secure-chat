@@ -50,8 +50,22 @@ class ChatModel(
 
     private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
 
-
     init {
+        launch(Ui) {
+            api.subscribeOnNewInvites {
+                invites.value += it.associateBy { invite -> invite.chatId }
+            }
+
+            api.subscribeOnNewMessages { messages ->
+                val chats = chats.value
+                messages.forEach { (chatId, message) ->
+                    chats[chatId]?.let { chat ->
+                        newMessage(chat, message)
+                    }
+                }
+            }
+        }
+
         resetInput.subscribe {
             currentInput.value = it
         }

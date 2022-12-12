@@ -28,4 +28,8 @@ interface ChatApi {
     suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean
 
     suspend fun acceptInvite(chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>>
+
+    suspend fun subscribeOnNewInvites(handler: (List<Invite>) -> Unit)
+
+    suspend fun subscribeOnNewMessages(handler: (List<Pair<Long, Message>>) -> Unit)
 }
