@@ -22,7 +22,8 @@ class Credentials {
         username = login.value ?: error("Expected username"),
         privateCryptoKey = keyPair.value?.privateKey ?: error("Expected privateKey"),
         publicCryptoKey = keyPair.value?.publicKey,
-        coder = coder
+        coder = coder,
+        chatKeys = chatKeys
     )
 
     fun clear() {
@@ -94,6 +95,7 @@ data class LoginContext(
     val privateCryptoKey: PrivateCryptoKey,
     val publicCryptoKey: PublicCryptoKey?,
     val coder: Coder,
+    val chatKeys: Map<Long, CryptoKeyPair> = emptyMap(),
 ) : Coder by coder
 
 fun PublicCryptoKey?.unsureKey() = this ?: error("Expected publicKey")

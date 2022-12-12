@@ -34,7 +34,7 @@ object MessageRepositoryImpl : MessageRepository {
     override fun Transactional.getMessages(chatId: Long, idLt: Long, limit: Int): List<Message> =
         Messages.innerJoin(Users).select {
             Messages.chatId.eq(chatId)
-                .and(Messages.id.less(chatId))
+                .and(Messages.id.greater(idLt))
         }.orderBy(
             Messages.id,
             SortOrder.DESC,
@@ -50,7 +50,7 @@ object MessageRepositoryImpl : MessageRepository {
 
     override fun Transactional.getNewMessages(idGt: Long, limit: Int): List<Message> =
         Messages
-            .innerJoin(Users, { userId }, { Users.id })
+            .innerJoin(Users)
             .select {
                 Messages.id.greater(idGt)
             }.orderBy(

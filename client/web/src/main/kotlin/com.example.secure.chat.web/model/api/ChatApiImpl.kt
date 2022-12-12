@@ -239,7 +239,11 @@ object ChatApiImpl : ChatApi {
     }
 
     override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): Result<List<Message>> {
-        TODO("Not yet implemented")
+        val response = context.requestAndReceive {
+            MessageListRequestDto(it, chat.id, null, 1000)
+        } ?: return failBackoff()
+
+        return response.messages.map { it.toMessage(context) }.success()
     }
 
     override suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean {
@@ -273,8 +277,10 @@ object ChatApiImpl : ChatApi {
 
 private suspend fun MessageDto.toMessage(context: LoginContext) = Message(
     author = Author.User(userLogin),
-    text = context.safeDecryptRSA(context.privateCryptoKey, encodedText.toArrayBuffer())?.asString()
-        ?: error("Failed to decode message"),
+    text = context.safeDecryptRSA(
+        context.chatKeys[chatId]?.privateKey ?: error("Expected private key for chat $chatId"),
+        encodedText.toArrayBuffer()
+    )?.asString() ?: error("Failed to decrypt message"),
     id = id,
     timestamp = timestamp.zoned(),
     isSecret = false,
