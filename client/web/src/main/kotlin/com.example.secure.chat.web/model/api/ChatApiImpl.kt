@@ -1,6 +1,7 @@
 package com.example.secure.chat.web.model.api
 
 import com.example.auth.common.dto.model.chat.ChatDraftDto
+import com.example.auth.common.dto.model.invite.InviteDraftDto
 import com.example.auth.common.dto.model.message.MessageDraftDto
 import com.example.auth.common.dto.model.message.MessageDto
 import com.example.auth.common.dto.request.*
@@ -280,7 +281,16 @@ object ChatApiImpl : ChatApi {
     }
 
     override suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean {
-        TODO("Not yet implemented")
+        val chatPk = context.chatKeys[chat.id]?.publicKey ?: error("Expected chat ${chat.id} public key")
+
+        val encodedPk = context.exportPublicRSAKey(chatPk).toBase64Bytes()
+
+        val draft = InviteDraftDto(username, chat.id, encodedPk)
+
+        context.requestAndReceive { InviteSendRequestDto(it, username, draft) }
+            ?: return false
+
+        return true
     }
 
     override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
