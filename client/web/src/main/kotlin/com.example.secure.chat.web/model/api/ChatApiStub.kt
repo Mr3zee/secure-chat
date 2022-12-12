@@ -25,8 +25,12 @@ object ChatApiStub : ChatApi {
         }
     }
 
-    override suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Message {
-        return message.copy(text = "chat-${chat.id}-message-${now()}")
+    override suspend fun getLastMessage(
+        context: LoginContext,
+        chat: Chat.Global,
+        key: PrivateCryptoKey,
+    ): Result<Message> {
+        return message.copy(text = "chat-${chat.id}-message-${now()}").let { Result.success(it) }
     }
 
     private val random = Random(1234)
@@ -54,7 +58,11 @@ object ChatApiStub : ChatApi {
         return true
     }
 
-    override suspend fun acceptInvite(context: LoginContext, chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>> {
+    override suspend fun acceptInvite(
+        context: LoginContext,
+        chatName: String,
+        invite: Invite,
+    ): Result<Pair<Chat.Global, CryptoKeyPair>> {
         return Result.success(Chat.Global(random.nextLong(), chatName) to crypto.genRsaKeyPair())
     }
 
@@ -66,7 +74,7 @@ object ChatApiStub : ChatApi {
         // unsupported
     }
 
-    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): List<Message> {
+    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): Result<List<Message>> {
         return listOf(
             message.copy(
                 text = "hello 1".repeat(100),
@@ -119,10 +127,10 @@ object ChatApiStub : ChatApi {
             message.copy(text = "hello 23", timestamp = now()),
             message.copy(text = "hello 24", timestamp = now()),
             message.copy(text = "hello 25", timestamp = now(), initialStatus = MessageStatus.Unread),
-        )
+        ).let { Result.success(it) }
     }
 
-    override suspend fun getAllChats(context: LoginContext): List<Pair<Chat.Global, PublicCryptoKey>> {
+    override suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
         val pk = context.coder.genRsaKeyPair().publicKey
 
         return listOf(
@@ -144,7 +152,7 @@ object ChatApiStub : ChatApi {
                     initialStatus = MessageStatus.Unread
                 )
             },
-        ).map { it to pk }
+        ).map { it to pk }.let { Result.success(it) }
     }
 }
 

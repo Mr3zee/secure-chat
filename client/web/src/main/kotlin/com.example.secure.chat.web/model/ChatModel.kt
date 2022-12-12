@@ -13,6 +13,7 @@ import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.Credentials
 import com.example.secure.chat.web.model.creds.LoginContext
 import com.example.secure.chat.web.utils.clipboard
+import com.example.secure.chat.web.utils.get
 import kotlinx.coroutines.Job
 import org.w3c.files.File
 import org.w3c.files.FileReader
@@ -84,7 +85,12 @@ class ChatModel(
                 is Chat.Global -> {
                     chatTimelineRequestJob?.cancel()
                     chatTimelineRequestJob = launch(Ui) {
-                        selectedChatTimeline.value = api.getChatTimeline(loginContext, chat)
+                        selectedChatTimeline.value = api.getChatTimeline(loginContext, chat).let {
+                            if (it.isFailure) {
+                                console.error("Failed to load chat's timeline")
+                                emptyList()
+                            } else it.get()
+                        }
                         selectedChat.value.lastMessage.value = selectedChatTimeline.value.lastOrNull()
 
                         chat.lastMessage.value?.status?.let {
@@ -164,7 +170,12 @@ class ChatModel(
     }
 
     suspend fun loadChats() {
-        api.getAllChats(loginContext).let { list ->
+        api.getAllChats(loginContext).let { res ->
+            val list = if (res.isFailure) {
+                console.error("Failed to load chat list")
+                return
+            } else res.get()
+
             chats.value = list.associateBy(keySelector = { it.first.id }) { it.first }
             credentials.chatsLonePublicKeys.putAll(list.associateBy(keySelector = { it.first.id }) { it.second })
         }

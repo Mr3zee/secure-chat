@@ -11,6 +11,7 @@ import com.example.secure.chat.web.model.chat.processors.handler.ConversationHan
 import com.example.secure.chat.web.model.creds.Credentials
 import com.example.secure.chat.web.model.creds.CredsDTO
 import com.example.secure.chat.web.model.creds.LoginContext
+import com.example.secure.chat.web.utils.get
 import kotlinx.js.jso
 
 class LocalMessageProcessor(
@@ -134,7 +135,7 @@ class LocalMessageProcessor(
 
                 when {
                     res.isSuccess -> {
-                        val keyPair = res.getOrNull() ?: error("unreachable")
+                        val keyPair = res.get()
 
                         model.credentials.keyPair.value = keyPair
                         model.credentials.login.value = username
@@ -169,7 +170,7 @@ class LocalMessageProcessor(
 
                     when {
                         res.isSuccess -> {
-                            val keyPair = res.getOrNull() ?: error("unreachable")
+                            val keyPair = res.get()
 
                             sendMessage("Login successful. Welcome, ${creds.login}!")
 
@@ -394,10 +395,15 @@ class LocalMessageProcessor(
         chat: Chat.Global,
         privateCryptoKey: PrivateCryptoKey,
     ): Boolean {
-        val lastMessage = model.api.getLastMessage(model.loginContext, chat, privateCryptoKey) ?: run {
+        val result = model.api.getLastMessage(model.loginContext, chat, privateCryptoKey)
+
+        if (result.isFailure) {
             sendMessage("Failed to login into ${chat.name} chat.")
+
             return false
         }
+
+        val lastMessage = result.get()
 
         sendMessage("Logged in into ${chat.name} chat.")
 

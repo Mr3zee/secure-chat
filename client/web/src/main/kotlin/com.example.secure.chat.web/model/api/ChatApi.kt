@@ -14,7 +14,7 @@ interface ChatApi {
 
     suspend fun loginUser(context: LoginContext): Result<CryptoKeyPair>
 
-    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Message?
+    suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Result<Message>
 
     suspend fun createChat(
         context: LoginContext,
@@ -22,9 +22,9 @@ interface ChatApi {
         initialMessage: Message,
     ): Pair<Chat.Global, CryptoKeyPair>
 
-    suspend fun getAllChats(context: LoginContext): List<Pair<Chat.Global, PublicCryptoKey>>
+    suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>>
 
-    suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): List<Message>
+    suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): Result<List<Message>>
 
     suspend fun leaveChat(context: LoginContext, chat: Chat.Global): Boolean
 

@@ -12,6 +12,7 @@ import com.example.secure.chat.web.model.chat.Invite
 import com.example.secure.chat.web.model.chat.Message
 import com.example.secure.chat.web.model.coder.Coder
 import com.example.secure.chat.web.model.creds.LoginContext
+import com.example.secure.chat.web.utils.asString
 import com.example.secure.chat.web.utils.isDevEnv
 import com.example.secure.chat.web.utils.toArrayBuffer
 import com.example.secure.chat.web.utils.toBase64Bytes
@@ -179,7 +180,11 @@ object ChatApiImpl : ChatApi {
         })
     }
 
-    override suspend fun getLastMessage(context: LoginContext, chat: Chat.Global, key: PrivateCryptoKey): Message? {
+    override suspend fun getLastMessage(
+        context: LoginContext,
+        chat: Chat.Global,
+        key: PrivateCryptoKey,
+    ): Result<Message> {
         TODO("Not yet implemented")
     }
 
@@ -191,11 +196,22 @@ object ChatApiImpl : ChatApi {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllChats(context: LoginContext): List<Pair<Chat.Global, PublicCryptoKey>> {
-        TODO("Not yet implemented")
+    override suspend fun getAllChats(context: LoginContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
+        val chats = context.sendAndReceive { ChatListRequestDto(it) }?.chats ?: return failBackoff()
+
+        return chats.map {
+            val pk = context.coder.importRSAPublicKey(it.publicKey.toArrayBuffer())
+
+            val name = context.coder.safeDecryptRSA(context.privateCryptoKey, it.name.toArrayBuffer())?.asString()
+                ?: error("Failed to decrypt chat name")
+
+            val chat = Chat.Global(it.id, name)
+
+            chat to pk
+        }.let { Result.success(it) }
     }
 
-    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): List<Message> {
+    override suspend fun getChatTimeline(context: LoginContext, chat: Chat.Global): Result<List<Message>> {
         TODO("Not yet implemented")
     }
 
@@ -220,10 +236,10 @@ object ChatApiImpl : ChatApi {
     }
 
     override suspend fun subscribeOnNewInvites(context: LoginContext, handler: (List<Invite>) -> Unit) {
-        TODO("Not yet implemented")
+        // todo
     }
 
     override suspend fun subscribeOnNewMessages(context: LoginContext, handler: (List<Pair<Long, Message>>) -> Unit) {
-        TODO("Not yet implemented")
+        // todo
     }
 }
