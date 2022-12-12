@@ -107,17 +107,15 @@ class ChatModel(
     }
 
     private fun subscribeOnServerEvents() {
-        launch(Ui) {
-            api.subscribeOnNewInvites(apiContext) {
-                invites.value += it.associateBy { invite -> invite.chatId }
-            }
+        api.subscribeOnNewInvites(apiContext) {
+            invites.value += it.associateBy { invite -> invite.chatId }
+        }
 
-            api.subscribeOnNewMessages(apiContext) { messages ->
-                val chats = chats.value
-                messages.forEach { (chatId, message) ->
-                    chats[chatId]?.let { chat ->
-                        newMessage(chat, message)
-                    }
+        api.subscribeOnNewMessages(apiContext) { messages ->
+            val chats = chats.value
+            messages.forEach { (chatId, message) ->
+                chats[chatId]?.let { chat ->
+                    newMessage(chat, message)
                 }
             }
         }

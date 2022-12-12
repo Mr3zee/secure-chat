@@ -40,7 +40,7 @@ interface ChatApi {
         invite: Invite,
     ): Result<Pair<Chat.Global, CryptoKeyPair>>
 
-    suspend fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit)
+    fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit)
 
-    suspend fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit)
+    fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit)
 }

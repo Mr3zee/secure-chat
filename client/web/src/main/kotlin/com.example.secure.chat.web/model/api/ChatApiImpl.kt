@@ -7,10 +7,7 @@ import com.example.auth.common.dto.model.message.MessageDraftDto
 import com.example.auth.common.dto.model.message.MessageDto
 import com.example.auth.common.dto.request.*
 import com.example.auth.common.dto.response.*
-import com.example.secure.chat.platform.Ui
-import com.example.secure.chat.platform.backoff
-import com.example.secure.chat.platform.client
-import com.example.secure.chat.platform.launch
+import com.example.secure.chat.platform.*
 import com.example.secure.chat.web.crypto.*
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
@@ -21,9 +18,11 @@ import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.js.jso
+import kotlin.reflect.KClass
 
 object ChatApiImpl : ChatApi {
     private var session: DefaultClientWebSocketSession? = null
@@ -68,15 +67,41 @@ object ChatApiImpl : ChatApi {
 
     private val serverChannel: Channel<SerializableServerResponseDto> get() = channel ?: error("Channel closed")
 
+    private val serverChannelSubscribers = mutableListOf<ServerSubscription<*>>()
+
+    private data class ServerSubscription<E : ServerEventDto>(
+        val channel: Channel<ServerEventDto>,
+        val clazz: KClass<E>,
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private inline fun <reified E : ServerEventDto> subscribeOnServerEvent(crossinline handler: suspend (E) -> Unit) {
+        val channel = Channel<ServerEventDto>(Channel.UNLIMITED)
+        safeLaunch(Ui) {
+            while (!channel.isClosedForReceive) {
+                val event = channel.receive()
+                handler(event as E)
+            }
+        }
+        val sub = ServerSubscription(channel, E::class)
+
+        serverChannelSubscribers.add(sub)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun DefaultClientWebSocketSession.collectServerResponses() {
-        launch(Ui) {
-            try {
-                while (isActive) {
-                    val response = receiveDeserialized<SerializableServerResponseDto>()
-                    serverChannel.send(response)
+        safeLaunch(Ui) {
+            outer@ while (isActive && !serverChannel.isClosedForSend) {
+                val response = receiveDeserialized<SerializableServerResponseDto>()
+
+                for (it in serverChannelSubscribers) {
+                    if (it.clazz.isInstance(response)) {
+                        it.channel.send(response as ServerEventDto)
+                        continue@outer
+                    }
                 }
-            } catch (e: dynamic) {
-                console.warn(e)
+
+                serverChannel.send(response)
             }
         }
     }
@@ -198,6 +223,8 @@ object ChatApiImpl : ChatApi {
         session = null
         backlog.clear()
         channel?.close()
+        serverChannelSubscribers.forEach { it.channel.close() }
+        serverChannelSubscribers.clear()
         return true
     }
 
@@ -341,12 +368,23 @@ object ChatApiImpl : ChatApi {
         }).success()
     }
 
-    override suspend fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
-        // todo
+    override fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
+        subscribeOnServerEvent<NewInvitesEventDto> {
+            val invites = it.invites.map { invite -> Invite(invite.chatId, invite.encodedKey) }
+            handler(invites)
+        }
     }
 
-    override suspend fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
-        // todo
+    override fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
+        subscribeOnServerEvent<NewMessagesEventDto> {
+            val invites = it.messages.map { message ->
+                val privateCryptoKey = context.chatKeys[message.chatId]?.privateKey
+                    ?: error("Expected private key for chat ${message.chatId}")
+
+                message.chatId to message.toMessage(context, privateCryptoKey)
+            }
+            handler(invites)
+        }
     }
 }
 

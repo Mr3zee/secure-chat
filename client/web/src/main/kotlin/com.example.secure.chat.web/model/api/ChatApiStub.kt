@@ -72,11 +72,11 @@ object ChatApiStub : ChatApi {
         return Result.success(Chat.Global(random.nextLong(), chatName) to crypto.genRsaKeyPair())
     }
 
-    override suspend fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
+    override fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
         // unsupported
     }
 
-    override suspend fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
+    override fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
         // unsupported
     }
 
