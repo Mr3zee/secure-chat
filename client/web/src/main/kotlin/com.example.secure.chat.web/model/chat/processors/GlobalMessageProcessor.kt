@@ -22,6 +22,7 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
             }
         } catch (e: dynamic) {
             localMessage("Failed to perform operation.")
+            console.error(e)
         } finally {
             globalConversation.setState(GlobalState.DEFAULT)
         }

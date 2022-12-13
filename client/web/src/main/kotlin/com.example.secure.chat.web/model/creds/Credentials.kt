@@ -70,7 +70,8 @@ class Credentials {
                     }
                 )
             } catch (e: dynamic) {
-                console.warn("Failed to parse file with error: ", e)
+                console.warn("Failed to parse file")
+                console.warn(e)
                 null
             }
         }

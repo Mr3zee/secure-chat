@@ -50,7 +50,8 @@ object DefaultCoder : Coder {
         return try {
             body()
         } catch (e: dynamic) {
-            console.warn("Failed to import key", e)
+            console.warn("Failed to import key")
+            console.warn(e)
             null
         }
     }
@@ -59,11 +60,16 @@ object DefaultCoder : Coder {
         return crypto.genRsaKeyPair()
     }
 
+    override suspend fun encryptRSA(publicKey: PublicCryptoKey, data: ArrayBuffer): ArrayBuffer? {
+        return crypto.encryptRSA(publicKey, data)
+    }
+
     override suspend fun safeEncryptRSA(publicKey: PublicCryptoKey, data: ArrayBuffer): ArrayBuffer? {
         return try {
-            crypto.encryptRSA(publicKey, data)
+            encryptRSA(publicKey, data)
         } catch (e: dynamic) {
-            console.warn("Failed to encrypt", e)
+            console.warn("Failed to encrypt")
+            console.warn(e)
             null
         }
     }
@@ -72,7 +78,8 @@ object DefaultCoder : Coder {
         return try {
             crypto.encryptRSA(publicKey, data)
         } catch (e: dynamic) {
-            console.warn("Failed to encrypt", e)
+            console.warn("Failed to encrypt")
+            console.warn(e)
             null
         }
     }
@@ -81,7 +88,8 @@ object DefaultCoder : Coder {
         return try {
             crypto.decryptRSA(privateKey, data)
         } catch (e: dynamic) {
-            console.warn("Failed to decrypt", e)
+            console.warn("Failed to decrypt")
+            console.warn(e)
             null
         }
     }

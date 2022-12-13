@@ -18,7 +18,8 @@ fun <T> safeLaunch(scope: CoroutineScope, body: suspend () -> T): Job  {
         try {
             body()
         } catch (e : dynamic) {
-            console.warn("Exception in coroutine launch", e)
+            console.warn("Exception in coroutine launch")
+            console.warn(e)
         }
     }
 }

@@ -2,8 +2,7 @@
 
 package com.example.secure.chat.web.crypto
 
-import com.example.secure.chat.web.utils.asString
-import com.example.secure.chat.web.utils.toArrayBuffer
+import com.example.secure.chat.web.utils.*
 import io.ktor.utils.io.core.*
 import kotlinx.browser.window
 import kotlinx.coroutines.await
@@ -26,6 +25,9 @@ private const val SHA_512 = "SHA-512"
 
 private const val ENCRYPT_KEY_USAGE = "encrypt"
 private const val DECRYPT_KEY_USAGE = "decrypt"
+
+private const val CHUNK_SIZE = 256
+private const val ENCRYPTED_CHUNK_SIZE = 512 // SHA-512
 
 val ImportRsaParams = jso<RsaHashedKeyGenParams> {
     name = RSA_OAEP
@@ -99,14 +101,30 @@ suspend fun Crypto.genRsaKeyPair(): CryptoKeyPair {
     ).await()
 }
 
-suspend fun Crypto.encryptRSA(publicKey: PublicCryptoKey, data: ArrayBuffer): ArrayBuffer {
+suspend fun Crypto.simpleEncryptRSA(publicKey: PublicCryptoKey, data: ArrayBuffer): ArrayBuffer {
     return encrypt(jso { name = RSA_OAEP }, publicKey, data).await()
+}
+
+suspend fun Crypto.simpleEncryptRSA(publicKey: PublicCryptoKey, data: String): ArrayBuffer {
+    return simpleEncryptRSA(publicKey, data.toArrayBuffer())
 }
 
 suspend fun Crypto.encryptRSA(publicKey: PublicCryptoKey, data: String): ArrayBuffer {
     return encryptRSA(publicKey, data.toArrayBuffer())
 }
 
-suspend fun Crypto.decryptRSA(privateKey: PrivateCryptoKey, data: ArrayBuffer): ArrayBuffer {
+suspend fun Crypto.encryptRSA(publicKey: PublicCryptoKey, data: ArrayBuffer): ArrayBuffer {
+    return data.chunked(CHUNK_SIZE).map {
+        simpleEncryptRSA(publicKey, it).toByteArray()
+    }.concat().toUint8Array().buffer
+}
+
+suspend fun Crypto.simpleDecryptRSA(privateKey: PrivateCryptoKey, data: ArrayBuffer): ArrayBuffer {
     return decrypt(jso { name = RSA_OAEP }, privateKey, data).await()
+}
+
+suspend fun Crypto.decryptRSA(privateKey: PrivateCryptoKey, data: ArrayBuffer): ArrayBuffer {
+    return data.chunked(ENCRYPTED_CHUNK_SIZE).map {
+        simpleDecryptRSA(privateKey, it).toByteArray()
+    }.concat().toUint8Array().buffer
 }

@@ -26,6 +26,8 @@ interface Coder {
 
     suspend fun genRsaKeyPair(): CryptoKeyPair
 
+    suspend fun encryptRSA(publicKey: PublicCryptoKey, data: ArrayBuffer): ArrayBuffer?
+
     suspend fun safeEncryptRSA(publicKey: PublicCryptoKey, data: ArrayBuffer): ArrayBuffer?
 
     suspend fun safeEncryptRSA(publicKey: PublicCryptoKey, data: String): ArrayBuffer?
