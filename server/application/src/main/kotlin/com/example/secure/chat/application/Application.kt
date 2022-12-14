@@ -1,7 +1,7 @@
 package com.example.secure.chat.application
 
-import com.example.secure.chat.base.koinLevel
-import com.example.secure.chat.base.loggerLevel
+import com.example.secure.chat.base.callLoggerLevel
+import com.example.secure.chat.base.koinLoggerLevel
 import com.example.secure.chat.core.coreModule
 import com.example.secure.chat.core.registry.Registry
 import com.example.secure.chat.domain.db.connection.postgres
@@ -53,12 +53,12 @@ fun Application.module() {
     configureCORS()
 
     install(CallLogging) {
-        level = this@module.loggerLevel
+        level = this@module.callLoggerLevel
         filter { call -> call.request.path().startsWith("/") }
     }
 
     install(Koin) {
-        slf4jLogger(this@module.loggerLevel.koinLevel())
+        slf4jLogger(this@module.koinLoggerLevel)
 
         environmentProperties()
 
@@ -83,7 +83,7 @@ fun Application.module() {
         }
     }
 
-    postgres(isDebug = loggerLevel != Level.INFO)
+    postgres(isDebug = callLoggerLevel != Level.INFO)
 
     getKoin().getAll<Registry<*, *>>().forEach(Registry<*, *>::startPolling)
 

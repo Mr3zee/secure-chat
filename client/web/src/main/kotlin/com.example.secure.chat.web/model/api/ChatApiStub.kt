@@ -3,9 +3,12 @@ package com.example.secure.chat.web.model.api
 import com.example.secure.chat.web.crypto.*
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
+import com.example.secure.chat.web.model.creds.ApiContext
 import com.example.secure.chat.web.utils.now
+import com.example.secure.chat.web.utils.success
 import kotlin.random.Random
 
+@Suppress("unused")
 object ChatApiStub : ChatApi {
     override suspend fun registerUser(username: String, keyPair: CryptoKeyPair, coder: Coder): Boolean {
         return when (username) {
@@ -15,58 +18,73 @@ object ChatApiStub : ChatApi {
     }
 
     override suspend fun loginUser(
-        username: String,
-        privateCryptoKey: PrivateCryptoKey,
-        coder: Coder,
-    ): Result<CryptoKeyPair> {
+        context: ApiContext,
+    ): Result<CryptoKeyPair> = with(context) {
         return when (username) {
             "admin", "user" -> Result.success(coder.genRsaKeyPair())
             else -> Result.failure(IllegalArgumentException())
         }
     }
 
-    override suspend fun getLastMessage(chat: Chat.Global, key: PrivateCryptoKey, coder: Coder): Message {
-        return message.copy(text = "chat-${chat.id}-message-${now()}")
+    override suspend fun logoutUser(): Boolean {
+        return true
+    }
+
+    override suspend fun getLastMessage(
+        context: ApiContext,
+        chat: Chat.Global,
+        key: PrivateCryptoKey,
+    ): Result<Pair<Message?, PublicCryptoKey>> {
+        val pk = context.genRsaKeyPair()
+        return (message.copy(text = "chat-${chat.id}-message-${now()}") to pk.publicKey).success()
     }
 
     private val random = Random(1234)
 
     override suspend fun createChat(
+        context: ApiContext,
         chatName: String,
         initialMessage: Message,
-        coder: Coder,
-    ): Pair<Chat.Global, CryptoKeyPair> {
-        return Chat.Global(random.nextLong(), chatName).apply {
+    ): Result<Pair<Chat.Global, CryptoKeyPair>> {
+        return (Chat.Global(random.nextLong(), chatName).apply {
             lastMessage.value = initialMessage
             isLocked.value = false
-        } to coder.genRsaKeyPair()
+        } to context.coder.genRsaKeyPair()).let { Result.success(it) }
     }
 
-    override suspend fun leaveChat(chat: Chat.Global): Boolean {
+    override suspend fun leaveChat(context: ApiContext, chat: Chat.Global): Boolean {
         return true
     }
 
-    override suspend fun inviteMember(chat: Chat.Global, username: String): Boolean {
+    override suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean {
         return true
     }
 
-    override suspend fun sendMessage(chat: Chat.Global, message: Message): Boolean {
+    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
         return true
     }
 
-    override suspend fun acceptInvite(chatName: String, invite: Invite): Result<Pair<Chat.Global, CryptoKeyPair>> {
+    override suspend fun acceptInvite(
+        context: ApiContext,
+        chatName: String,
+        invite: Invite,
+    ): Result<Pair<Chat.Global, CryptoKeyPair>> {
         return Result.success(Chat.Global(random.nextLong(), chatName) to crypto.genRsaKeyPair())
     }
 
-    override suspend fun subscribeOnNewInvites(handler: (List<Invite>) -> Unit) {
+    override suspend fun listInvites(context: ApiContext): Result<List<Invite>> {
+        return emptyList<Invite>().success()
+    }
+
+    override fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
         // unsupported
     }
 
-    override suspend fun subscribeOnNewMessages(handler: (List<Pair<Long, Message>>) -> Unit) {
+    override fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
         // unsupported
     }
 
-    override suspend fun getChatTimeline(chat: Chat.Global): List<Message> {
+    override suspend fun getChatTimeline(context: ApiContext, chat: Chat.Global): Result<List<Message>> {
         return listOf(
             message.copy(
                 text = "hello 1".repeat(100),
@@ -119,11 +137,11 @@ object ChatApiStub : ChatApi {
             message.copy(text = "hello 23", timestamp = now()),
             message.copy(text = "hello 24", timestamp = now()),
             message.copy(text = "hello 25", timestamp = now(), initialStatus = MessageStatus.Unread),
-        )
+        ).let { Result.success(it) }
     }
 
-    override suspend fun getAllChats(coder: Coder): List<Pair<Chat.Global, PublicCryptoKey>> {
-        val pk = coder.genRsaKeyPair().publicKey
+    override suspend fun getAllChats(context: ApiContext): Result<List<Pair<Chat.Global, PublicCryptoKey>>> {
+        val pk = context.coder.genRsaKeyPair().publicKey
 
         return listOf(
             Chat.Global(0, "Chat 1"),
@@ -144,7 +162,7 @@ object ChatApiStub : ChatApi {
                     initialStatus = MessageStatus.Unread
                 )
             },
-        ).map { it to pk }
+        ).map { it to pk }.let { Result.success(it) }
     }
 }
 

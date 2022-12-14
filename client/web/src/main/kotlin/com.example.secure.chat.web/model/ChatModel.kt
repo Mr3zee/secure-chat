@@ -3,6 +3,7 @@ package com.example.secure.chat.web.model
 import com.arkivanov.decompose.ComponentContext
 import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.launch
+import com.example.secure.chat.platform.safeLaunch
 import com.example.secure.chat.web.compose.mutableProperty
 import com.example.secure.chat.web.crypto.CryptoKeyPair
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
@@ -10,8 +11,10 @@ import com.example.secure.chat.web.model.api.ChatApi
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.chat.processors.*
 import com.example.secure.chat.web.model.coder.Coder
+import com.example.secure.chat.web.model.creds.ApiContext
 import com.example.secure.chat.web.model.creds.Credentials
 import com.example.secure.chat.web.utils.clipboard
+import com.example.secure.chat.web.utils.get
 import kotlinx.coroutines.Job
 import org.w3c.files.File
 import org.w3c.files.FileReader
@@ -50,22 +53,9 @@ class ChatModel(
 
     private val messageProcessor = mutableProperty<MessageProcessor>(localMessageProcessor)
 
+    val apiContext: ApiContext get() = credentials.loginContext(coder)
+
     init {
-        launch(Ui) {
-            api.subscribeOnNewInvites {
-                invites.value += it.associateBy { invite -> invite.chatId }
-            }
-
-            api.subscribeOnNewMessages { messages ->
-                val chats = chats.value
-                messages.forEach { (chatId, message) ->
-                    chats[chatId]?.let { chat ->
-                        newMessage(chat, message)
-                    }
-                }
-            }
-        }
-
         resetInput.subscribe {
             currentInput.value = it
         }
@@ -96,8 +86,13 @@ class ChatModel(
                 is Chat.Global -> {
                     chatTimelineRequestJob?.cancel()
                     chatTimelineRequestJob = launch(Ui) {
-                        selectedChatTimeline.value = api.getChatTimeline(chat)
-                        selectedChat.value.lastMessage.value = selectedChatTimeline.value.lastOrNull()
+                        selectedChatTimeline.value = api.getChatTimeline(apiContext, chat).let {
+                            if (it.isFailure) {
+                                console.error("Failed to load chat's timeline")
+                                emptyList()
+                            } else it.get()
+                        }
+                        selectedChat.value.lastMessage.value = selectedChatTimeline.value.firstOrNull()
 
                         chat.lastMessage.value?.status?.let {
                             if (it.value == MessageStatus.Unread) {
@@ -112,8 +107,23 @@ class ChatModel(
         }
     }
 
+    private fun subscribeOnServerEvents() {
+        api.subscribeOnNewInvites(apiContext) {
+            invites.value += it.associateBy { invite -> invite.chatId }
+        }
+
+        api.subscribeOnNewMessages(apiContext) { messages ->
+            val chats = chats.value
+            messages.forEach { (chatId, message) ->
+                chats[chatId]?.let { chat ->
+                    newMessage(chat, message)
+                }
+            }
+        }
+    }
+
     suspend fun leaveChat(chat: Chat.Global): Boolean {
-        return if (api.leaveChat(chat)) {
+        return if (api.leaveChat(apiContext, chat)) {
             if (chat == selectedChat.value) {
                 selectedChat.value = Chat.Local
             }
@@ -126,10 +136,12 @@ class ChatModel(
         } else false
     }
 
-    fun logout() {
+    suspend fun logout() {
         selectedChat.value = Chat.Local
         inputByChat.clear()
         chats.value = emptyMap()
+
+        api.logoutUser()
     }
 
     fun prepareFileInput() {
@@ -159,14 +171,27 @@ class ChatModel(
     }
 
     suspend fun loadChats() {
-        api.getAllChats(coder).let { list ->
+        api.getAllChats(apiContext).let { res ->
+            val list = if (res.isFailure) {
+                console.error("Failed to load chat list")
+                return
+            } else res.get()
+
             chats.value = list.associateBy(keySelector = { it.first.id }) { it.first }
             credentials.chatsLonePublicKeys.putAll(list.associateBy(keySelector = { it.first.id }) { it.second })
         }
     }
 
+    private fun loadChatLastMessage(chat: Chat.Global) {
+        val pk = credentials.chatKeys[chat.id]?.privateKey ?: return
+
+        safeLaunch(Ui) {
+            chat.lastMessage.value = api.getLastMessage(apiContext, chat, pk).get().first
+        }
+    }
+
     suspend fun acceptInvite(chatName: String, id: Invite): Boolean {
-        val res = api.acceptInvite(chatName, id)
+        val res = api.acceptInvite(apiContext, chatName, id)
 
         if (res.isFailure) {
             return false
@@ -174,8 +199,27 @@ class ChatModel(
 
         val (chat, keyPair) = res.getOrNull() ?: error("unreachable")
         addChat(chat, keyPair)
+        loadChatLastMessage(chat)
+        prepareSecretToCopy(keyPair.privateKey)
 
         return true
+    }
+
+    fun onLogin(login: String, keyPair: CryptoKeyPair) {
+        credentials.login.value = login
+        credentials.keyPair.value = keyPair
+        subscribeOnServerEvents()
+        safeLaunch(Ui) {
+            loadInvites()
+        }
+    }
+
+    private suspend fun loadInvites() {
+        invites.value = api.listInvites(apiContext).let {
+            if (it.isFailure) throw it.exceptionOrNull()!!
+
+            it.get().associateBy { invite -> invite.chatId }
+        }
     }
 
     fun lockInput() {
@@ -193,6 +237,8 @@ class ChatModel(
     fun addChat(chat: Chat.Global, keyPair: CryptoKeyPair) {
         chats.value += chat.id to chat
         credentials.chatKeys += chat.id to keyPair
+
+        chat.isLocked.value = false
     }
 
     fun cancelFileUpload() {

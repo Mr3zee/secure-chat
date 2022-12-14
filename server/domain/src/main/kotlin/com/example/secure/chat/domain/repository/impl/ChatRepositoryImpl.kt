@@ -25,9 +25,10 @@ object ChatRepositoryImpl : ChatRepository {
         }
     }
 
-    override fun Transactional.getUserChat(chatId: Long): UserChat {
-        UsersChatsJoinTable.innerJoin(Chats).select {
+    override fun Transactional.getUserChat(chatId: Long, userId: Long): UserChat {
+        return UsersChatsJoinTable.innerJoin(Chats).select {
             UsersChatsJoinTable.chatId.eq(chatId)
+                .and(UsersChatsJoinTable.userId.eq(userId))
         }.single().let { row ->
             UserChat(
                 row[UsersChatsJoinTable.userId],
@@ -36,7 +37,6 @@ object ChatRepositoryImpl : ChatRepository {
                 Base64Bytes(row[Chats.publicKey]),
             )
         }
-        TODO("Not yet implemented")
     }
 
     override fun Transactional.getUserChats(userId: Long): List<UserChat> =

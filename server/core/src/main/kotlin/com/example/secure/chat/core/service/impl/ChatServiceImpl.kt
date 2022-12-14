@@ -36,7 +36,7 @@ object ChatServiceImpl : ChatService, KoinComponent {
         val userChat: UserChat = with(chatRepository) {
             val chatId = createChat(publicKey)
             createUserChat(chatId, rq)
-            getUserChat(chatId)
+            getUserChat(chatId, rq.user.id)
         }
         userChat to with(messageRepository) {
             val messageId = createMessage(
@@ -66,7 +66,13 @@ object ChatServiceImpl : ChatService, KoinComponent {
         }
         with(chatRepository) {
             createUserChat(rq.chatId, UserChatCreateRq(rq.user, rq.chatName))
-            getUserChat(rq.chatId)
+            getUserChat(rq.chatId, rq.user.id)
+        }
+    }
+
+    override suspend fun getChatById(id: Long, userId: Long): UserChat = tx {
+        with(chatRepository) {
+            getUserChat(id, userId)
         }
     }
 
