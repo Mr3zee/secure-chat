@@ -30,9 +30,11 @@ interface ChatApi {
 
     suspend fun leaveChat(context: ApiContext, chat: Chat.Global): Boolean
 
-    suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean
-
     suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean
+
+    suspend fun listInvites(context: ApiContext): Result<List<Invite>>
+
+    suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean
 
     suspend fun acceptInvite(
         context: ApiContext,

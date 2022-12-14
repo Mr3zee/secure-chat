@@ -52,10 +52,8 @@ class LocalMessageProcessor(
                 val login = it.args[0]
 
                 if (model.api.registerUser(login, keyPair, model.coder)) {
-                    model.credentials.keyPair.value = keyPair
-                    model.credentials.login.value = login
 
-                    model.onLogin()
+                    model.onLogin(login, keyPair)
                     model.prepareSecretToCopy(keyPair.privateKey)
 
                     sendMessage(
@@ -138,14 +136,11 @@ class LocalMessageProcessor(
                     res.isSuccess -> {
                         val keyPair = res.get()
 
-                        model.credentials.keyPair.value = keyPair
-                        model.credentials.login.value = username
+                        model.onLogin(username, keyPair)
 
                         launch(Ui) {
                             model.loadChats()
                         }
-
-                        model.onLogin()
 
                         sendMessage("Login successful. Welcome, $username!")
 
@@ -175,8 +170,7 @@ class LocalMessageProcessor(
 
                             sendMessage("Login successful. Welcome, ${creds.login}!")
 
-                            model.credentials.login.value = creds.login
-                            model.credentials.keyPair.value = keyPair
+                            model.onLogin(creds.login, keyPair)
 
                             launch(Ui) {
                                 model.loadChats()
@@ -226,7 +220,7 @@ class LocalMessageProcessor(
                 val chatName = it.args.getOrNull(1)
 
                 if (it.args.size != 2 || id == null || chatName == null) {
-                    sendMessage("Please, provide exactly two arguments (int, string) - invite id like in the /invites command.")
+                    sendMessage("Please, provide exactly two arguments (int, string) - chat id like in the /invites command.")
 
                     return@command LocalState.LOGGED_IN
                 }
@@ -238,7 +232,7 @@ class LocalMessageProcessor(
                 }
 
                 if (model.acceptInvite(chatName, inviteId)) {
-                    sendMessage("Invite accepted successfully.")
+                    sendMessage("Invite accepted successfully. Please, save private key with the button below.")
                 } else {
                     sendMessage("Failed to accept the invite.")
                 }

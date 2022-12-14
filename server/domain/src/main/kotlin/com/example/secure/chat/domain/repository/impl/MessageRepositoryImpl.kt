@@ -13,7 +13,7 @@ object MessageRepositoryImpl : MessageRepository {
 
     override fun Transactional.createMessage(rq: MessageCreateRq): Long =
         Messages.insertAndGetId {
-            it[chatId] = rq.user.id
+            it[chatId] = rq.chatId
             it[userId] = rq.user.id
             it[text] = rq.text.content
         }.value

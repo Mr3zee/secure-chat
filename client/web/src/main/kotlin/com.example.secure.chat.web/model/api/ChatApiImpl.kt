@@ -308,6 +308,27 @@ object ChatApiImpl : ChatApi {
         return true
     }
 
+    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
+        val chatPk = context.chatKeys[chat.id]?.publicKey ?: error("Expected chat ${chat.id} public key")
+
+        val encodedText = context.safeEncryptRSA(chatPk, message.text)?.toBase64Bytes()
+            ?: error("Failed to encrypt message")
+
+        val draft = MessageDraftDto(chat.id, encodedText)
+
+        context.requestAndReceive { MessageSendRequestDto(it, draft) }
+            ?: return false
+
+        return true
+    }
+
+    override suspend fun listInvites(context: ApiContext): Result<List<Invite>> {
+        val result = context.requestAndReceive { InviteListRequestDto(it) }
+            ?: return failBackoff()
+
+        return result.invites.map { Invite(it.chatId, it.encodedKey) }.success()
+    }
+
     override suspend fun inviteMember(context: ApiContext, chat: Chat.Global, username: String): Boolean {
         val chatSk = context.chatKeys[chat.id]?.privateKey ?: error("Expected chat ${chat.id} private key")
 
@@ -322,20 +343,6 @@ object ChatApiImpl : ChatApi {
         val draft = InviteDraftDto(username, chat.id, encodedSk)
 
         context.requestAndReceive { InviteSendRequestDto(it, username, draft) }
-            ?: return false
-
-        return true
-    }
-
-    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
-        val chatPk = context.chatKeys[chat.id]?.publicKey ?: error("Expected chat ${chat.id} public key")
-
-        val encodedText = context.safeEncryptRSA(chatPk, message.text)?.toBase64Bytes()
-            ?: error("Failed to encrypt message")
-
-        val draft = MessageDraftDto(chat.id, encodedText)
-
-        context.requestAndReceive { MessageSendRequestDto(it, draft) }
             ?: return false
 
         return true
@@ -360,7 +367,9 @@ object ChatApiImpl : ChatApi {
 
         val publicKey = context.importRSAPublicKey(response.acceptedChat.publicKey.toArrayBuffer())
 
-        val chat = Chat.Global(response.acceptedChat.id, chatName)
+        val chat = Chat.Global(response.acceptedChat.id, chatName).apply {
+            this.isLocked.value = false
+        }
 
         return (chat to jso<CryptoKeyPair> {
             this.privateKey = privateKey

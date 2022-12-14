@@ -72,6 +72,10 @@ object ChatApiStub : ChatApi {
         return Result.success(Chat.Global(random.nextLong(), chatName) to crypto.genRsaKeyPair())
     }
 
+    override suspend fun listInvites(context: ApiContext): Result<List<Invite>> {
+        return emptyList<Invite>().success()
+    }
+
     override fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit) {
         // unsupported
     }

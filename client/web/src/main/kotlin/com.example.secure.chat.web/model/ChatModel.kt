@@ -3,6 +3,7 @@ package com.example.secure.chat.web.model
 import com.arkivanov.decompose.ComponentContext
 import com.example.secure.chat.platform.Ui
 import com.example.secure.chat.platform.launch
+import com.example.secure.chat.platform.safeLaunch
 import com.example.secure.chat.web.compose.mutableProperty
 import com.example.secure.chat.web.crypto.CryptoKeyPair
 import com.example.secure.chat.web.crypto.PrivateCryptoKey
@@ -91,7 +92,7 @@ class ChatModel(
                                 emptyList()
                             } else it.get()
                         }
-                        selectedChat.value.lastMessage.value = selectedChatTimeline.value.lastOrNull()
+                        selectedChat.value.lastMessage.value = selectedChatTimeline.value.firstOrNull()
 
                         chat.lastMessage.value?.status?.let {
                             if (it.value == MessageStatus.Unread) {
@@ -181,6 +182,14 @@ class ChatModel(
         }
     }
 
+    private fun loadChatLastMessage(chat: Chat.Global) {
+        val pk = credentials.chatKeys[chat.id]?.privateKey ?: return
+
+        safeLaunch(Ui) {
+            chat.lastMessage.value = api.getLastMessage(apiContext, chat, pk).get().first
+        }
+    }
+
     suspend fun acceptInvite(chatName: String, id: Invite): Boolean {
         val res = api.acceptInvite(apiContext, chatName, id)
 
@@ -190,12 +199,27 @@ class ChatModel(
 
         val (chat, keyPair) = res.getOrNull() ?: error("unreachable")
         addChat(chat, keyPair)
+        loadChatLastMessage(chat)
+        prepareSecretToCopy(keyPair.privateKey)
 
         return true
     }
 
-    fun onLogin() {
+    fun onLogin(login: String, keyPair: CryptoKeyPair) {
+        credentials.login.value = login
+        credentials.keyPair.value = keyPair
         subscribeOnServerEvents()
+        safeLaunch(Ui) {
+            loadInvites()
+        }
+    }
+
+    private suspend fun loadInvites() {
+        invites.value = api.listInvites(apiContext).let {
+            if (it.isFailure) throw it.exceptionOrNull()!!
+
+            it.get().associateBy { invite -> invite.chatId }
+        }
     }
 
     fun lockInput() {
@@ -213,6 +237,8 @@ class ChatModel(
     fun addChat(chat: Chat.Global, keyPair: CryptoKeyPair) {
         chats.value += chat.id to chat
         credentials.chatKeys += chat.id to keyPair
+
+        chat.isLocked.value = false
     }
 
     fun cancelFileUpload() {
