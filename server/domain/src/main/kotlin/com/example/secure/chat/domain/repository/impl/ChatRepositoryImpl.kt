@@ -25,9 +25,10 @@ object ChatRepositoryImpl : ChatRepository {
         }
     }
 
-    override fun Transactional.getUserChat(chatId: Long): UserChat {
+    override fun Transactional.getUserChat(chatId: Long, userId: Long): UserChat {
         return UsersChatsJoinTable.innerJoin(Chats).select {
             UsersChatsJoinTable.chatId.eq(chatId)
+                .and(UsersChatsJoinTable.userId.eq(userId))
         }.single().let { row ->
             UserChat(
                 row[UsersChatsJoinTable.userId],

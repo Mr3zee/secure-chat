@@ -22,7 +22,7 @@ object MessageControllerImpl : MessageController, KoinComponent {
         context: WebSocketSessionContext,
         rq: MessageListRequestDto,
     ): MessageListResponseDto {
-        val pk = chatService.getChatById(rq.chatId).publicKey
+        val pk = chatService.getChatById(rq.chatId, context.currentUser.id).publicKey
 
         val (messages, hasMore) = messageService.getMessages(
             rq.chatId,
