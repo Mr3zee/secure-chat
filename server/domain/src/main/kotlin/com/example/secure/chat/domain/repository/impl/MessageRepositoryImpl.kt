@@ -67,7 +67,11 @@ object MessageRepositoryImpl : MessageRepository {
             }
 
     override fun Transactional.getLastMessageId(): Long =
-        Messages.slice(Messages.id.max())
+        Messages.slice(Messages.id)
             .selectAll()
-            .singleOrNull()?.get(Messages.id.max()) ?: 0L
+            .orderBy(Messages.id, SortOrder.DESC)
+            .limit(1)
+            .singleOrNull()?.let {
+                it[Messages.id].value
+            } ?: 0L
 }
