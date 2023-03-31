@@ -74,7 +74,7 @@ object ChatControllerImpl : ChatController, KoinComponent {
                     return@subscribe false
                 }
                 val event = NewMessagesEventDto(messages.map(::toDto))
-                context.sendSerialized(event)
+                context.sendSerialized<SerializableServerResponseDto>(event)
                 logger.debug { "Sent ${messages.size} events to session ${context.sessionId}" }
             } catch (e: Exception) {
                 logger.error(e) {

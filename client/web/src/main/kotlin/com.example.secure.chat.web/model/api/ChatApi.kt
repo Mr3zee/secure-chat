@@ -30,7 +30,7 @@ interface ChatApi {
 
     suspend fun leaveChat(context: ApiContext, chat: Chat.Global): Boolean
 
-    suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean
+    suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Message?
 
     suspend fun listInvites(context: ApiContext): Result<List<Invite>>
 
@@ -45,4 +45,6 @@ interface ChatApi {
     fun subscribeOnNewInvites(context: ApiContext, handler: (List<Invite>) -> Unit)
 
     fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit)
+
+    suspend fun addChatSubscription(context: ApiContext, chat: Chat.Global)
 }

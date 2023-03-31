@@ -7,7 +7,10 @@ import com.example.auth.common.dto.model.message.MessageDraftDto
 import com.example.auth.common.dto.model.message.MessageDto
 import com.example.auth.common.dto.request.*
 import com.example.auth.common.dto.response.*
-import com.example.secure.chat.platform.*
+import com.example.secure.chat.platform.Ui
+import com.example.secure.chat.platform.backoff
+import com.example.secure.chat.platform.client
+import com.example.secure.chat.platform.safeLaunch
 import com.example.secure.chat.web.crypto.*
 import com.example.secure.chat.web.model.chat.*
 import com.example.secure.chat.web.model.coder.Coder
@@ -308,18 +311,15 @@ object ChatApiImpl : ChatApi {
         return true
     }
 
-    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
-        val chatPk = context.chatKeys[chat.id]?.publicKey ?: error("Expected chat ${chat.id} public key")
+    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Message? {
+        val (pub, priv) = context.chatKeys[chat.id] ?: error("Expected chat ${chat.id} public key")
 
-        val encodedText = context.safeEncryptRSA(chatPk, message.text)?.toBase64Bytes()
+        val encodedText = context.safeEncryptRSA(pub, message.text)?.toBase64Bytes()
             ?: error("Failed to encrypt message")
 
         val draft = MessageDraftDto(chat.id, encodedText)
 
-        context.requestAndReceive { MessageSendRequestDto(it, draft) }
-            ?: return false
-
-        return true
+        return context.requestAndReceive { MessageSendRequestDto(it, draft) }?.message?.toMessage(context, priv)
     }
 
     override suspend fun listInvites(context: ApiContext): Result<List<Invite>> {
@@ -386,14 +386,18 @@ object ChatApiImpl : ChatApi {
 
     override fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
         subscribeOnServerEvent<NewMessagesEventDto> {
-            val invites = it.messages.map { message ->
+            val messages = it.messages.map { message ->
                 val privateCryptoKey = context.chatKeys[message.chatId]?.privateKey
                     ?: error("Expected private key for chat ${message.chatId}")
 
                 message.chatId to message.toMessage(context, privateCryptoKey)
             }
-            handler(invites)
+            handler(messages)
         }
+    }
+
+    override suspend fun addChatSubscription(context: ApiContext, chat: Chat.Global) {
+        context.requestAndReceive { ChatSubscribeRequestDto(it, chat.id) }
     }
 }
 

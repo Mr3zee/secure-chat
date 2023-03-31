@@ -5,7 +5,7 @@
       <configuration version="5" platform="JavaScript " allPlatforms="JS []" useProjectSettings="false" isTestModule="false" externalProjectId=":client:web" isHmppProject="true">
         <newMppModelJpsModuleKind>COMPILATION_AND_SOURCE_SET_HOLDER</newMppModelJpsModuleKind>
         <compilerSettings>
-          <option name="additionalArguments" value="-Xir-only -Xir-per-module-output-name=secure-chat-web -Xir-produce-klib-dir -Xir-module-name=secure-chat.client:web" />
+          <option name="additionalArguments" value="-Xir-module-name=secure-chat.client:web -Xir-only -Xir-per-module-output-name=secure-chat-web -Xir-produce-klib-dir" />
         </compilerSettings>
         <compilerArguments>
           <flagArguments>

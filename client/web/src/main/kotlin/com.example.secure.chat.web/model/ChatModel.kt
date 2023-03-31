@@ -123,6 +123,8 @@ class ChatModel(
     }
 
     suspend fun leaveChat(chat: Chat.Global): Boolean {
+        // todo unsubscribe
+
         return if (api.leaveChat(apiContext, chat)) {
             if (chat == selectedChat.value) {
                 selectedChat.value = Chat.Local
@@ -140,6 +142,7 @@ class ChatModel(
         selectedChat.value = Chat.Local
         inputByChat.clear()
         chats.value = emptyMap()
+        // todo unsubscribe
 
         api.logoutUser()
     }
@@ -178,6 +181,7 @@ class ChatModel(
             } else res.get()
 
             chats.value = list.associateBy(keySelector = { it.first.id }) { it.first }
+            chats.value.values.forEach { api.addChatSubscription(apiContext, it) }
             credentials.chatsLonePublicKeys.putAll(list.associateBy(keySelector = { it.first.id }) { it.second })
         }
     }
@@ -234,7 +238,9 @@ class ChatModel(
         inputType.value = ChatInputType.Secret
     }
 
-    fun addChat(chat: Chat.Global, keyPair: CryptoKeyPair) {
+    suspend fun addChat(chat: Chat.Global, keyPair: CryptoKeyPair) {
+        api.addChatSubscription(apiContext, chat)
+
         chats.value += chat.id to chat
         credentials.chatKeys += chat.id to keyPair
 
@@ -293,8 +299,10 @@ class ChatModel(
     }
 
     private fun newMessage(chat: Chat, message: Message) {
-        if (selectedChat.value == chat) {
+        if (selectedChat.value == chat && !selectedChatTimeline.value.contains(message)) {
             selectedChatTimeline.value += message
+
+            newMessageEvent.fire()
         }
 
         if (chat is Chat.Local) {
@@ -302,8 +310,6 @@ class ChatModel(
         }
 
         chat.lastMessage.value = message
-
-        newMessageEvent.fire()
     }
 
     private fun sendLocalMessage(text: String) {

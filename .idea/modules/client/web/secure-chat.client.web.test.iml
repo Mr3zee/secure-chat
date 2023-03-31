@@ -5,10 +5,10 @@
       <configuration version="5" platform="JavaScript " allPlatforms="JS []" useProjectSettings="false" isTestModule="true" externalProjectId=":client:web" isHmppProject="true">
         <newMppModelJpsModuleKind>COMPILATION_AND_SOURCE_SET_HOLDER</newMppModelJpsModuleKind>
         <externalSystemTestTasks>
-          <externalSystemTestTask>browserTest|:client:web|js</externalSystemTestTask>
+          <externalSystemTestTask>browserTest|:client:web|js|js</externalSystemTestTask>
         </externalSystemTestTasks>
         <compilerSettings>
-          <option name="additionalArguments" value="-Xir-only -Xir-per-module-output-name=secure-chat-web-test -Xir-produce-klib-dir -Xir-module-name=secure-chat.client:web_test" />
+          <option name="additionalArguments" value="-Xir-module-name=secure-chat.client:web_test -Xir-only -Xir-per-module-output-name=secure-chat-web-test -Xir-produce-klib-dir" />
         </compilerSettings>
         <compilerArguments>
           <flagArguments>

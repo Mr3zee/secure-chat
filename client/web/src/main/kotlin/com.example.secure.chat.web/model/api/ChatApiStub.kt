@@ -60,8 +60,8 @@ object ChatApiStub : ChatApi {
         return true
     }
 
-    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Boolean {
-        return true
+    override suspend fun sendMessage(context: ApiContext, chat: Chat.Global, message: Message): Message? {
+        return message
     }
 
     override suspend fun acceptInvite(
@@ -81,6 +81,10 @@ object ChatApiStub : ChatApi {
     }
 
     override fun subscribeOnNewMessages(context: ApiContext, handler: (List<Pair<Long, Message>>) -> Unit) {
+        // unsupported
+    }
+
+    override suspend fun addChatSubscription(context: ApiContext, chat: Chat.Global) {
         // unsupported
     }
 

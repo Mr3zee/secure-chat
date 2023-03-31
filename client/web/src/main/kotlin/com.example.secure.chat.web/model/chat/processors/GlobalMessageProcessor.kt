@@ -105,9 +105,10 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
 
     private fun MessageContext.sendGlobalMessage(chat: Chat.Global, globalMessage: Message) {
         launch(Ui) {
-            if (model.api.sendMessage(model.apiContext, chat, globalMessage)) {
+            model.api.sendMessage(model.apiContext, chat, globalMessage)?.let {
                 globalMessage.status.value = MessageStatus.Verified
-            } else {
+                globalMessage.id = it.id
+            } ?: run {
                 globalMessage.status.value = MessageStatus.Failed
             }
         }
