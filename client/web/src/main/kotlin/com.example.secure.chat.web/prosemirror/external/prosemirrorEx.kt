@@ -7,7 +7,8 @@ fun EditorView.safeFocus() {
         focus()
     } catch (e: dynamic) {
         val t = (e as? Throwable) ?: Exception(e?.toString())
-        console.warn("failed to focus the editor view", t)
+        console.warn("failed to focus the editor view")
+        console.warn(t)
     }
 }
 

@@ -18,6 +18,14 @@ class Credentials {
     val chatKeys = mutableMapOf<Long, CryptoKeyPair>()
     val chatsLonePublicKeys = mutableMapOf<Long, PublicCryptoKey>()
 
+    fun loginContext(coder: Coder): ApiContext = ApiContext(
+        username = login.value ?: error("Expected username"),
+        privateCryptoKey = keyPair.value?.privateKey ?: error("Expected privateKey"),
+        publicCryptoKey = keyPair.value?.publicKey,
+        coder = coder,
+        chatKeys = chatKeys
+    )
+
     fun clear() {
         keyPair.value = null
         login.value = null
@@ -62,7 +70,8 @@ class Credentials {
                     }
                 )
             } catch (e: dynamic) {
-                console.warn("Failed to parse file with error: ", e)
+                console.warn("Failed to parse file")
+                console.warn(e)
                 null
             }
         }
@@ -81,3 +90,13 @@ data class CredsDTO(
     val privateKey: PrivateCryptoKey,
     val chatKeys: Map<Long, PrivateCryptoKey>,
 )
+
+data class ApiContext(
+    val username: String,
+    val privateCryptoKey: PrivateCryptoKey,
+    val publicCryptoKey: PublicCryptoKey?,
+    val coder: Coder,
+    val chatKeys: Map<Long, CryptoKeyPair> = emptyMap(),
+) : Coder by coder
+
+fun PublicCryptoKey?.unsureKey() = this ?: error("Expected publicKey")

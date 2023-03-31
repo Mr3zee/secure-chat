@@ -12,3 +12,14 @@ fun <T> launch(scope: CoroutineScope, body: suspend () -> T): Job = with(scope) 
         body()
     }
 }
+
+fun <T> safeLaunch(scope: CoroutineScope, body: suspend () -> T): Job  {
+    return launch(scope) {
+        try {
+            body()
+        } catch (e : dynamic) {
+            console.warn("Exception in coroutine launch")
+            console.warn(e)
+        }
+    }
+}

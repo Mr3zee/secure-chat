@@ -1,7 +1,8 @@
 package com.example.secure.chat.web.routing.websocket
 
 import com.example.auth.common.dto.request.*
-import com.example.auth.common.dto.response.*
+import com.example.auth.common.dto.response.LogoutResponseDto
+import com.example.auth.common.dto.response.SerializableServerResponseDto
 import com.example.secure.chat.web.controller.ChatController
 import com.example.secure.chat.web.controller.MessageController
 import com.example.secure.chat.web.controller.UserController
@@ -20,8 +21,8 @@ object RequestProcessorStrategy : KoinComponent {
     private val userController by inject<UserController>()
 
     private fun chooseProcessor(
-        request: ClientRequestDto<*, *>,
-    ): suspend (WebSocketSessionContext) -> ServerResponseDto<*, *> {
+        request: SerializableClientRequestDto,
+    ): suspend (WebSocketSessionContext) -> SerializableServerResponseDto {
         return when (request) {
             is ChatCreateRequestDto -> { context -> chatController.chatCreate(context, request) }
             is ChatListRequestDto -> { context -> chatController.chatList(context, request) }
@@ -39,7 +40,7 @@ object RequestProcessorStrategy : KoinComponent {
 
     suspend fun process(
         context: WebSocketSessionContext,
-        request: ClientRequestDto<*, *>,
+        request: SerializableClientRequestDto,
     ) {
         val action = chooseProcessor(request)
 

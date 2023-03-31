@@ -10,17 +10,22 @@ import com.example.secure.chat.web.model.chat.processors.handler.ConversationHan
 
 class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
     override suspend fun MessageContext.processMessage(): Unit = with(globalConversation) {
-        when (handle(message) ?: error("unreachable")) {
-            GlobalState.OK, GlobalState.DEFAULT -> MessageStatus.Verified
+        try {
+            when (handle(message) ?: error("unreachable")) {
+                GlobalState.OK, GlobalState.DEFAULT -> MessageStatus.Verified
 
-            GlobalState.ERROR -> MessageStatus.Failed
+                GlobalState.ERROR -> MessageStatus.Failed
 
-            else -> null
-        }?.let {
-            message.status.value = it
+                else -> null
+            }?.let {
+                message.status.value = it
+            }
+        } catch (e: dynamic) {
+            localMessage("Failed to perform operation.")
+            console.error(e)
+        } finally {
+            globalConversation.setState(GlobalState.DEFAULT)
         }
-
-        globalConversation.setState(GlobalState.DEFAULT)
     }
 
     private val globalConversation = ConversationHandler(GlobalState.DEFAULT) {
@@ -58,7 +63,7 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
                     return@command GlobalState.ERROR
                 }
 
-                if (model.api.inviteMember(chat, username)) {
+                if (model.api.inviteMember(model.apiContext, chat, username)) {
                     globalMessage("'${author.name}' invited '$username' to the chat.")
 
                     GlobalState.OK
@@ -100,7 +105,7 @@ class GlobalMessageProcessor(private val model: ChatModel) : MessageProcessor {
 
     private fun MessageContext.sendGlobalMessage(chat: Chat.Global, globalMessage: Message) {
         launch(Ui) {
-            if (model.api.sendMessage(chat, globalMessage)) {
+            if (model.api.sendMessage(model.apiContext, chat, globalMessage)) {
                 globalMessage.status.value = MessageStatus.Verified
             } else {
                 globalMessage.status.value = MessageStatus.Failed
@@ -133,6 +138,7 @@ private enum class GlobalState {
     DEFAULT, OK, ERROR, PENDING
 }
 
+@Suppress("EnumEntryName")
 private enum class GlobalCommand {
     leave, invite
 }
