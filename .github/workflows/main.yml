@@ -1,0 +1,9 @@
+name: get-source-branch
+on: workflow_dispatch
+jobs: 
+  pring_branch_name:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ github.ref }}
+      - run: echo ${{ github.ref_name }}
+      - run: echo ${{ github.head_ref }
